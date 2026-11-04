@@ -170,13 +170,16 @@ public class RunnerFakeExecutableTests
     [Fact]
     public async Task Slow_but_steady_output_does_not_trip_the_watchdog()
     {
-        // 15 rows, one every 200 ms: three seconds in total, longer than the 2 s watchdog, but never 2 s of silence.
-        using var fake = new FakePresentMonInstall("rows=15", "rowDelayMs=200", "holdOpen=true");
-        var options = Options(fake, o => o with { WatchdogNoOutputTimeout = TimeSpan.FromSeconds(2) });
+        // 30 rows, one every 250 ms: 7.5 seconds in total, longer than the 5 s watchdog, but never 5 s of silence. The margins are wide on purpose: the
+        // child is a .NET program that starts cold on a loaded two-processor CI runner, so its first row can come well over a second after the launch, and
+        // a 2 s watchdog tripped there once (CI run 41830266693: Stalls was 1 on a push to main, while the same code passed in the pull request run).
+        // The property under test (steady output is not a stall) does not need a tight margin.
+        using var fake = new FakePresentMonInstall("rows=30", "rowDelayMs=250", "holdOpen=true");
+        var options = Options(fake, o => o with { WatchdogNoOutputTimeout = TimeSpan.FromSeconds(5) });
         await using var runner = NewRunner(options);
 
         runner.Start();
-        await RunnerRig.Eventually(() => runner.Health.RowsParsed == 15, "all rows", 30_000);
+        await RunnerRig.Eventually(() => runner.Health.RowsParsed == 30, "all rows", 60_000);
 
         Assert.Equal(0, runner.Health.Stalls);
         Assert.Equal(RunnerState.Running, runner.Health.State);
