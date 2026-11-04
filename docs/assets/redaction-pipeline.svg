@@ -1,0 +1,85 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 280" width="100%" height="100%">
+  <defs>
+    <linearGradient id="redBg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#070A12"/>
+      <stop offset="100%" stop-color="#0B111E"/>
+    </linearGradient>
+    <marker id="arrowRight" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1 L 8 5 L 0 9 z" fill="#38BDF8"/>
+    </marker>
+  </defs>
+
+  <rect width="1200" height="280" rx="14" fill="url(#redBg)" stroke="#1E293B" stroke-width="1.5"/>
+
+  <!-- Header -->
+  <rect x="1" y="1" width="1198" height="44" rx="13" fill="#0B1324"/>
+  <line x1="1" y1="45" x2="1199" y2="45" stroke="#1E293B" stroke-width="1"/>
+  <text x="28" y="28" fill="#E2E8F0" font-family="'JetBrains Mono', Consolas, monospace" font-size="12" font-weight="700" letter-spacing="1">TWO-LAYER FAIL-CLOSED REDACTION ENGINE // ZERO-TRUST DIAGNOSTIC EXPORT</text>
+  <text x="1172" y="28" text-anchor="end" fill="#34D399" font-family="'JetBrains Mono', Consolas, monospace" font-size="11" font-weight="600">111 CANARY &amp; MUTATION TESTS</text>
+
+  <!-- Step 1: Raw Incident Bundle -->
+  <g transform="translate(28, 66)">
+    <rect width="262" height="190" rx="10" fill="#0F172A" stroke="#334155" stroke-width="1.2"/>
+    <text x="16" y="28" fill="#94A3B8" font-family="'JetBrains Mono', Consolas, monospace" font-size="10.5" font-weight="700">1. RAW INCIDENT BUNDLE</text>
+    <text x="16" y="50" fill="#F8FAFC" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="14" font-weight="700">Unredacted In-Memory Tree</text>
+    <g font-family="'JetBrains Mono', Consolas, monospace" font-size="10" fill="#FCA5A5">
+      <text x="16" y="76">"C:\Users\Alice_01\Desktop"</text>
+      <text x="16" y="94">"\\ALICE-PC\share\game.exe"</text>
+      <text x="16" y="112">"OneDrive - Acme Corp"</text>
+      <text x="16" y="130">"::ffff:192.168.1.40%eth0"</text>
+      <text x="16" y="148">"AA:BB:CC:DD:EE:FF"</text>
+      <text x="16" y="166">"game.exe --token=secret"</text>
+    </g>
+  </g>
+
+  <line x1="290" y1="161" x2="314" y2="161" stroke="#38BDF8" stroke-width="2" marker-end="url(#arrowRight)"/>
+
+  <!-- Step 2: Layer 1 Redactor -->
+  <g transform="translate(318, 66)">
+    <rect width="272" height="190" rx="10" fill="#0F172A" stroke="#38BDF8" stroke-width="1.2"/>
+    <text x="16" y="28" fill="#38BDF8" font-family="'JetBrains Mono', Consolas, monospace" font-size="10.5" font-weight="700">2. LAYER 1: REDACTOR (AST WALK)</text>
+    <text x="16" y="50" fill="#F8FAFC" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="14" font-weight="700">Structured + Context Scrub</text>
+    <g font-family="'JetBrains Mono', Consolas, monospace" font-size="10" fill="#93C5FD">
+      <text x="16" y="76">"C:\Users\&lt;USER&gt;\Desktop"</text>
+      <text x="16" y="94">"\\&lt;HOST&gt;\share\game.exe"</text>
+      <text x="16" y="112">"OneDrive - &lt;ORG&gt;"</text>
+      <text x="16" y="130">"&lt;IP&gt;"</text>
+      <text x="16" y="148">"&lt;MAC&gt;"</text>
+      <text x="16" y="166">"game.exe &lt;ARGS&gt;"</text>
+    </g>
+  </g>
+
+  <line x1="590" y1="161" x2="614" y2="161" stroke="#38BDF8" stroke-width="2" marker-end="url(#arrowRight)"/>
+
+  <!-- Step 3: Layer 2 ExportGuard -->
+  <g transform="translate(618, 66)">
+    <rect width="272" height="190" rx="10" fill="#0F172A" stroke="#F59E0B" stroke-width="1.2"/>
+    <text x="16" y="28" fill="#FBBF24" font-family="'JetBrains Mono', Consolas, monospace" font-size="10.5" font-weight="700">3. LAYER 2: EXPORT GUARD</text>
+    <text x="16" y="50" fill="#F8FAFC" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="14" font-weight="700">Independent 3-View Verification</text>
+    <g font-family="'JetBrains Mono', Consolas, monospace" font-size="10" fill="#CBD5E1">
+      <text x="16" y="76">• Scans raw serialized JSON</text>
+      <text x="16" y="94">• Scans Uri.UnescapeDataString</text>
+      <text x="16" y="112">• Parses JsonDocument &amp; scans</text>
+      <text x="16" y="130">  every unescaped key &amp; string</text>
+      <text x="16" y="148" fill="#FBBF24">• Any leak -&gt; throws</text>
+      <text x="16" y="166" fill="#FBBF24">  ExportBlockedException</text>
+    </g>
+  </g>
+
+  <line x1="890" y1="161" x2="914" y2="161" stroke="#38BDF8" stroke-width="2" marker-end="url(#arrowRight)"/>
+
+  <!-- Step 4: Verified ExportPreview & Atomic Disk Write -->
+  <g transform="translate(918, 66)">
+    <rect width="254" height="190" rx="10" fill="#0F172A" stroke="#10B981" stroke-width="1.2"/>
+    <text x="16" y="28" fill="#34D399" font-family="'JetBrains Mono', Consolas, monospace" font-size="10.5" font-weight="700">4. ATOMIC VERIFIED EXPORT</text>
+    <text x="16" y="50" fill="#F8FAFC" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="14" font-weight="700">Preview == Bytes on Disk</text>
+    <g font-family="'JetBrains Mono', Consolas, monospace" font-size="10" fill="#A7F3D0">
+      <text x="16" y="76">• UTF-8 without BOM</text>
+      <text x="16" y="94">• Exact SHA-256 hash shown</text>
+      <text x="16" y="112">  in UI before saving</text>
+      <text x="16" y="130">• Category replacement counts</text>
+      <text x="16" y="148">• Flush(true) to .tmp file</text>
+      <text x="16" y="166">  + atomic File.Move</text>
+    </g>
+  </g>
+</svg>

@@ -1,0 +1,53 @@
+name: Bug or Diagnostic Defect Report
+description: Report a bug, a redaction edge case, a capability probe mismatch, or a UI issue.
+title: "[Bug]: "
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thank you for reporting an issue in **Jankscope**.
+        **Privacy reminder:** If you attach a diagnostic JSON report or terminal output, always use the default redacted export (`jankscope probe --redact` or the redacted Export Preview) so your Windows username and hostname are replaced with `<USER>` and `<HOST>`.
+
+  - type: dropdown
+    id: component
+    attributes:
+      label: Component
+      description: Which subsystem is affected?
+      options:
+        - Desktop App (Jankscope.App — Capture / Investigator / Timeline / Export UI)
+        - Frame Capture & Stutter Detector (Jankscope.Frames — PresentMon / Ring / Detector / Anchors)
+        - Platform Probes & Hotkeys (Jankscope.Platform — CPU / GPU / Display / Anti-Cheat / RegisterHotKey)
+        - Core & Redaction Engine (Jankscope.Core — Redactor / ExportGuard / Capability Matrix)
+        - CLI (Jankscope.Cli — probe / incident)
+        - Synthetic D3D11 Harness (Jankscope.Harness)
+        - Build & Safety Lints (build.ps1 / BannedSymbols.txt / RepoLintTests)
+    validations:
+      required: true
+
+  - type: textarea
+    id: summary
+    attributes:
+      label: What happened?
+      description: Describe the actual behavior vs. expected behavior clearly.
+    validations:
+      required: true
+
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to Reproduce
+      description: Exact commands or UI steps to trigger the issue.
+      placeholder: |
+        1. Run `.\build.ps1`
+        2. Launch `jankscope-app.exe`
+        3. ...
+    validations:
+      required: true
+
+  - type: textarea
+    id: environment
+    attributes:
+      label: Redacted Capability Matrix (Optional)
+      description: Output of `jankscope.exe probe --redact`
+      render: text

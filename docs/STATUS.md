@@ -1,10 +1,10 @@
 # Status ledger
 
-Single source of truth for progress (spec §1 #1, #7). States: `not started` · `in progress` · `done-verified` · `done-unverified` · `blocked`. Nothing is `done-verified` because a screen or stub exists: each row needs evidence. **Last updated: 2026-11-04 (Stage 1a closed; see `HANDOFF.md`).**
+Single source of truth for progress (spec §1 #1, #7). States: `not started` · `in progress` · `done-verified` · `done-unverified` · `blocked`. Nothing is `done-verified` because a screen or stub exists: each row needs evidence. **Last updated: 2026-11-04 (Stage 1b closed; awaiting owner live-game validation per `docs/VALIDATION_1.md`).**
 
 Quality gates at **every** stage (owner request, 2026-10-16): build green with 0 warnings · tests green · **independent code review, every finding fixed or recorded** (`docs/reviews/stage-N.md`; no stage is `done-verified` with an open Critical/High) · simplification pass · safety-critical tests shown able to fail · STATUS/LIMITATIONS updated.
 
-Current verified baseline: `./build.ps1` (working tree and clean copy) → 0 warnings; 2054 tests (654 Core, 309 Platform, 973 Frames, 118 Harness; 1 skipped); the banned-symbol coverage proof (106 entries), the analyzer-wiring proof and the smoke-gate self-test pass pass; `jankscope probe` → 41 capability rows, 13 probes, 0 failed.
+Current verified baseline: `./build.ps1` (working tree) → 0 warnings; **2,505 tests (2,504 passed, 1 skipped)**: 765 Core, 344 Platform, 1,098 Frames (1,097 passed, 1 skipped), 266 Harness, 32 App; the banned-symbol coverage proof (106 entries), the analyzer-wiring proof (7 product projects) and the smoke-gate self-test pass; `jankscope probe` → 41 capability rows, 14 probes, 0 failed.
 
 ## Stage 0 — Bootstrap (**done-verified 2026-10-17** on the owner's call: two independent review passes plus a re-verification, every finding fixed or recorded, no Critical/High open; residuals are in `docs/LIMITATIONS.md`)
 
@@ -49,13 +49,26 @@ Current verified baseline: `./build.ps1` (working tree and clean copy) → 0 war
 | Anti-cheat gating on `PresentMonRunner.Start` | done-verified | `PresentMonRunnerOptions.AntiCheatSuppressionCheck` suppresses capture when active; fails closed and never starts child process |
 | `os.locale` redaction flag (L16) | done-verified | `CapabilityEntry.IsSensitive` added; `os.locale` redacted to `[REDACTED: sensitive]` on export |
 | CLI incident report (`jankscope incident`) | done-verified | `IncidentReportBuilder` + `RedactionEngine` with planted canary checks; golden file `tests/fixtures/reports/golden_incident_report.json`; CLI command verified |
-| Overhead measurement v1 | done-verified | `tools/dev/Measure-Overhead.ps1` paired A-B-A-B benchmark; observer delta on median present error is 0.033 ms (< 0.200 ms budget); documented in `docs/benchmarks/overhead-v1.md` |
+| Overhead measurement v1 | done-verified | `tools/dev/Measure-Overhead.ps1` 10-run interleaved A-B-A-B benchmark (5 pairs); observer delta on median present error is `+0.009 ms` (`< 0.200 ms` budget), p99 delta `-0.012 ms` (`< 0.500 ms`), frame-time median delta `+0.002 ms` (`< 0.100 ms`), `0` disturbed frames; documented in `docs/benchmarks/overhead-v1.md` |
+
+## Stage 1b — Interactive slice (**done-verified 2026-11-04**; awaiting owner live-game validation stop per `docs/VALIDATION_1.md`)
+
+| Item | State | Evidence |
+|---|---|---|
+| ADR 0008 + test plan written before implementation | done-verified | `docs/adr/0008-stage-1b-interactive-slice.md`, `docs/test-plans/stage-1b.md` |
+| Global hotkeys (`RegisterHotKey` / `WM_HOTKEY`, no keyboard hooks) | done-verified | `HotkeyChord`, `HotkeyRegistrar`, `HotkeyHost`; `user32.dll` `RegisterHotKey`/`UnregisterHotKey` only (`BannedSymbols.txt` + `ApprovedLibraryImports` forbid `SetWindowsHookEx`); 43 Core + 35 Platform tests |
+| Audible mark confirmation cue (non-blocking, toggleable) | done-verified | `AudioCue` generates PCM WAV in memory (`440 -> 660 Hz` mark tone, `240 Hz` warning tone); verified in `AppLogicTests` and live E2E run |
+| Capture clock map, candidate anchor search, and incident recorder | done-verified | `CaptureClockMap` (5 ms restart threshold + explicit `Reset()`), `CandidateAnchorFinder` (stutter events, collector gaps, weak spikes; never auto-selects), `FrameSeries` & `IncidentRecorder` (epoch-isolated pre-roll and post-roll); 125 new `Frames.Tests` |
+| Two-layer redaction (`Redactor` + independent `ExportGuard`) & atomic export | done-verified | `Redactor`, `ExportGuard` (fail-closed on raw, URL-decoded, and JSON-decoded strings), `ExportPipeline.Prepare` + `WriteAtomic` with SHA-256 preview match; 111 `ExportRedactionTests` |
+| WPF desktop shell (`Jankscope.App`) | done-verified | `MainWindow` (Capture, Investigator, Settings, About), `TimelineView` (min/median/p95/max pixel-bucket reduction preserving single-frame spikes), `ExportWindow`, `WelcomeWindow`, `TrayIcon`; 32 `App.Tests` including live PresentMon + visible D3D11 harness E2E test |
+| Self-overhead & zero-network verification (HC-4 / HC-6) | done-verified | `jankscope-app.exe`: `0.682%` CPU (`<= 1.0%`), `198.9 MB` Working Set (`<= 250 MB`), `0 TCP / 0 UDP` connections (`docs/benchmarks/overhead-v1.md`) |
+| **Independent code review of Stage 1b** | **done-verified** | `docs/reviews/stage-1b.md` (2 High, 3 Medium, 1 Low findings — all fixed and regression-tested; 0 Critical/High open) |
+| Owner validation guide (`docs/VALIDATION_1.md`) | done-verified | `docs/VALIDATION_1.md` written; ready for owner live-game validation stop |
 
 ## Later stages
 | Stage | State |
 |---|---|
-| 1b Interactive slice → **ready to begin (requires owner validation)** | not started |
-| 2 Input and network | not started |
+| 2 Input and network | not started (gated on owner validation of Stage 1 per `docs/VALIDATION_1.md`) |
 | 3 Expanded diagnosis | not started |
 | 4 Controlled optimization → **stop for owner validation** | not started |
 | 5 Hardening and release (+ go/no-go gate) | not started |

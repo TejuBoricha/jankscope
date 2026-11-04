@@ -27,11 +27,11 @@ public sealed class ExportBlockedException : InvalidOperationException
 public static class ExportGuard
 {
     private static readonly Regex ForeignProfilePath = new(
-        @"[A-Za-z]:[\\/]+Users[\\/]+(?!<USER>)[^\\/""'<>|:*?\r\n]+",
+        @"[A-Za-z]:[\\/]+Users[\\/]+(?!<USER>(?:[\\/""'\s]|$))[^\\/""'|:*?\r\n]+",
         RegexOptions.IgnoreCase | RegexOptions.CultureInvariant, TimeSpan.FromSeconds(2));
 
     private static readonly Regex ForeignUncHost = new(
-        @"\\\\(?![?.]\\)(?!<)[^\\\s""]+\\",
+        @"\\\\(?![?.]\\)(?!<HOST>\\)[^\\\s""]+\\",
         RegexOptions.CultureInvariant, TimeSpan.FromSeconds(2));
 
     /// <summary>Throws <see cref="ExportBlockedException"/> unless <paramref name="text"/> is clean.</summary>

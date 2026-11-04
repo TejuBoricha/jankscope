@@ -326,4 +326,27 @@ public class ExportRedactionTests
         var node = JsonNode.Parse(preview.Text)!.AsObject();
         Assert.Equal(2, node.Count(p => p.Key.StartsWith("<USER>", StringComparison.Ordinal)));
     }
+
+    [Fact]
+    public void Profile_paths_unc_hosts_and_ipv4_mapped_ipv6_redact_completely_without_partial_suffix_leaks()
+    {
+        var context = Context();
+        var redactor = new Redactor(context);
+
+        var text = $"path C:\\Users\\{User}_000\\Desktop and \\\\{User}-pc\\share and ::ffff:192.168.1.5 and fe80::1%eth0.";
+        var redacted = redactor.Redact(text)!;
+
+        Assert.DoesNotContain("_000", redacted, StringComparison.Ordinal);
+        Assert.DoesNotContain("-pc", redacted, StringComparison.Ordinal);
+        Assert.DoesNotContain("192.168.1.5", redacted, StringComparison.Ordinal);
+        Assert.DoesNotContain(".168.1.5", redacted, StringComparison.Ordinal);
+        Assert.DoesNotContain("%eth0", redacted, StringComparison.Ordinal);
+        Assert.Contains("C:\\Users\\<USER>\\Desktop", redacted, StringComparison.Ordinal);
+        Assert.Contains("\\\\<HOST>\\share", redacted, StringComparison.Ordinal);
+        ExportGuard.Verify(redacted, context);
+
+        // And if a caller ever bypassed Redactor with a partial token inside a profile path or UNC host, ExportGuard blocks it
+        Assert.Throws<ExportBlockedException>(() => ExportGuard.Verify("C:\\Users\\<USER>_000\\Desktop", context));
+        Assert.Throws<ExportBlockedException>(() => ExportGuard.Verify("\\\\<USER>-pc\\share", context));
+    }
 }

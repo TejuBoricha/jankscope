@@ -1,0 +1,8 @@
+blank_issues_enabled: true
+contact_links:
+  - name: Stage 1 Validation Guide
+    url: https://github.com/TejuBoricha/jankscope/blob/main/docs/VALIDATION_1.md
+    about: Step-by-step guide to running Jankscope against a live game and exporting a redacted incident bundle.
+  - name: Security & Anti-Cheat Safety Policy
+    url: https://github.com/TejuBoricha/jankscope/blob/main/SECURITY.md
+    about: Learn how Jankscope enforces zero foreign process access, zero hooks, and fail-closed redaction.

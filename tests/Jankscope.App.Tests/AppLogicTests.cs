@@ -1,3 +1,5 @@
+using System.Diagnostics;
+using System.Globalization;
 using Jankscope.App.Services;
 using Jankscope.Core;
 using Jankscope.Core.Hotkeys;
@@ -369,5 +371,107 @@ public class AppHostTests
 
         var error = Assert.Throws<InvalidOperationException>(() => host.Controller.PrepareExport(mark, redact: true));
         Assert.Contains("no usable frame", error.Message);
+    }
+
+    [Fact]
+    public async Task Start_refuses_while_previous_session_is_still_stopping()
+    {
+        var (host, factory, _) = Create();
+        await using var owner = host;
+        Assert.True(host.Controller.Start("game.exe").Started);
+
+        factory.Capture.State = Jankscope.Frames.PresentMon.RunnerState.Stopping;
+        var whileStopping = host.Controller.Start("other.exe");
+        Assert.False(whileStopping.Started);
+        Assert.Contains("Already capturing game.exe", whileStopping.Message);
+
+        await host.Controller.StopAsync();
+        await host.Controller.Session!.Completion;
+        Assert.True(host.Controller.Start("other.exe").Started);
+    }
+
+    [DesktopFact]
+    public async Task Real_presentmon_and_visible_harness_end_to_end_mark_anchor_and_redacted_export()
+    {
+        var pin = PresentMonLocator.Find(AppContext.BaseDirectory, out _);
+        if (pin is null)
+        {
+            return;
+        }
+
+        var repoRoot = Path.GetFullPath(Path.Combine(AppContext.BaseDirectory, "..", "..", "..", "..", ".."));
+        var harnessExe = Path.Combine(repoRoot, "tools", "Jankscope.Harness", "bin", "Release", "net10.0-windows", "jankscope-harness.exe");
+        if (!File.Exists(harnessExe))
+        {
+            return;
+        }
+
+        const string userCanary = "Zanzibar_Quinn_E2E";
+        const string hostCanary = "QUINN-E2E-RIG";
+        var cue = new SilentCue();
+        var factory = new PresentMonCaptureFactory(pin!);
+        var matrix = TestData.Matrix(
+            TestData.Row("os.build", $"Windows 11 on {hostCanary}"),
+            TestData.Row("storage.disk", $"C:\\Users\\{userCanary}\\Desktop\\game"));
+        await using var host = new AppHost(
+            AppContext.BaseDirectory,
+            new SettingsStore(TestData.TempFile("settings.json")),
+            factory,
+            cue,
+            () => matrix);
+
+        var start = host.Controller.Start("jankscope-harness.exe");
+        Assert.True(start.Started, start.Message);
+        await Task.Delay(700);
+
+        var csvPath = TestData.TempFile("harness-e2e.csv");
+        var harnessInfo = new ProcessStartInfo
+        {
+            FileName = harnessExe,
+            UseShellExecute = false,
+            CreateNoWindow = true,
+            RedirectStandardOutput = true,
+            RedirectStandardError = true,
+        };
+        foreach (var arg in new[] { "run", "--seed", "7", "--fps", "120", "--frames", "360", "--hitches", "3", "--extra-ms", "65", "--jitter-ms", "0.2", "--out", csvPath, "--window-visible" })
+        {
+            harnessInfo.ArgumentList.Add(arg);
+        }
+
+        using var harnessProcess = Process.Start(harnessInfo);
+        Assert.NotNull(harnessProcess);
+        await harnessProcess.WaitForExitAsync().WaitAsync(TimeSpan.FromSeconds(30));
+        Assert.Equal(0, harnessProcess.ExitCode);
+
+        await TestData.WaitUntil(() => host.Controller.Session!.FramesReceived >= 150, timeoutMs: 10_000);
+
+        var outcome = await host.MarkAsync(MarkKind.Stutter);
+        Assert.Equal(MarkOutcomeKind.Recorded, outcome.Kind);
+        Assert.Equal([MarkKind.Stutter], cue.MarkedKinds);
+
+        var mark = outcome.Mark!;
+        Assert.NotNull(mark.CaptureTime);
+        Assert.NotEmpty(mark.Search.Candidates);
+        Assert.Contains(mark.Search.Candidates.Take(3), c => c.Kind == AnchorKind.StutterEvent && c.SeverityMs >= 40.0);
+
+        host.Controller.Recorder.SelectCandidate(mark.Id, 1);
+        host.Controller.Recorder.SetNote(mark.Id, $"hitch seen by {userCanary} on {hostCanary} from 192.168.10.25");
+        var updated = host.Controller.Recorder.Marks.Single();
+
+        var context = RedactionContext.ForThisMachine()
+            .With(RedactionCategory.UserName, userCanary)
+            .With(RedactionCategory.HostName, hostCanary);
+        var preview = host.Controller.PrepareExport(updated, redact: true, context);
+        Assert.True(preview.RedactionApplied);
+        Assert.DoesNotContain(userCanary, preview.Text, StringComparison.OrdinalIgnoreCase);
+        Assert.DoesNotContain(hostCanary, preview.Text, StringComparison.OrdinalIgnoreCase);
+        Assert.DoesNotContain("192.168.10.25", preview.Text, StringComparison.Ordinal);
+
+        var exportPath = TestData.TempFile("e2e-incident.json");
+        ExportPipeline.WriteAtomic(preview, exportPath);
+        Assert.Equal(preview.Bytes.ToArray(), File.ReadAllBytes(exportPath));
+
+        await host.Controller.StopAsync();
+        Assert.False(host.Controller.IsCapturing);
     }
 }

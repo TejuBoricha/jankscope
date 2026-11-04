@@ -1,0 +1,176 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 490" width="100%" height="100%">
+  <defs>
+    <linearGradient id="archBg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#070A12"/>
+      <stop offset="100%" stop-color="#0B111E"/>
+    </linearGradient>
+    <linearGradient id="cardGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#111A2E"/>
+      <stop offset="100%" stop-color="#0B111E"/>
+    </linearGradient>
+    <marker id="arrowCyan" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1 L 8 5 L 0 9 z" fill="#38BDF8"/>
+    </marker>
+    <marker id="arrowEmerald" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1 L 8 5 L 0 9 z" fill="#10B981"/>
+    </marker>
+    <marker id="arrowAmber" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1 L 8 5 L 0 9 z" fill="#F59E0B"/>
+    </marker>
+  </defs>
+
+  <rect width="1200" height="490" rx="14" fill="url(#archBg)" stroke="#1E293B" stroke-width="1.5"/>
+
+  <!-- Header -->
+  <rect x="1" y="1" width="1198" height="44" rx="13" fill="#0B1324"/>
+  <line x1="1" y1="45" x2="1199" y2="45" stroke="#1E293B" stroke-width="1"/>
+  <text x="28" y="28" fill="#E2E8F0" font-family="'JetBrains Mono', Consolas, monospace" font-size="12" font-weight="700" letter-spacing="1">SYSTEM ARCHITECTURE // END-TO-END DIAGNOSTIC &amp; FAIL-CLOSED EXPORT PIPELINE</text>
+  <text x="1172" y="28" text-anchor="end" fill="#64748B" font-family="'JetBrains Mono', Consolas, monospace" font-size="11">5 ASSEMBLIES · ZERO UNSAFE OUTSIDE PLATFORM</text>
+
+  <!-- Stage 1: Out-of-Process ETW Capture -->
+  <g transform="translate(28, 70)">
+    <rect width="210" height="260" rx="10" fill="url(#cardGrad)" stroke="#38BDF8" stroke-width="1.2"/>
+    <rect x="12" y="12" width="68" height="20" rx="4" fill="#0C2D48"/>
+    <text x="46" y="26" text-anchor="middle" fill="#38BDF8" font-family="'JetBrains Mono', Consolas, monospace" font-size="10" font-weight="700">STAGE 01</text>
+    <text x="12" y="52" fill="#F8FAFC" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="15" font-weight="700">Out-of-Process</text>
+    <text x="12" y="70" fill="#F8FAFC" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="15" font-weight="700">ETW Frame Capture</text>
+    <line x1="12" y1="82" x2="198" y2="82" stroke="#1E293B" stroke-width="1"/>
+    <g fill="#94A3B8" font-family="'JetBrains Mono', Consolas, monospace" font-size="10.5">
+      <text x="12" y="102" fill="#38BDF8" font-weight="600">PresentMonRunner</text>
+      <text x="12" y="120">• Pinned PresentMon 2.6.0</text>
+      <text x="12" y="136">• SHA-256 verified on open</text>
+      <text x="12" y="152">  FileStream handle</text>
+      <text x="12" y="168">• Reparse/symlink refusal</text>
+      <text x="12" y="184">• Argv allowlist grammar</text>
+      <text x="12" y="200">  (--restart_as_admin banned)</text>
+      <text x="12" y="216">• PresentMonCsvParser</text>
+      <text x="12" y="232">• OrphanSessionCleaner</text>
+      <text x="12" y="248" fill="#64748B">Jankscope.Frames</text>
+    </g>
+  </g>
+
+  <!-- Arrow 1 -> 2 -->
+  <line x1="238" y1="200" x2="262" y2="200" stroke="#38BDF8" stroke-width="2" marker-end="url(#arrowCyan)"/>
+
+  <!-- Stage 2: Lock-Free Ring & Clock Map -->
+  <g transform="translate(266, 70)">
+    <rect width="210" height="260" rx="10" fill="url(#cardGrad)" stroke="#38BDF8" stroke-width="1.2"/>
+    <rect x="12" y="12" width="68" height="20" rx="4" fill="#0C2D48"/>
+    <text x="46" y="26" text-anchor="middle" fill="#38BDF8" font-family="'JetBrains Mono', Consolas, monospace" font-size="10" font-weight="700">STAGE 02</text>
+    <text x="12" y="52" fill="#F8FAFC" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="15" font-weight="700">Zero-Allocation Ring</text>
+    <text x="12" y="70" fill="#F8FAFC" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="15" font-weight="700">&amp; QPC Clock Map</text>
+    <line x1="12" y1="82" x2="198" y2="82" stroke="#1E293B" stroke-width="1"/>
+    <g fill="#94A3B8" font-family="'JetBrains Mono', Consolas, monospace" font-size="10.5">
+      <text x="12" y="102" fill="#38BDF8" font-weight="600">CaptureSession</text>
+      <text x="12" y="120">• Single-writer RingBuffer</text>
+      <text x="12" y="136">• 0 B/frame steady-state</text>
+      <text x="12" y="152">• 30–600 s pre-roll history</text>
+      <text x="12" y="168">• CaptureClockMap maps</text>
+      <text x="12" y="184">  QPC ticks to capture ms</text>
+      <text x="12" y="200">• 95th-pct delivery delay</text>
+      <text x="12" y="216">  uncertainty band</text>
+      <text x="12" y="232">• Epoch isolation on reset</text>
+      <text x="12" y="248" fill="#64748B">Jankscope.Frames</text>
+    </g>
+  </g>
+
+  <!-- Arrow 2 -> 3 -->
+  <line x1="476" y1="200" x2="500" y2="200" stroke="#F59E0B" stroke-width="2" marker-end="url(#arrowAmber)"/>
+
+  <!-- Stage 3: Stutter Detector & Candidate Anchors -->
+  <g transform="translate(504, 70)">
+    <rect width="210" height="260" rx="10" fill="url(#cardGrad)" stroke="#F59E0B" stroke-width="1.2"/>
+    <rect x="12" y="12" width="68" height="20" rx="4" fill="#3B2506"/>
+    <text x="46" y="26" text-anchor="middle" fill="#FBBF24" font-family="'JetBrains Mono', Consolas, monospace" font-size="10" font-weight="700">STAGE 03</text>
+    <text x="12" y="52" fill="#F8FAFC" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="15" font-weight="700">Stutter Detector &amp;</text>
+    <text x="12" y="70" fill="#F8FAFC" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="15" font-weight="700">Candidate Anchors</text>
+    <line x1="12" y1="82" x2="198" y2="82" stroke="#1E293B" stroke-width="1"/>
+    <g fill="#94A3B8" font-family="'JetBrains Mono', Consolas, monospace" font-size="10.5">
+      <text x="12" y="102" fill="#FBBF24" font-weight="600">IncidentRecorder</text>
+      <text x="12" y="120">• RegisterHotKey (WM_HOTKEY)</text>
+      <text x="12" y="136">• Rolling 1,000-frame</text>
+      <text x="12" y="152">  baseline median detector</text>
+      <text x="12" y="168">• 10 s backwards search:</text>
+      <text x="12" y="184">  1. StutterEvent spikes</text>
+      <text x="12" y="200">  2. CollectorGap stretches</text>
+      <text x="12" y="216">  3. WeakSpike fallback</text>
+      <text x="12" y="232">• Never auto-selects press</text>
+      <text x="12" y="248" fill="#64748B">Jankscope.Frames + App</text>
+    </g>
+  </g>
+
+  <!-- Arrow 3 -> 4 -->
+  <line x1="714" y1="200" x2="738" y2="200" stroke="#10B981" stroke-width="2" marker-end="url(#arrowEmerald)"/>
+
+  <!-- Stage 4: Capability Matrix & Grading -->
+  <g transform="translate(742, 70)">
+    <rect width="200" height="260" rx="10" fill="url(#cardGrad)" stroke="#10B981" stroke-width="1.2"/>
+    <rect x="12" y="12" width="68" height="20" rx="4" fill="#062E22"/>
+    <text x="46" y="26" text-anchor="middle" fill="#34D399" font-family="'JetBrains Mono', Consolas, monospace" font-size="10" font-weight="700">STAGE 04</text>
+    <text x="12" y="52" fill="#F8FAFC" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="15" font-weight="700">Capability Matrix</text>
+    <text x="12" y="70" fill="#F8FAFC" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="15" font-weight="700">&amp; Evidence Grading</text>
+    <line x1="12" y1="82" x2="188" y2="82" stroke="#1E293B" stroke-width="1"/>
+    <g fill="#94A3B8" font-family="'JetBrains Mono', Consolas, monospace" font-size="10.5">
+      <text x="12" y="102" fill="#34D399" font-weight="600">41 Capability Rows</text>
+      <text x="12" y="120">• CPU P/E hybrid topology</text>
+      <text x="12" y="136">• DXGI GPUs keyed by LUID</text>
+      <text x="12" y="152">• CCD Display topology</text>
+      <text x="12" y="168">• SCM Anti-Cheat residency</text>
+      <text x="12" y="184">• HVCI / VBS / Power plan</text>
+      <text x="12" y="200">• Falsifiable hypotheses</text>
+      <text x="12" y="216">• DataProvenance tracking</text>
+      <text x="12" y="232">  (Measured vs Simulated)</text>
+      <text x="12" y="248" fill="#64748B">Jankscope.Platform + Core</text>
+    </g>
+  </g>
+
+  <!-- Arrow 4 -> 5 -->
+  <line x1="942" y1="200" x2="966" y2="200" stroke="#10B981" stroke-width="2" marker-end="url(#arrowEmerald)"/>
+
+  <!-- Stage 5: Two-Layer Redaction & Export Guard -->
+  <g transform="translate(970, 70)">
+    <rect width="202" height="260" rx="10" fill="url(#cardGrad)" stroke="#10B981" stroke-width="1.2"/>
+    <rect x="12" y="12" width="68" height="20" rx="4" fill="#062E22"/>
+    <text x="46" y="26" text-anchor="middle" fill="#34D399" font-family="'JetBrains Mono', Consolas, monospace" font-size="10" font-weight="700">STAGE 05</text>
+    <text x="12" y="52" fill="#F8FAFC" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="15" font-weight="700">Two-Layer Redaction</text>
+    <text x="12" y="70" fill="#F8FAFC" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="15" font-weight="700">&amp; Fail-Closed Guard</text>
+    <line x1="12" y1="82" x2="190" y2="82" stroke="#1E293B" stroke-width="1"/>
+    <g fill="#94A3B8" font-family="'JetBrains Mono', Consolas, monospace" font-size="10.5">
+      <text x="12" y="102" fill="#34D399" font-weight="600">ExportPipeline</text>
+      <text x="12" y="120">• Layer 1: Redactor scrubs</text>
+      <text x="12" y="136">  JSON keys, values, paths,</text>
+      <text x="12" y="152">  UNC, IPs, MACs, cmdlines</text>
+      <text x="12" y="168">• Layer 2: ExportGuard</text>
+      <text x="12" y="184">  verifies raw, URL-decoded</text>
+      <text x="12" y="200">  &amp; JSON-unescaped text</text>
+      <text x="12" y="216">• SHA-256 preview match</text>
+      <text x="12" y="232">• Atomic temp-file rename</text>
+      <text x="12" y="248" fill="#64748B">Jankscope.Core</text>
+    </g>
+  </g>
+
+  <!-- Bottom Cross-Cutting Verification Bar -->
+  <g transform="translate(28, 352)">
+    <rect width="1144" height="112" rx="10" fill="#0B1324" stroke="#1E293B" stroke-width="1.2"/>
+    <text x="20" y="28" fill="#38BDF8" font-family="'JetBrains Mono', Consolas, monospace" font-size="11.5" font-weight="700" letter-spacing="0.8">CROSS-CUTTING COMPILE-TIME &amp; BUILD-TIME VERIFICATION GATES (EXECUTED ON EVERY BUILD.PS1 RUN)</text>
+    <line x1="20" y1="38" x2="1124" y2="38" stroke="#1E293B" stroke-width="1"/>
+
+    <g font-family="'JetBrains Mono', Consolas, monospace" font-size="10.5" fill="#CBD5E1">
+      <rect x="20" y="50" width="266" height="48" rx="6" fill="#0F172A" stroke="#334155" stroke-width="1"/>
+      <text x="32" y="69" fill="#F8FAFC" font-weight="700">1. BannedApiAnalyzers (RS0030)</text>
+      <text x="32" y="86" fill="#94A3B8">106 banned symbols · 109 proof lines</text>
+
+      <rect x="302" y="50" width="266" height="48" rx="6" fill="#0F172A" stroke="#334155" stroke-width="1"/>
+      <text x="314" y="69" fill="#F8FAFC" font-weight="700">2. CSharpScanner Lexer Lints</text>
+      <text x="314" y="86" fill="#94A3B8">26 exact System32 LibraryImports</text>
+
+      <rect x="584" y="50" width="266" height="48" rx="6" fill="#0F172A" stroke="#334155" stroke-width="1"/>
+      <text x="596" y="69" fill="#F8FAFC" font-weight="700">3. Synthetic D3D11 Ground Truth</text>
+      <text x="596" y="86" fill="#94A3B8">jankscope-harness QPC flip swapchain</text>
+
+      <rect x="866" y="50" width="258" height="48" rx="6" fill="#0F172A" stroke="#334155" stroke-width="1"/>
+      <text x="878" y="69" fill="#F8FAFC" font-weight="700">4. Smoke Gate Self-Test</text>
+      <text x="878" y="86" fill="#94A3B8">1 healthy + 7 mutated matrices</text>
+    </g>
+  </g>
+</svg>

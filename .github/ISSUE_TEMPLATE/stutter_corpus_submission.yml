@@ -1,0 +1,41 @@
+name: Stutter Incident Bundle Submission
+description: Share a redacted Jankscope incident bundle to help expand the real-world stutter corpus.
+title: "[Corpus]: "
+labels: ["corpus", "diagnostics"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ### Share a Redacted Incident Bundle
+        Help improve Jankscope's candidate anchor ranking and hypothesis grading by sharing a **redacted** incident JSON bundle exported from the Stutter Investigator.
+        - Ensure **"Remove personal information (recommended)"** was checked when exporting (`redaction.applied: true`).
+
+  - type: input
+    id: game_genre
+    attributes:
+      label: Application / Game Workload
+      description: e.g., Direct3D 11 FPS, Direct3D 12 open-world, Vulkan title, or jankscope-harness
+      placeholder: "e.g., Aim Lab (D3D11 borderless windowed at 144 Hz)"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: mark_kind
+    attributes:
+      label: What did you feel when you pressed the mark hotkey?
+      options:
+        - Single sharp frame freeze / hitch (Stutter)
+        - Repeated micro-stutter / uneven pacing cluster (Stutter)
+        - Mouse or keyboard input stopped responding (Input stall)
+        - Scene / asset loading stall
+    validations:
+      required: true
+
+  - type: textarea
+    id: bundle_summary
+    attributes:
+      label: Redacted Incident Summary or Attached JSON
+      description: Paste the `mark`, `metrics`, and `hypotheses` sections of your redacted JSON bundle, or attach the `.json` file.
+      render: json
+    validations:
+      required: true

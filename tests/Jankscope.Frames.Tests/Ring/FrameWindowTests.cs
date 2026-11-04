@@ -98,4 +98,31 @@ public class FrameWindowTests
         Assert.Empty(ring.SnapshotWindow(100));
         Assert.Empty(ring.SnapshotWindow(10, 100));
     }
+
+    [Fact]
+    public void SelectWindow_cuts_at_a_clock_restart_or_application_change_instead_of_mixing_epochs()
+    {
+        var samples = new[]
+        {
+            new FrameSample(0, 50_000, 16.7, Application: "game.exe"),
+            new FrameSample(1, 50_016.7, 16.7, Application: "game.exe"),
+            new FrameSample(0, 10, 16.7, Application: "game.exe"),
+            new FrameSample(1, 20, 16.7, Application: "game.exe"),
+            new FrameSample(2, 30, 16.7, Application: "game.exe"),
+        };
+
+        var window = FrameRingExtensions.SelectWindow(samples, endTimestampMs: 30, windowMs: 120_000);
+        Assert.Equal([10.0, 20.0, 30.0], window.ToArray().Select(s => s.TimestampMs).ToArray());
+
+        var switchedApp = new[]
+        {
+            new FrameSample(0, 10, 16.7, Application: "first.exe"),
+            new FrameSample(1, 20, 16.7, Application: "first.exe"),
+            new FrameSample(2, 30, 16.7, Application: "second.exe"),
+            new FrameSample(3, 40, 16.7, Application: "second.exe"),
+        };
+
+        var appWindow = FrameRingExtensions.SelectWindow(switchedApp, endTimestampMs: 40, windowMs: 120_000);
+        Assert.Equal([30.0, 40.0], appWindow.ToArray().Select(s => s.TimestampMs).ToArray());
+    }
 }

@@ -1,0 +1,83 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 320" width="100%" height="100%">
+  <defs>
+    <linearGradient id="ovhBg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#070A12"/>
+      <stop offset="100%" stop-color="#0B111E"/>
+    </linearGradient>
+    <linearGradient id="barBlue" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#0284C7"/>
+      <stop offset="100%" stop-color="#38BDF8"/>
+    </linearGradient>
+    <linearGradient id="barEmerald" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#059669"/>
+      <stop offset="100%" stop-color="#34D399"/>
+    </linearGradient>
+  </defs>
+
+  <rect width="1200" height="320" rx="14" fill="url(#ovhBg)" stroke="#1E293B" stroke-width="1.5"/>
+
+  <!-- Header -->
+  <rect x="1" y="1" width="1198" height="44" rx="13" fill="#0B1324"/>
+  <line x1="1" y1="45" x2="1199" y2="45" stroke="#1E293B" stroke-width="1"/>
+  <text x="28" y="28" fill="#E2E8F0" font-family="'JetBrains Mono', Consolas, monospace" font-size="12" font-weight="700" letter-spacing="1">OBSERVER-EFFECT &amp; SELF-OVERHEAD BENCHMARK // 10 INTERLEAVED A-B-A-B RUNS (300 FRAMES @ 144 FPS D3D11 FLIP)</text>
+  <text x="1172" y="28" text-anchor="end" fill="#38BDF8" font-family="'JetBrains Mono', Consolas, monospace" font-size="11" font-weight="600">SPEC SECTION 14 &amp; HC-6</text>
+
+  <!-- Card 1: Present() Return Error Delta -->
+  <g transform="translate(28, 64)">
+    <rect width="364" height="232" rx="10" fill="#0F172A" stroke="#1E293B" stroke-width="1.2"/>
+    <text x="20" y="30" fill="#94A3B8" font-family="'JetBrains Mono', Consolas, monospace" font-size="11" font-weight="600">PRESENT() RETURN ERROR DELTA (MEDIAN)</text>
+    <text x="20" y="68" fill="#34D399" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="36" font-weight="800">+0.009 ms</text>
+    <text x="220" y="64" fill="#64748B" font-family="'JetBrains Mono', Consolas, monospace" font-size="11">budget &lt; 0.200 ms</text>
+
+    <!-- Condition A vs B Bars -->
+    <text x="20" y="104" fill="#CBD5E1" font-family="'JetBrains Mono', Consolas, monospace" font-size="10.5">Condition A (Collectors OFF): 0.057 ms (IQR 0.013)</text>
+    <rect x="20" y="112" width="324" height="12" rx="4" fill="#1E293B"/>
+    <rect x="20" y="112" width="92" height="12" rx="4" fill="url(#barBlue)"/>
+
+    <text x="20" y="146" fill="#CBD5E1" font-family="'JetBrains Mono', Consolas, monospace" font-size="10.5">Condition B (Collectors ON):  0.066 ms (IQR 0.014)</text>
+    <rect x="20" y="154" width="324" height="12" rx="4" fill="#1E293B"/>
+    <rect x="20" y="154" width="107" height="12" rx="4" fill="url(#barEmerald)"/>
+
+    <line x1="20" y1="184" x2="344" y2="184" stroke="#1E293B" stroke-width="1"/>
+    <text x="20" y="208" fill="#34D399" font-family="'JetBrains Mono', Consolas, monospace" font-size="11" font-weight="700">✓ PASS · 22x BELOW DISTURBANCE LIMIT</text>
+  </g>
+
+  <!-- Card 2: Frame-Time Error Delta & Disturbed Frames -->
+  <g transform="translate(418, 64)">
+    <rect width="364" height="232" rx="10" fill="#0F172A" stroke="#1E293B" stroke-width="1.2"/>
+    <text x="20" y="30" fill="#94A3B8" font-family="'JetBrains Mono', Consolas, monospace" font-size="11" font-weight="600">FRAME-TIME ERROR DELTA (MEDIAN)</text>
+    <text x="20" y="68" fill="#38BDF8" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="36" font-weight="800">+0.002 ms</text>
+    <text x="220" y="64" fill="#64748B" font-family="'JetBrains Mono', Consolas, monospace" font-size="11">budget &lt; 0.100 ms</text>
+
+    <!-- Condition A vs B Bars -->
+    <text x="20" y="104" fill="#CBD5E1" font-family="'JetBrains Mono', Consolas, monospace" font-size="10.5">Condition A (Collectors OFF): 0.013 ms (IQR 0.002)</text>
+    <rect x="20" y="112" width="324" height="12" rx="4" fill="#1E293B"/>
+    <rect x="20" y="112" width="42" height="12" rx="4" fill="url(#barBlue)"/>
+
+    <text x="20" y="146" fill="#CBD5E1" font-family="'JetBrains Mono', Consolas, monospace" font-size="10.5">Condition B (Collectors ON):  0.015 ms (IQR 0.003)</text>
+    <rect x="20" y="154" width="324" height="12" rx="4" fill="#1E293B"/>
+    <rect x="20" y="154" width="49" height="12" rx="4" fill="url(#barEmerald)"/>
+
+    <line x1="20" y1="184" x2="344" y2="184" stroke="#1E293B" stroke-width="1"/>
+    <text x="20" y="208" fill="#34D399" font-family="'JetBrains Mono', Consolas, monospace" font-size="11" font-weight="700">✓ PASS · 0 DISTURBED FRAMES ACROSS 10 RUNS</text>
+  </g>
+
+  <!-- Card 3: Desktop App Resource Budget (HC-4 / HC-6) -->
+  <g transform="translate(808, 64)">
+    <rect width="364" height="232" rx="10" fill="#0F172A" stroke="#1E293B" stroke-width="1.2"/>
+    <text x="20" y="30" fill="#94A3B8" font-family="'JetBrains Mono', Consolas, monospace" font-size="11" font-weight="600">DESKTOP APP SELF-OVERHEAD (HC-6)</text>
+    <text x="20" y="68" fill="#F8FAFC" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="36" font-weight="800">0.682% <tspan font-size="18" fill="#94A3B8" font-weight="600">CPU</tspan></text>
+    <text x="235" y="64" fill="#64748B" font-family="'JetBrains Mono', Consolas, monospace" font-size="11">budget &lt;= 1.0%</text>
+
+    <text x="20" y="104" fill="#CBD5E1" font-family="'JetBrains Mono', Consolas, monospace" font-size="10.5">Logical CPU Utilization: 0.682% / 1.000% max</text>
+    <rect x="20" y="112" width="324" height="12" rx="4" fill="#1E293B"/>
+    <rect x="20" y="112" width="221" height="12" rx="4" fill="url(#barBlue)"/>
+
+    <text x="20" y="146" fill="#CBD5E1" font-family="'JetBrains Mono', Consolas, monospace" font-size="10.5">Working Set (RAM):       198.9 MB / 250.0 MB max</text>
+    <rect x="20" y="154" width="324" height="12" rx="4" fill="#1E293B"/>
+    <rect x="20" y="154" width="257" height="12" rx="4" fill="url(#barEmerald)"/>
+
+    <line x1="20" y1="184" x2="344" y2="184" stroke="#1E293B" stroke-width="1"/>
+    <text x="20" y="208" fill="#34D399" font-family="'JetBrains Mono', Consolas, monospace" font-size="11" font-weight="700">✓ PASS · 0 TCP / 0 UDP ENDPOINTS (HC-4)</text>
+  </g>
+</svg>

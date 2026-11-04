@@ -204,7 +204,7 @@ public sealed class IncidentRecorder
             Note: null,
             Window: window,
             PreRoll: preRoll,
-            TargetProcess: preRoll.Application ?? (snapshot.Length > 0 ? snapshot[^1].Application : null));
+            TargetProcess: preRoll.Application ?? (captureTime is not null && snapshot.Length > 0 ? snapshot[^1].Application : null));
 
         lock (_gate)
         {
@@ -272,8 +272,7 @@ public sealed class IncidentRecorder
         }
 
         var snapshot = _history.Snapshot();
-        var frames = mark.PreRoll.ContinueWith(snapshot, end);
-        var complete = snapshot.Length > 0 && snapshot[^1].TimestampMs >= end;
+        var frames = mark.PreRoll.ContinueWith(snapshot, end, out var complete);
         var collected = frames.LastMs is { } last ? Math.Clamp((last - time.Ms) / 1000.0, 0.0, mark.Window.PostRollSeconds) : 0.0;
         return new CollectedWindow(frames, complete, collected);
     }

@@ -150,6 +150,12 @@ public sealed class CaptureSession : IAsyncDisposable
                 }
 
                 var ticks = _time.GetTimestamp();
+                var previousRun = Volatile.Read(ref _run);
+                if (previousRun != 0 && captured.Run != previousRun)
+                {
+                    _clock.Reset();
+                }
+
                 _clock.Observe(ticks, sample.TimestampMs);
                 if (_history.TryWrite(in sample))
                 {

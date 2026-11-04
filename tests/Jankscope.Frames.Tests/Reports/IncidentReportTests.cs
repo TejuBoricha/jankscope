@@ -90,4 +90,30 @@ public class IncidentReportTests
         Assert.Equal(expectedDoc.RootElement.GetProperty("metrics").GetProperty("stutterEventsCount").GetInt32(),
             actualDoc.RootElement.GetProperty("metrics").GetProperty("stutterEventsCount").GetInt32());
     }
+
+    [Fact]
+    public void Incident_report_filters_unusable_frame_times_and_uses_null_instead_of_fabricated_zero()
+    {
+        var matrix = new CapabilityMatrix(DateTimeOffset.UtcNow, "0.1.0", [], []);
+        var badAndGood = new[]
+        {
+            new FrameSample(0, 0, double.NaN, PresentMode: "Composed: Flip", Application: "game.exe", Provenance: DataProvenance.Measured),
+            new FrameSample(1, 10, -5.0, PresentMode: "Composed: Flip", Application: "game.exe", Provenance: DataProvenance.Measured),
+            new FrameSample(2, 20, 10.0, PresentMode: "Composed: Flip", Application: "game.exe", Provenance: DataProvenance.Measured),
+            new FrameSample(3, 30, 10.0, PresentMode: "Composed: Flip", Application: "game.exe", Provenance: DataProvenance.Measured),
+        };
+        var report = IncidentReportBuilder.Build(IncidentTrigger.UserMarked, "game.exe", badAndGood, StutterDetector.Analyze(badAndGood), matrix, redact: false);
+        Assert.Equal(100.0, report.Metrics.AverageFps);
+        Assert.Equal(10.0, report.Metrics.MedianFrameTimeMs);
+
+        var onlyBad = new[]
+        {
+            new FrameSample(0, 0, double.NaN, PresentMode: "Composed: Flip", Application: "game.exe", Provenance: DataProvenance.Measured),
+        };
+        var emptyMetrics = IncidentReportBuilder.Build(IncidentTrigger.UserMarked, "game.exe", onlyBad, StutterDetector.Analyze(onlyBad), matrix, redact: false).Metrics;
+        Assert.Null(emptyMetrics.AverageFps);
+        Assert.Null(emptyMetrics.MedianFrameTimeMs);
+        Assert.Null(emptyMetrics.P99FrameTimeMs);
+        Assert.Null(emptyMetrics.P999FrameTimeMs);
+    }
 }

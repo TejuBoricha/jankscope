@@ -23,7 +23,7 @@ public readonly record struct CaptureTime(double Ms, double UncertaintyMs, int O
 public sealed class CaptureClockMap
 {
     /// <summary>A capture timestamp this much smaller than the newest one means the capture clock restarted (a new run of the capture tool).</summary>
-    private const double RestartThresholdMs = 1000.0;
+    private const double RestartThresholdMs = 5.0;
 
     private readonly long _frequency;
     private readonly double[] _delays;
@@ -49,6 +49,21 @@ public sealed class CaptureClockMap
             lock (_gate)
             {
                 return _count;
+            }
+        }
+    }
+
+    /// <summary>Clears observations from a previous capture run and advances the epoch so stale offsets are never used after a restart.</summary>
+    public void Reset()
+    {
+        lock (_gate)
+        {
+            if (_count > 0 || double.IsFinite(_lastCaptureMs))
+            {
+                _count = 0;
+                _next = 0;
+                _lastCaptureMs = double.NegativeInfinity;
+                _epoch++;
             }
         }
     }

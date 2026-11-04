@@ -347,6 +347,38 @@ public class FrameSeriesTests
     }
 
     [Fact]
+    public void A_capture_that_restarts_isolates_the_new_pre_roll_candidates_and_the_old_post_roll()
+    {
+        var rig = new RecorderRig();
+        rig.Feed(30);
+        rig.FeedFrame(RecorderRig.Frame + 120); // a large hitch in run 1 around 30 s
+        rig.Feed(10);
+        var run1Mark = rig.Recorder.Mark(MarkKind.Stutter)!;
+
+        // Simulate a PresentMon restart (run 2 starts near 0 ms on the same history ring)
+        rig.Clock.Reset();
+        for (var i = 0; i < 600; i++)
+        {
+            var ts = (i + 1) * RecorderRig.Frame;
+            rig.Wait(RecorderRig.Frame);
+            rig.Clock.Observe(rig.Time.GetTimestamp(), ts);
+            rig.Ring.Write(new FrameSample(i, ts, RecorderRig.Frame, Application: "game.exe", Provenance: DataProvenance.Fixture));
+        }
+
+        // Run 1's post-roll was cut short by the restart and must not absorb run 2 frames or claim completion
+        var run1Window = rig.Recorder.CollectWindow(run1Mark);
+        Assert.False(run1Window.PostRollComplete);
+        Assert.Equal(run1Mark.PreRoll.Count, run1Window.Frames.Count);
+
+        // Run 2's mark at ~10 s must only contain run 2's 600 frames and must not offer run 1's hitch
+        rig.Wait(1500);
+        var run2Mark = rig.Recorder.Mark(MarkKind.Stutter)!;
+        Assert.Equal(600, run2Mark.PreRoll.Count);
+        Assert.True(run2Mark.Window.PreRollShort);
+        Assert.Empty(run2Mark.Search.Candidates);
+    }
+
+    [Fact]
     public void Continuing_a_series_keeps_only_frames_that_come_later_and_stay_inside_the_end()
     {
         var head = FrameSeries.FromSamples([new FrameSample(0, 10, 10), new FrameSample(1, 20, 10)]);
@@ -357,6 +389,7 @@ public class FrameSeriesTests
             new FrameSample(2, 30, 10),
             new FrameSample(3, 40, 10),
             new FrameSample(9, 5, 10),    // the clock restarted
+            new FrameSample(10, 25, 10),  // after the restart: inside (20, 40] numerically, but from a new run!
             new FrameSample(4, 50, 10),   // beyond the end
         };
         var joined = head.ContinueWith(later, endMs: 40);

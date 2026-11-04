@@ -57,14 +57,16 @@ public sealed partial class Redactor
         // An e-mail address goes first: its local part is often the user name, and the whole address is the identifier.
         result = EmailRegex().Replace(result, _ => Count(RedactionCategory.EmailAddress));
 
+        // Structured path, OneDrive and UNC patterns run before known values so a user/host segment that starts with a known
+        // name (for example "C:\Users\alice_01\...") is replaced as one whole segment rather than leaving a partial suffix behind.
+        result = ProfilePathRegex().Replace(result, m => m.Groups[1].Value + Count(RedactionCategory.UserName));
+        result = OneDriveRegex().Replace(result, m => m.Groups[1].Value + Count(RedactionCategory.OrganizationName));
+        result = UncHostRegex().Replace(result, m => @"\\" + Count(RedactionCategory.HostName) + @"\");
+
         foreach (var (pattern, category) in _known)
         {
             result = pattern.Replace(result, _ => Count(category));
         }
-
-        result = ProfilePathRegex().Replace(result, m => m.Groups[1].Value + Count(RedactionCategory.UserName));
-        result = OneDriveRegex().Replace(result, m => m.Groups[1].Value + Count(RedactionCategory.OrganizationName));
-        result = UncHostRegex().Replace(result, m => @"\\" + Count(RedactionCategory.HostName) + @"\");
 
         result = MacRegex().Replace(result, _ => Count(RedactionCategory.MacAddress));
         result = Ipv6Regex().Replace(result, _ => Count(RedactionCategory.IpAddress));
@@ -176,9 +178,10 @@ public sealed partial class Redactor
     [GeneratedRegex(@"\b(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\b")]
     internal static partial Regex Ipv4Regex();
 
-    // Full form (eight groups), or compressed with "::". A bare "12:34:56" (a time) has neither and is never an address.
+    // Full form (eight groups, or six groups + IPv4), or compressed with "::" (including IPv4-mapped tails and optional %zone).
+    // A bare "12:34:56" (a time) has neither and is never an address.
     [GeneratedRegex(
-        @"(?<![0-9A-Za-z:])(?:(?:[0-9A-Fa-f]{1,4}:){7}[0-9A-Fa-f]{1,4}|(?:[0-9A-Fa-f]{1,4}:){1,7}:(?:[0-9A-Fa-f]{1,4}(?::[0-9A-Fa-f]{1,4}){0,6})?|::(?:[0-9A-Fa-f]{1,4}:){0,6}[0-9A-Fa-f]{1,4})(?![0-9A-Za-z:])")]
+        @"(?<![0-9A-Za-z:])(?:(?:[0-9A-Fa-f]{1,4}:){6}(?:[0-9A-Fa-f]{1,4}:[0-9A-Fa-f]{1,4}|(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?))|(?:[0-9A-Fa-f]{1,4}:){1,7}:(?:(?:[0-9A-Fa-f]{1,4}:){0,5}(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)|[0-9A-Fa-f]{1,4}(?::[0-9A-Fa-f]{1,4}){0,6})?|::(?:(?:[0-9A-Fa-f]{1,4}:){0,5}(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)|(?:[0-9A-Fa-f]{1,4}:){0,6}[0-9A-Fa-f]{1,4}))(?:%[0-9A-Za-z_]+)?(?![0-9A-Za-z:])")]
     internal static partial Regex Ipv6Regex();
 
     // C:\Users\<name>, c:/users/<name>, \\?\C:\Users\<name>. A folder name may contain spaces. The class excludes '<', so an existing token is never replaced twice.

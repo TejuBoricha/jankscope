@@ -1,0 +1,70 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 370" width="100%" height="100%">
+  <defs>
+    <linearGradient id="safeBg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#070A12"/>
+      <stop offset="100%" stop-color="#0B111E"/>
+    </linearGradient>
+    <linearGradient id="banPanel" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#1F1016"/>
+      <stop offset="100%" stop-color="#0D090E"/>
+    </linearGradient>
+    <linearGradient id="allowPanel" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#0B221E"/>
+      <stop offset="100%" stop-color="#081214"/>
+    </linearGradient>
+  </defs>
+
+  <rect width="1200" height="370" rx="14" fill="url(#safeBg)" stroke="#1E293B" stroke-width="1.5"/>
+
+  <!-- Header -->
+  <rect x="1" y="1" width="1198" height="44" rx="13" fill="#0B1324"/>
+  <line x1="1" y1="45" x2="1199" y2="45" stroke="#1E293B" stroke-width="1"/>
+  <text x="28" y="28" fill="#E2E8F0" font-family="'JetBrains Mono', Consolas, monospace" font-size="12" font-weight="700" letter-spacing="1">ANTI-CHEAT &amp; PRIVACY SAFETY BOUNDARY // ENFORCED BY ROSLYN ANALYZERS &amp; LEXER PROOFS</text>
+  <text x="1172" y="28" text-anchor="end" fill="#34D399" font-family="'JetBrains Mono', Consolas, monospace" font-size="11" font-weight="600">HC-1 .. HC-13 VERIFIED</text>
+
+  <!-- Left Panel: Forbidden by Compile-Time Proofs -->
+  <g transform="translate(28, 64)">
+    <rect width="556" height="280" rx="10" fill="url(#banPanel)" stroke="#EF4444" stroke-width="1.2"/>
+    <rect x="16" y="16" width="236" height="24" rx="5" fill="#3B1219" stroke="#EF4444" stroke-width="0.8"/>
+    <text x="134" y="32" text-anchor="middle" fill="#FCA5A5" font-family="'JetBrains Mono', Consolas, monospace" font-size="10.5" font-weight="700">COMPILE-TIME BANNED (RS0030 + LEXER)</text>
+
+    <text x="16" y="64" fill="#F8FAFC" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="16" font-weight="700">What Jankscope Can Never Do (Static Proof)</text>
+
+    <g font-family="'JetBrains Mono', Consolas, monospace" font-size="11" fill="#FECACA">
+      <text x="16" y="94" fill="#F87171" font-weight="700">✕ Foreign Process Memory or Handle Access (HC-1)</text>
+      <text x="30" y="112" fill="#94A3B8">OpenProcess · ReadProcessMemory · WriteProcessMemory · VirtualAllocEx</text>
+      <text x="30" y="128" fill="#94A3B8">CreateRemoteThread · NtQueryInformationProcess · Process.GetProcessById</text>
+
+      <text x="16" y="156" fill="#F87171" font-weight="700">✕ Hooks, Overlays, Drivers &amp; Input Interception (HC-1 / HC-2)</text>
+      <text x="30" y="174" fill="#94A3B8">SetWindowsHookEx (WH_KEYBOARD_LL) · DXGI SwapChain Hooks · In-Game Overlays</text>
+      <text x="30" y="190" fill="#94A3B8">CreateService · NtLoadDriver · DebugActiveProcess · MiniDumpWriteDump</text>
+
+      <text x="16" y="218" fill="#F87171" font-weight="700">✕ Network Sockets, Telemetry &amp; Dynamic Code Loading (HC-4 / HC-8)</text>
+      <text x="30" y="236" fill="#94A3B8">HttpClient · Socket · WebClient · Dns · UdpClient · TcpClient · WebSocket</text>
+      <text x="30" y="252" fill="#94A3B8">Assembly.Load* · Activator.CreateInstance · LoadLibrary · GetProcAddress</text>
+    </g>
+  </g>
+
+  <!-- Right Panel: Sanctioned & Verified Architecture -->
+  <g transform="translate(616, 64)">
+    <rect width="556" height="280" rx="10" fill="url(#allowPanel)" stroke="#10B981" stroke-width="1.2"/>
+    <rect x="16" y="16" width="254" height="24" rx="5" fill="#083B2E" stroke="#10B981" stroke-width="0.8"/>
+    <text x="143" y="32" text-anchor="middle" fill="#6EE7B7" font-family="'JetBrains Mono', Consolas, monospace" font-size="10.5" font-weight="700">SANCTIONED &amp; PROVEN SAFE ARCHITECTURE</text>
+
+    <text x="16" y="64" fill="#F8FAFC" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="16" font-weight="700">How Jankscope Measures Without Intrusions</text>
+
+    <g font-family="'JetBrains Mono', Consolas, monospace" font-size="11" fill="#A7F3D0">
+      <text x="16" y="94" fill="#34D399" font-weight="700">✓ Unelevated Out-of-Process ETW Consumption (HC-7)</text>
+      <text x="30" y="112" fill="#94A3B8">Pinned PresentMon 2.6.0 verified by SHA-256 on an open FileStream handle</text>
+      <text x="30" y="128" fill="#94A3B8">Strict argv allowlist refuses --restart_as_admin &amp; unknown flags</text>
+
+      <text x="16" y="156" fill="#34D399" font-weight="700">✓ Exact Pinned Set of 26 System32 LibraryImports</text>
+      <text x="30" y="174" fill="#94A3B8">[DefaultDllImportSearchPaths(DllImportSearchPath.System32)] enforced</text>
+      <text x="30" y="190" fill="#94A3B8">RegisterHotKey (WM_HOTKEY) · DXGI LUID · CCD Display · SCM QueryServiceStatusEx</text>
+
+      <text x="16" y="218" fill="#34D399" font-weight="700">✓ Self-Testing Build Proofs (tools/dev/verify-*.ps1)</text>
+      <text x="30" y="236" fill="#94A3B8">Every build compiles 109 forbidden call-sites in Coverage.cs.txt and proves</text>
+      <text x="30" y="252" fill="#94A3B8">all 106 BannedSymbols.txt rules fire RS0030 across all 7 product projects</text>
+    </g>
+  </g>
+</svg>

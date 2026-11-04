@@ -40,6 +40,19 @@ public static class FrameRingExtensions
 
         ValidateWindow(windowMs);
 
+        if (chronological.IsEmpty)
+        {
+            return chronological;
+        }
+
+        var runStart = chronological.Length - 1;
+        while (runStart > 0 && SameCaptureEpoch(in chronological[runStart - 1], in chronological[runStart]))
+        {
+            runStart--;
+        }
+
+        chronological = chronological[runStart..];
+
         var startTimestampMs = endTimestampMs - windowMs;
         var last = chronological.Length - 1;
         while (last >= 0 && chronological[last].TimestampMs > endTimestampMs)
@@ -54,6 +67,23 @@ public static class FrameRingExtensions
         }
 
         return chronological[first..(last + 1)];
+    }
+
+    private static bool SameCaptureEpoch(in FrameSample earlier, in FrameSample later)
+    {
+        if (earlier.TimestampMs > later.TimestampMs)
+        {
+            return false;
+        }
+
+        if (earlier.Application is not null
+            && later.Application is not null
+            && !string.Equals(earlier.Application, later.Application, StringComparison.OrdinalIgnoreCase))
+        {
+            return false;
+        }
+
+        return true;
     }
 
     private static void ValidateWindow(double windowMs)

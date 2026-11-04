@@ -226,9 +226,13 @@ public sealed class CaptureController : IAsyncDisposable
         CaptureSession? previous;
         lock (_gate)
         {
-            if (_session is not null && Status().IsActive)
+            if (_session is not null)
             {
-                return new StartResult(false, $"Already capturing {_program}. Stop that first.");
+                var status = Status();
+                if (status.IsActive || status.State == CaptureState.Stopping || !_session.Completion.IsCompleted)
+                {
+                    return new StartResult(false, $"Already capturing {_program}. Stop that first.");
+                }
             }
 
             _lastError = null;
@@ -238,6 +242,7 @@ public sealed class CaptureController : IAsyncDisposable
         CaptureSession? session = null;
         try
         {
+            Clock.Reset();
             session = new CaptureSession(_factory.CreateCapture(name), History, Clock, _time);
             session.Start();
         }

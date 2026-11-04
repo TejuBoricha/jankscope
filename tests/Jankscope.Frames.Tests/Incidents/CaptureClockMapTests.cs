@@ -83,6 +83,27 @@ public class CaptureClockMapTests
     }
 
     [Fact]
+    public void A_short_run_restart_or_explicit_reset_starts_a_new_epoch()
+    {
+        var map = new CaptureClockMap(Frequency);
+        map.Observe(Ticks(500), 480);
+        map.Observe(Ticks(900), 880);
+
+        // Sub-second restart (880 ms -> 16 ms) must still trigger a new epoch
+        map.Observe(Ticks(1200), 16);
+        var estimate = map.Estimate(Ticks(1200))!.Value;
+        Assert.Equal(1, estimate.Epoch);
+        Assert.Equal(1, estimate.Observations);
+
+        map.Reset();
+        Assert.Equal(0, map.Observations);
+        Assert.Null(map.Estimate(Ticks(1300)));
+
+        map.Observe(Ticks(1400), 16);
+        Assert.Equal(2, map.Estimate(Ticks(1400))!.Value.Epoch);
+    }
+
+    [Fact]
     public void Non_finite_capture_times_are_ignored()
     {
         var map = new CaptureClockMap(Frequency);

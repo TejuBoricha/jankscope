@@ -21,18 +21,19 @@ public static class IncidentReportBuilder
         var time = timestampUtc ?? DateTimeOffset.UtcNow;
         var version = capabilityMatrix.ToolVersion;
 
-        var frameTimes = new double[samples.Length];
+        var validTimes = new List<double>(samples.Length);
+        double totalMs = 0;
         for (var i = 0; i < samples.Length; i++)
         {
-            frameTimes[i] = samples[i].FrameTimeMs;
+            var t = samples[i].FrameTimeMs;
+            if (double.IsFinite(t) && t > 0)
+            {
+                validTimes.Add(t);
+                totalMs += t;
+            }
         }
 
-        double totalMs = 0;
-        foreach (var t in frameTimes)
-        {
-            totalMs += t;
-        }
-
+        var frameTimes = validTimes.ToArray();
         var durationSec = totalMs / 1000.0;
         var avgFps = FrameStats.AverageFps(frameTimes);
         var p50 = FrameStats.PercentileFrameTimeMs(frameTimes, 50.0);
@@ -42,10 +43,10 @@ public static class IncidentReportBuilder
         var metrics = new MetricSummary(
             TotalSamples: samples.Length,
             DurationSeconds: Math.Round(durationSec, 3),
-            AverageFps: double.IsFinite(avgFps) ? Math.Round(avgFps, 2) : 0,
-            MedianFrameTimeMs: double.IsFinite(p50) ? Math.Round(p50, 2) : 0,
-            P99FrameTimeMs: double.IsFinite(p99) ? Math.Round(p99, 2) : 0,
-            P999FrameTimeMs: double.IsFinite(p999) ? Math.Round(p999, 2) : 0,
+            AverageFps: double.IsFinite(avgFps) ? Math.Round(avgFps, 2) : null,
+            MedianFrameTimeMs: double.IsFinite(p50) ? Math.Round(p50, 2) : null,
+            P99FrameTimeMs: double.IsFinite(p99) ? Math.Round(p99, 2) : null,
+            P999FrameTimeMs: double.IsFinite(p999) ? Math.Round(p999, 2) : null,
             StutterEventsCount: stutterResult.Events.Count,
             StutterClustersCount: stutterResult.Clusters.Count,
             InsufficientHistoryFrames: stutterResult.InsufficientHistoryFrames,
