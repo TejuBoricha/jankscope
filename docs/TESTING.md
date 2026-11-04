@@ -1,31 +1,36 @@
-# Testing and review strategy
+# Testing, Static Proofs & Review Strategy
 
-Spec §18, plus the owner's standing request (2026-10-16): **code review and testing at every stage**.
+Specification: [`MASTER_PROMPT_v4.md`](../MASTER_PROMPT_v4.md) §18, plus the standing engineering gate: **automated static proofs, comprehensive tests, and independent code review at every stage**.
 
-## Run everything
+---
+
+## 1. Run Everything in One Command
+
+```powershell
+./build.ps1                         # Restore, Build (Release, 0 warnings), Static Proofs, 2,505+ Tests, Smoke Gate
+./build.ps1 -Clean                  # Full clean verification from scratch
+./build.ps1 -RequireHardwareTests   # Reference bench mode: any skipped D3D11 or PresentMon test fails the build
 ```
-./build.ps1            # restore, build (0 warnings required), all tests, CLI smoke run
-./build.ps1 -Clean     # same from scratch
-```
-Individual projects: `dotnet test tests/Jankscope.Core.Tests -c Release` (portable, runs anywhere) and `dotnet test tests/Jankscope.Platform.Tests -c Release` (Windows probes, behaviour checked against the real machine).
 
-## Layers
-| Layer | Where | What it proves |
-|---|---|---|
-| Unit | `Jankscope.Core.Tests` | Metric math, provenance rules, capability invariants, HC-1 decision table, ETW classification, catalog validation (positive and negative) |
-| Static lints over the repo | `RepoLintTests` | No hooks/injection/process-memory/driver-loading APIs (acceptance #13), no hardcoded vendor names (#17), no network or process-launching APIs in product code, .NET 10 only, every package recorded in `THIRD_PARTY.md` |
-| Platform behaviour | `Jankscope.Platform.Tests` | Probe isolation (a throwing probe becomes a row), derived capabilities (frame capture, optimize-mode gate), Windows 11 detection by build, elevation matches the token, real-time ETW session cleanup, anti-cheat logic with synthetic catalogs, regression tests for bugs found by running on the bench |
-| End-to-end smoke | `build.ps1` | The built CLI runs and emits a parseable capability matrix |
+---
 
-Hardware-dependent assertions are structural (no fixed expectations about a particular GPU, battery or vendor), so the suite runs on any Windows PC or VM. Tests that need hardware will be tagged and skipped with a reason when it is absent.
+## 2. Verification Layers (`2,505+` Automated Tests + 3 Build-Time Proofs)
 
-## Tests must be able to fail
-Safety-critical rules get a **mutation check**: plant a violation, confirm the test fails, remove it. Stage 0 result (2026-10-16): a file containing a vendor name, a hook API and `HttpClient` failed all three lints; the file was removed. Every bug found by running on the bench gets a regression test (e.g. the MDM false positive).
+| Layer | Location | Count | What It Proves |
+| :--- | :--- | :--- | :--- |
+| **Banned-Symbol Coverage Proof** | [`tools/dev/verify-banned-symbols.ps1`](../tools/dev/verify-banned-symbols.ps1) | 106 rules | Compiles a synthetic probe project against [`BannedSymbols.txt`](../BannedSymbols.txt) and proves every single `RS0030` entry actually fires. |
+| **Analyzer Wiring Proof** | [`tools/dev/verify-analyzer-wiring.ps1`](../tools/dev/verify-analyzer-wiring.ps1) | 7 projects | Queries MSBuild directly (`dotnet build -getItem:Analyzer`) across all 7 product/tool projects to prove `BannedApiAnalyzers` and `BannedSymbols.txt` cannot be silently dropped. |
+| **Core & Repository Lints** | [`tests/Jankscope.Core.Tests`](../tests/Jankscope.Core.Tests) | 766 tests | Metric math, provenance lattice (`HC-9`), `AntiCheatSafety` decision table (`HC-1`), ETW session classification, catalog schema validation, two-layer redaction (`Redactor` + `ExportGuard`), and repository-wide static safety lints (`RepoLintTests`, `LauncherLintTests`). |
+| **Platform & Hardware Probes** | [`tests/Jankscope.Platform.Tests`](../tests/Jankscope.Platform.Tests) | 344 tests | Probe timeout/exception isolation (`TaskCreationOptions.LongRunning`), CPU topology, GPU LUID discovery, CCD display topology, PDH counter sampling, `OrphanSessionCleaner`, and `HotkeyRegistrar`. |
+| **Frames, Runner & Incidents** | [`tests/Jankscope.Frames.Tests`](../tests/Jankscope.Frames.Tests) | 1,098 tests | Lock-free `RingBuffer<T>` concurrency/zero-allocation proofs, `StutterDetector` equivalence against `NaiveStutterOracle`, 1M-row streaming `PresentMonCsvParser` bounded-heap check, `FileHashVerifier` symlink/junction rejection, `PresentMonRunner` watchdog/supervision, `CaptureClockMap`, `CandidateAnchorFinder`, and `IncidentRecorder`. |
+| **Direct3D 11 Synthetic Harness** | [`tests/Jankscope.Harness.Tests`](../tests/Jankscope.Harness.Tests) | 266 tests | Deterministic `SplitMix64` schedule generation, QPC frame pacer, Direct3D 11 flip-model presenter (hardware GPU + software `Microsoft Basic Render Driver` / WARP fallback), and 100% precision/recall exit tests against `StutterDetector`. |
+| **WPF Desktop App & Live E2E** | [`tests/Jankscope.App.Tests`](../tests/Jankscope.App.Tests) | 32 tests | `CaptureController`, `AppSettings` atomic persistence, `TimelineView` pixel-bucket spike preservation, STA WPF window smoke tests, and live PresentMon + visible D3D11 harness end-to-end mark/anchor/export verification. |
+| **CLI Smoke Gate & Self-Test** | [`tools/dev/test-smoke-gate.ps1`](../tools/dev/test-smoke-gate.ps1) | 41 rows / 14 probes | Proves `Assert-ProbeMatrix.ps1` rejects malformed/failed matrices and then verifies live `jankscope.exe probe --json` output. |
+| **Observer-Effect Benchmark** | [`tools/dev/Measure-Overhead.ps1`](../tools/dev/Measure-Overhead.ps1) | 10-run A/B | Paired interleaved A-B-A-B benchmark measuring PresentMon + `jankscope-app` CPU, Working Set, present-error delta, and zero network connections ([`docs/benchmarks/overhead-v1.md`](benchmarks/overhead-v1.md)). |
 
-## Code review gate (every stage)
-1. Self-review and simplification pass.
-2. **Independent review** by a separate reviewer with fresh context (security-sensitive code additionally by a dedicated security reviewer), recorded in `docs/reviews/stage-N.md`: findings, severity, and for each one *fixed* (with commit/test reference), *deferred* (with reason and owner) or *rejected* (with reasoning).
-3. No stage is marked `done-verified` while a Critical or High finding is open.
+---
 
-## Not covered yet
-IPC, helper, rollback/journal, UI, input and network collectors, real-frame capture, soak/overhead measurement — all later stages (see `STATUS.md`).
+## 3. Mutation Proofs & Code Review Gate
+
+1. **Safety Tests Must Be Proven Able to Fail:** Every safety-critical lint, analyzer rule, or redaction guard is verified with planted violations (recorded in [`docs/reviews/`](reviews/)).
+2. **Independent Stage Reviews:** Recorded in [`docs/reviews/stage-0.md`](reviews/stage-0.md), [`docs/reviews/stage-0-pass2.md`](reviews/stage-0-pass2.md), [`docs/reviews/stage-1a.md`](reviews/stage-1a.md), and [`docs/reviews/stage-1b.md`](reviews/stage-1b.md). No stage closes with an open Critical or High finding.

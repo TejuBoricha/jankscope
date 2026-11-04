@@ -1,0 +1,23 @@
+# Automated dependency & GitHub Actions security/version updates.
+# Note: Any NuGet version update MUST also update the corresponding row in docs/THIRD_PARTY.md
+# to satisfy RepoLintTests.Package_references_are_centrally_versioned_and_recorded_with_the_same_version_in_third_party_docs.
+
+version: 2
+updates:
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+    open-pull-requests-limit: 5
+    commit-message:
+      prefix: "ci(actions)"
+
+  - package-ecosystem: "nuget"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+    open-pull-requests-limit: 5
+    commit-message:
+      prefix: "chore(deps)"

@@ -64,12 +64,6 @@ public class IncidentReportTests
         Assert.NotEmpty(report.Hypotheses);
         Assert.Contains(report.Hypotheses, h => h.Name.Contains("pacing"));
         Assert.Contains(report.Hypotheses, h => h.Name.Contains("anti-cheat"));
-        Assert.Contains("[REDACTED: sensitive]", json);
-        Assert.Equal(2, report.Metrics.StutterEventsCount);
-        Assert.Equal(150, report.Metrics.TotalSamples);
-        Assert.NotEmpty(report.Hypotheses);
-        Assert.Contains(report.Hypotheses, h => h.Name.Contains("pacing"));
-        Assert.Contains(report.Hypotheses, h => h.Name.Contains("anti-cheat"));
 
         // Save or compare to golden file
         var goldenDir = Path.Combine(AppContext.BaseDirectory, "fixtures", "reports");

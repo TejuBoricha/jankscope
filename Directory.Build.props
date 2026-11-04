@@ -10,6 +10,7 @@
     <Deterministic>true</Deterministic>
     <ContinuousIntegrationBuild Condition="'$(CI)' == 'true'">true</ContinuousIntegrationBuild>
     <!-- AllowUnsafeBlocks is deliberately NOT set here: only the assembly that owns native interop (Jankscope.Platform) enables it. -->
+    <Version>0.1.0</Version>
     <Product>Jankscope</Product>
     <Authors>Jankscope contributors</Authors>
     <Copyright>Copyright (c) 2026 Jankscope contributors</Copyright>

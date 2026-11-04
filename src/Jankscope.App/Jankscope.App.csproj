@@ -7,7 +7,6 @@
     <UseWindowsForms>true</UseWindowsForms>
     <RootNamespace>Jankscope.App</RootNamespace>
     <AssemblyName>jankscope-app</AssemblyName>
-    <Version>0.1.0</Version>
     <ApplicationManifest>app.manifest</ApplicationManifest>
     <!-- WFO0003 wants DPI awareness set through a Windows Forms API; this is a WPF application, where the manifest (PerMonitorV2) is the supported place. -->
     <NoWarn>$(NoWarn);WFO0003</NoWarn>

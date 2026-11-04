@@ -32,8 +32,15 @@ foreach ($lockFile in Get-ChildItem -Path (Join-Path $root 'third_party') -Filte
             continue
         }
         New-Item -ItemType Directory -Force -Path (Split-Path $target) | Out-Null
+        $tempTarget = "$target.tmp-$([guid]::NewGuid().ToString('N'))"
         Write-Host "Downloading $name from $($lock.source)"
-        Invoke-WebRequest -Uri $lock.source -OutFile $target -UseBasicParsing
+        try {
+            [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12 -bor [Net.SecurityProtocolType]::Tls13
+            Invoke-WebRequest -Uri $lock.source -OutFile $tempTarget -UseBasicParsing
+            Move-Item -Path $tempTarget -Destination $target -Force
+        } finally {
+            if (Test-Path $tempTarget) { Remove-Item $tempTarget -Force }
+        }
     }
 
     $size = (Get-Item $target).Length
@@ -43,6 +50,16 @@ foreach ($lockFile in Get-ChildItem -Path (Join-Path $root 'third_party') -Filte
         Remove-Item $target -Force
         $failed = $true
         continue
+    }
+
+    if ($lock.verification.authenticode -and $lock.verification.authenticode.StartsWith('Valid')) {
+        $sig = Get-AuthenticodeSignature -FilePath $target
+        if ($sig.Status -ne 'Valid') {
+            Write-Host "SIGNATURE INVALID $name (status $($sig.Status)) - deleting" -ForegroundColor Red
+            Remove-Item $target -Force
+            $failed = $true
+            continue
+        }
     }
     Write-Host "OK       $name  sha256 $hash" -ForegroundColor Green
 }

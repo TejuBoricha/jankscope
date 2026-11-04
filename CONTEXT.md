@@ -7,7 +7,7 @@
 ## 1. What this is
 **Jankscope**: a free, open-source (MIT), no-telemetry Windows tool that explains *why* a game stutters, a wireless mouse freezes or online play lags, using evidence-graded hypotheses. It changes a setting only when it can prove the benefit and undo it. It is not a "booster".
 - Owner: Tejas (India). Reference PC: Windows 11 Home laptop, Intel + NVIDIA hybrid graphics, 6 SMT performance cores + 4 efficiency cores (10 cores / 16 threads), a kernel anti-cheat (Riot Vanguard) installed.
-- Spec: `MASTER_PROMPT_v4.md` (hard constraints HC-1..HC-13 in section 5; stage plan in section 17). v3 and `PROMPT_REVIEW.md` are history.
+- Spec: `MASTER_PROMPT_v4.md` (hard constraints HC-1..HC-13 in section 5; stage plan in section 17).
 - Repository: Published at `https://github.com/TejuBoricha/jankscope` (MIT). Branching strategy: **GitHub Flow** (`main` is protected with linear history and required CI checks; all work happens on `<type>/<slug>` branches merged via Squash/Rebase PRs — see `CONTRIBUTING.md`).
 
 ## 2. State right now
@@ -18,7 +18,7 @@
 | 1b Interactive slice | **done-verified 2026-11-04**: hotkey marker, candidate anchors, incident recorder, capture session, two-layer redaction and export with preview, WPF app (`src/Jankscope.App`), independent review (`docs/reviews/stage-1b.md`, all 6 findings fixed), live PresentMon + visible D3D11 harness E2E test, 10-run interleaved A/B overhead benchmark and app self-overhead check (`docs/benchmarks/overhead-v1.md`), and `docs/VALIDATION_1.md` complete. **Stopped at the Stage 1 owner validation gate** (`docs/VALIDATION_1.md`). |
 | 2 to 5, P1 | not started (`MASTER_PROMPT_v4.md` section 17; Stage 2 starts after owner validation of Stage 1) |
 
-Verified numbers (2026-11-04, full `build.ps1` locally and on GitHub Actions CI, exit 0): 0 warnings, **2,505 tests (2,504 passed, 1 skipped locally; 2,501 passed, 4 skipped on headless CI VM)** (765 Core, 1,098 Frames, 266 Harness, 344 Platform, 32 App), 0 failed; `jankscope probe` = **41 rows, 14 probes, 0 failed**; banned-symbol coverage **106 entries** proven; analyzer wiring proven for **7 product projects** (5 test projects exempt). `jankscope-app.exe` self-overhead: `0.682%` CPU (`<= 1.0%`), `198.9 MB` RAM (`<= 250 MB`), `0` TCP/UDP endpoints.
+Verified numbers (2026-11-04, full `build.ps1` locally and on GitHub Actions CI, exit 0): 0 warnings, **2,507 tests (2,506 passed, 1 skipped locally; 2,503 passed, 4 skipped on headless CI VM)** (767 Core, 1,098 Frames, 266 Harness, 344 Platform, 32 App), 0 failed; `jankscope probe` = **41 rows, 14 probes, 0 failed**; banned-symbol coverage **106 entries** proven; analyzer wiring proven for **7 product projects** (5 test projects exempt). `jankscope-app.exe` self-overhead: `0.682%` CPU (`<= 1.0%`), `198.9 MB` RAM (`<= 250 MB`), `0` TCP/UDP endpoints.
 
 ## 3. Verify in two minutes
 ```
@@ -58,7 +58,7 @@ src\Jankscope.Cli\bin\Release\net10.0-windows\jankscope.exe probe
 
 ## 8. Where things are
 - `src/Jankscope.Core` (portable logic, catalogs loader, metrics, anti-cheat state machine; Stage 1b: `Hotkeys/`, `Reports/Redactor`, `ExportGuard`, `ExportPipeline`), `.Platform` (Windows probes, native imports, hardware/PDH; Stage 1b: `Hotkeys/` over `RegisterHotKey`), `.Frames` (frame samples, PresentMon parser/runner, ring buffer, stutter detector; Stage 1b: `Incidents/` clock map, anchors, recorder, bundle, timeline buckets, and `Capture/` session and program scanner), `.Cli` (`jankscope probe`, `incident`), `.App` (WPF: tray, hotkey window, timeline, investigator, export preview; `Services/AppHost` and `CaptureController` hold the logic and are tested without a screen).
-- `tools/Jankscope.Harness` (D3D synthetic harness), `tools/Jankscope.FakePresentMon`, `tools/dev/*` (proof scripts, `apply-edits.js`, analyzer coverage), `tools/fetch-third-party.ps1`.
+- `tools/Jankscope.Harness` (D3D synthetic harness), `tools/Jankscope.FakePresentMon`, `tools/dev/*` (proof scripts and analyzer coverage), `tools/fetch-third-party.ps1`.
 - `tests/*Tests` (Core, Platform, Frames, Harness, App), `tests/fixtures/presentmon` (one real capture + hand-written synthetic fixtures).
 - `catalogs/*.json` (data-only knowledge: anti-cheat, protected titles, vendor terms, VM markers). `third_party/PresentMon` (pinned exe, git-ignored; lock file committed).
 - Docs: `docs/STATUS.md` (ledger), `LIMITATIONS.md` (L1..L29), `FACTS.md` (claims and whether verified), `THIRD_PARTY.md`, `METRICS.md`, `CATALOGS.md`, `adr/0001..0007`, `reviews/`, `test-plans/stage-1a.md`, `handoff/agent-prompts/`.

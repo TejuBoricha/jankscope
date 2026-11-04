@@ -1,0 +1,129 @@
+name: Release — Portable Package, Checksums & SBOM
+
+on:
+  push:
+    tags:
+      - 'v[0-9]+.[0-9]+.[0-9]+*'
+
+permissions:
+  contents: write
+
+env:
+  DOTNET_CLI_TELEMETRY_OPTOUT: '1'
+  DOTNET_NOLOGO: '1'
+  DOTNET_SKIP_FIRST_TIME_EXPERIENCE: '1'
+  NUGET_XMLDOC_MODE: 'skip'
+  CI: 'true'
+
+jobs:
+  release-windows-x64:
+    name: Build, Verify Safety Gates & Publish Release
+    runs-on: windows-latest
+    timeout-minutes: 20
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v7
+        with:
+          fetch-depth: 1
+
+      - name: Setup pinned .NET 10 SDK (global.json)
+        uses: actions/setup-dotnet@v6
+        with:
+          global-json-file: global.json
+
+      - name: Cache NuGet global packages
+        uses: actions/cache@v6
+        with:
+          path: ~/.nuget/packages
+          key: nuget-${{ runner.os }}-net10-${{ hashFiles('Directory.Packages.props', 'Directory.Build.props', 'Directory.Build.targets', '**/*.csproj') }}
+          restore-keys: |
+            nuget-${{ runner.os }}-net10-
+
+      - name: Run full verification pipeline (Build, Safety Proofs, 2,505+ Tests, Smoke Gate)
+        shell: pwsh
+        run: ./build.ps1 -Configuration Release
+
+      - name: Package portable distribution, SHA256SUMS.txt & CycloneDX SBOM
+        shell: pwsh
+        env:
+          TAG_NAME: ${{ github.ref_name }}
+          COMMIT_SHA: ${{ github.sha }}
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $version = $env:TAG_NAME.TrimStart('v')
+          $distRoot = Join-Path $PWD 'dist'
+          $stageDir = Join-Path $distRoot "jankscope-$($env:TAG_NAME)-win-x64"
+          New-Item -ItemType Directory -Force -Path $stageDir | Out-Null
+
+          # Publish framework-dependent portable binaries (CLI + WPF App)
+          dotnet publish src/Jankscope.Cli/Jankscope.Cli.csproj -c Release -r win-x64 --no-self-contained -o (Join-Path $stageDir 'cli')
+          dotnet publish src/Jankscope.App/Jankscope.App.csproj -c Release -r win-x64 --no-self-contained -o (Join-Path $stageDir 'app')
+
+          Copy-Item LICENSE, README.md, SECURITY.md, CHANGELOG.md -Destination $stageDir
+          Copy-Item docs/THIRD_PARTY.md -Destination (Join-Path $stageDir 'THIRD_PARTY.md')
+
+          $zipName = "jankscope-$($env:TAG_NAME)-win-x64-portable.zip"
+          $zipPath = Join-Path $distRoot $zipName
+          Compress-Archive -Path "$stageDir\*" -DestinationPath $zipPath -Force
+
+          # Generate CycloneDX 1.5 JSON SBOM from central package register and third-party lockfiles
+          [xml]$pkgProps = Get-Content Directory.Packages.props
+          $components = @()
+          foreach ($pkg in $pkgProps.Project.ItemGroup.PackageVersion) {
+              $components += [ordered]@{
+                  type    = 'library'
+                  name    = $pkg.Include
+                  version = $pkg.Version
+                  purl    = "pkg:nuget/$($pkg.Include)@$($pkg.Version)"
+              }
+          }
+          foreach ($lockFile in Get-ChildItem -Path third_party -Filter '*.lock.json' -Recurse) {
+              $lock = Get-Content $lockFile.FullName -Raw | ConvertFrom-Json
+              $components += [ordered]@{
+                  type    = 'application'
+                  name    = $lock.name
+                  version = $lock.version
+                  hashes  = @(@{ alg = 'SHA-256'; content = $lock.sha256 })
+              }
+          }
+          $sbom = [ordered]@{
+              bomFormat   = 'CycloneDX'
+              specVersion = '1.5'
+              version     = 1
+              metadata    = [ordered]@{
+                  timestamp = (Get-Date).ToUniversalTime().ToString('o')
+                  component = [ordered]@{
+                      type    = 'application'
+                      name    = 'Jankscope'
+                      version = $version
+                      commit  = $env:COMMIT_SHA
+                  }
+              }
+              components  = $components
+          }
+          $sbomPath = Join-Path $distRoot "jankscope-$($env:TAG_NAME)-sbom.cdx.json"
+          $sbom | ConvertTo-Json -Depth 8 | Set-Content -Path $sbomPath -Encoding utf8NoBOM
+
+          # Generate SHA256SUMS.txt
+          $checksumPath = Join-Path $distRoot 'SHA256SUMS.txt'
+          $lines = @()
+          foreach ($artifact in @($zipPath, $sbomPath)) {
+              $hash = (Get-FileHash -Path $artifact -Algorithm SHA256).Hash.ToLowerInvariant()
+              $lines += "$hash  $(Split-Path $artifact -Leaf)"
+          }
+          $lines | Set-Content -Path $checksumPath -Encoding utf8NoBOM
+
+      - name: Create GitHub Release
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TAG_NAME: ${{ github.ref_name }}
+        run: |
+          gh release create $env:TAG_NAME `
+            dist/*.zip `
+            dist/*.cdx.json `
+            dist/SHA256SUMS.txt `
+            --title "Jankscope $($env:TAG_NAME)" `
+            --generate-notes `
+            --verify-tag

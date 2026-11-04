@@ -1,4 +1,6 @@
+using System.Text;
 using System.Text.Json;
+using Jankscope.Core;
 using Jankscope.Core.Hotkeys;
 using Jankscope.Frames.Incidents;
 
@@ -51,7 +53,7 @@ public sealed class SettingsStore(string filePath)
     private static readonly JsonSerializerOptions Options = new(JsonSerializerDefaults.Web) { WriteIndented = true };
 
     public static string DefaultPath { get; } = Path.Combine(
-        Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Jankscope", "settings.json");
+        Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), Branding.DataFolderName, "settings.json");
 
     public string FilePath { get; } = filePath;
 
@@ -80,11 +82,17 @@ public sealed class SettingsStore(string filePath)
     public bool TrySave(AppSettings settings, out string? problem)
     {
         problem = null;
-        var temporary = FilePath + ".tmp";
+        var temporary = FilePath + ".tmp-" + Guid.NewGuid().ToString("N");
         try
         {
             Directory.CreateDirectory(System.IO.Path.GetDirectoryName(FilePath)!);
-            File.WriteAllText(temporary, JsonSerializer.Serialize(settings.Normalized(), Options), new System.Text.UTF8Encoding(false));
+            var bytes = new UTF8Encoding(encoderShouldEmitUTF8Identifier: false).GetBytes(JsonSerializer.Serialize(settings.Normalized(), Options));
+            using (var stream = new FileStream(temporary, FileMode.CreateNew, FileAccess.Write, FileShare.None))
+            {
+                stream.Write(bytes);
+                stream.Flush(flushToDisk: true);
+            }
+
             File.Move(temporary, FilePath, overwrite: true);
             return true;
         }

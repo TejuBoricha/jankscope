@@ -21,11 +21,11 @@ switch (command)
     case "incident":
         return Incident(args);
     case "version":
-        Console.WriteLine($"{Branding.ProductName} {typeof(Program).Assembly.GetName().Version}");
+        Console.WriteLine($"{Branding.ProductName} {typeof(Program).Assembly.GetName().Version?.ToString(3) ?? "0.1.0"}");
         return 0;
     default:
         Console.WriteLine($"""
-            {Branding.ProductName} (Stage 1a core)
+            {Branding.ProductName} (Stage 1a/1b diagnostic CLI)
 
             Usage:
               jankscope probe [--json] [--redact]      Show the runtime capability matrix for this PC
@@ -139,9 +139,36 @@ static int Incident(string[] args)
         redact: doRedact);
 
     var json = report.ToJson();
+    if (doRedact)
+    {
+        ExportGuard.Verify(json, RedactionContext.ForThisMachine());
+    }
+
     if (!string.IsNullOrWhiteSpace(outPath))
     {
-        File.WriteAllText(outPath, json, Encoding.UTF8);
+        var full = Path.GetFullPath(outPath);
+        var dir = Path.GetDirectoryName(full) ?? throw new IOException("The output path has no directory.");
+        Directory.CreateDirectory(dir);
+        var temp = Path.Combine(dir, Path.GetFileName(full) + ".tmp-" + Guid.NewGuid().ToString("N"));
+        try
+        {
+            var bytes = new UTF8Encoding(encoderShouldEmitUTF8Identifier: false).GetBytes(json);
+            using (var stream = new FileStream(temp, FileMode.CreateNew, FileAccess.Write, FileShare.None))
+            {
+                stream.Write(bytes);
+                stream.Flush(flushToDisk: true);
+            }
+
+            File.Move(temp, full, overwrite: true);
+        }
+        finally
+        {
+            if (File.Exists(temp))
+            {
+                File.Delete(temp);
+            }
+        }
+
         Console.WriteLine($"Incident report written to {outPath}");
     }
     else

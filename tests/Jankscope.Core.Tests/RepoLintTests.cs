@@ -422,6 +422,19 @@ public class RepoLintTests
     }
 
     [Fact]
+    public void Product_version_is_centrally_defined_in_directory_build_props()
+    {
+        var props = File.ReadAllText(Path.Combine(Repo.Root, "Directory.Build.props"));
+        Assert.Matches(@"<Version>\d+\.\d+\.\d+</Version>", props);
+
+        foreach (var project in Repo.AllFiles("*.csproj"))
+        {
+            var text = Regex.Replace(File.ReadAllText(project), "<!--.*?-->", string.Empty, RegexOptions.Singleline);
+            Assert.False(Regex.IsMatch(text, @"<Version\b[^>]*>"), $"{Repo.Rel(project)} defines its own <Version>; version must be managed centrally in Directory.Build.props.");
+        }
+    }
+
+    [Fact]
     public void Package_references_are_centrally_versioned_and_recorded_with_the_same_version_in_third_party_docs()
     {
         // Shared build files can add package references to every project, so they are scanned like projects.

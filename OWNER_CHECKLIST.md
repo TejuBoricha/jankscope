@@ -5,7 +5,7 @@ Things only you can do (accounts, identity checks, payments, publishing, legal).
 ## When you are ready to go public (Stage 5)
 | # | Step | Cost | Notes |
 |---|---|---|---|
-| 1 | Create or pick a GitHub account and reserve the handle **`jankscope`** (a user or an organization). | Free | Found unclaimed on 2026-10-16. |
+| 1 | Create or pick a GitHub account and publish the repository. | Free | **Done 2026-11-04:** Published at `https://github.com/TejuBoricha/jankscope` with branch protection, GitHub Flow governance, Private Vulnerability Reporting, and Dependabot alerts enabled. |
 | 2 | Run a **formal trademark search** for "Jankscope" — USPTO, EUIPO TMview, India IP portal (ipindiaonline.gov.in). Optionally ask a lawyer or legal-aid clinic for a one-hour review of the name, the disclaimer and the anti-cheat wording. | Free search; consult optional | My web check found no hits, but that is **not** trademark clearance. If it fails, the backups are HitchLens and StutterLens; renaming is a branding-config change. |
 | 3 | Enable **GitHub Sponsors** on the account. | Free (personal sponsorships have no GitHub fee) | Needs a bank account and tax residence in India, plus an identity check. Set one-time and monthly tiers with social perks only. |
 | 4 | Ask me for the release package; **approve each public action** (create repo, push, tag, release). | — | I prepare everything in `dist/` and the docs; I will ask for a one-line yes per action. |
