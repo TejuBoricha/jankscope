@@ -42,7 +42,7 @@ public class RunnerFakeExecutableTests
     [Fact]
     public async Task A_normal_capture_streams_rows_from_a_real_child_and_finishes_cleanly()
     {
-        using var fake = new FakePresentMonInstall("rows=6", "rowDelayMs=20");
+        using var fake = new FakePresentMonInstall("rows=6");
         var options = Options(fake, o => o with { TimedSeconds = 1, ProcessNames = ["My Game & Co; Edition.exe"] });
         await using var runner = NewRunner(options);
 

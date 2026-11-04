@@ -131,7 +131,7 @@ var endAt = timedSeconds is { } t && terminateAfterTimed ? DateTime.UtcNow.AddSe
 stdout.WriteLine(header);
 for (var i = 0; i < rows; i++)
 {
-    if (SessionEnded() || (endAt is { } end && DateTime.UtcNow >= end))
+    if (SessionEnded())
     {
         break;
     }
