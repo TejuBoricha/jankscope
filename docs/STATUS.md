@@ -12,7 +12,7 @@ Current verified baseline: `./build.ps1` (working tree and clean copy) → 0 war
 |---|---|---|
 | .NET 10 SDK installed from the official winget package, hash logged | done-verified | `dotnet --version` = 10.0.402; winget verified the installer hash; SHA-256 in `docs/THIRD_PARTY.md`; owner approved 2026-10-16 |
 | Smart App Control probed | done-verified | Registry value 0 (off); also the `security.smart_app_control` probe row |
-| Repo layout, local `git init` (no remote, **no commits**) | done-verified | branch `main`; `src/ tests/ catalogs/ tools/ docs/ third_party/` |
+| Repo layout, local `git init` (no remote; first commit `d0b3e7f` on 2026-11-04) | done-verified | branch `main`; `src/ tests/ catalogs/ tools/ docs/ third_party/` |
 | One-command build/test | done-verified | `./build.ps1` (restore, build, banned-symbol coverage proof, analyzer-wiring proof, tests, smoke-gate self-test, smoke run) on the working tree 2026-10-17: 0 warnings, 562 tests, 41 capability rows, 13 probes, 0 failed; also green from a clean copy earlier the same stage |
 | Pinned toolchain + .NET 8/9 ban | done-verified | `global.json`; `Directory.Build.props` target; test `Every_project_targets_net10_only` |
 | Capability-probe prototype | done-verified | `jankscope probe` on the bench; one real defect found by running it (MDM false positive) and regression-tested. The review's weaknesses (#2, #3, #6–#8, #10, #12, #13, #17, #18) are fixed with tests and mutation checks; residuals are in `docs/LIMITATIONS.md` (L14–L18) |

@@ -8,7 +8,7 @@
 **Jankscope**: a free, open-source (MIT), no-telemetry Windows tool that explains *why* a game stutters, a wireless mouse freezes or online play lags, using evidence-graded hypotheses. It changes a setting only when it can prove the benefit and undo it. It is not a "booster".
 - Owner: Tejas (India). Reference PC: Windows 11 Home laptop, Intel + NVIDIA hybrid graphics, 6 SMT performance cores + 4 efficiency cores (10 cores / 16 threads), a kernel anti-cheat (Riot Vanguard) installed.
 - Spec: `MASTER_PROMPT_v4.md` (hard constraints HC-1..HC-13 in section 5; stage plan in section 17). v3 and `PROMPT_REVIEW.md` are history.
-- Funding: GitHub Sponsors + optional paid Store edition; **no ads**. Repo is local only: **nothing is committed, no remote** (commit only when the owner asks; never push without a per-action yes).
+- Funding: GitHub Sponsors + optional paid Store edition; **no ads**. Repo is local only, **no remote**. First commit `d0b3e7f` (2026-11-04, at the owner's request); commit again only when the owner asks, and never push without a per-action yes. Three stray `PresentMon-*.csv` captures in the repo root are deliberately left uncommitted (raw captures from this PC, contents not inspected).
 
 ## 2. State right now
 | Stage | State |
@@ -30,7 +30,7 @@ src\Jankscope.Cli\bin\Release\net10.0-windows\jankscope.exe probe
 
 ## 4. Next actions, in order
 1. Stage 1a is complete. Its independent review, security fixes, re-verification, exit-test variants, anti-cheat gate, orphan-session cleaner, incident report, and overhead benchmark are recorded in `docs/STATUS.md` and `docs/reviews/stage-1a-reverify.md`.
-2. Close Stage 1b: (a) run the real app against the harness with live PresentMon and press the chord after an injected hitch (nobody has run the app live yet; the audible tone has never been heard); (b) independent review, fix every finding; (c) fix the known open items below; (d) measure the app's own CPU and memory while capturing (HC-6); (e) write `docs/VALIDATION_1.md` and bring STATUS, LIMITATIONS and HANDOFF up to date (they still describe Stage 1a); (f) ask the owner for a first local commit (nothing is committed) and for the validation on a real non-protected game.
+2. Close Stage 1b: (a) run the real app against the harness with live PresentMon and press the chord after an injected hitch (nobody has run the app live yet; the audible tone has never been heard); (b) independent review, fix every finding; (c) fix the known open items below; (d) measure the app's own CPU and memory while capturing (HC-6); (e) write `docs/VALIDATION_1.md` and bring STATUS, LIMITATIONS and HANDOFF up to date (they still describe Stage 1a); (f) ask the owner for the validation on a real non-protected game (the work is committed locally as `d0b3e7f`; commit the fixes from (b) and (c) when asked).
 3. Keep the remaining environment limitations explicit: true standard-user, VM, non-English, Windows 10, ARM64, elevated-token and real-game-session runs remain unexercised; see `docs/LIMITATIONS.md` and `docs/COMPATIBILITY.md`.
 
 ## 5. Standing rules from the owner

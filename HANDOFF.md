@@ -15,7 +15,7 @@ src\Jankscope.Cli\bin\Release\net10.0-windows\jankscope.exe probe  # capability 
 ```
 Expected: 654 Core + 309 Platform + 973 Frames (1 skipped) + 118 Harness tests green; "banned-symbol coverage proven" (106 entries); "analyzer wiring proven for 6 product projects"; "smoke gate self-test passed"; "41 capability rows, 13 probes, 0 failed". (The ETW and Direct3D tests skip, with a visible reason, on an account or machine that cannot run them; here none of the ETW or D3D tests skip.)
 
-**Git:** `git init` was done (branch `main`, no remote). **Nothing is committed** (the owner has not asked for a commit). When asked, commit with the trailer from the harness instructions; never push without a per-action yes.
+**Git:** branch `main`, no remote. One commit so far, `d0b3e7f` (2026-11-04, made at the owner's request; it holds Stages 0 to 1a and the Stage 1b build). Commit again only when asked, with the trailer from the harness instructions; never push without a per-action yes. Three stray `PresentMon-*.csv` captures in the repo root are intentionally not committed.
 
 ## 3. Read order
 1. This file → 2. `docs/STATUS.md` (ledger with evidence) → 3. `docs/reviews/stage-0.md` (open review findings) → 4. `docs/test-plans/stage-1a.md` → 5. `docs/FACTS.md` (which claims are verified) → 6. `docs/adr/*` → 7. `MASTER_PROMPT_v4.md` as needed (§5 hard constraints HC-1…HC-13 matter most).
