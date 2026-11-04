@@ -16,9 +16,10 @@
 | 0 Bootstrap | **done-verified** (two independent reviews + a re-verification; `docs/reviews/stage-0*.md`) |
 | 1a Headless core | **done-verified 2026-11-04**: all five work packages built and merged, independently reviewed and re-verified; exit tests, safety gates, incident reporting and overhead measurement are complete |
 | 1b Interactive slice | **done-verified 2026-11-04**: hotkey marker, candidate anchors, incident recorder, capture session, two-layer redaction and export with preview, WPF app (`src/Jankscope.App`), independent review (`docs/reviews/stage-1b.md`, all 6 findings fixed), live PresentMon + visible D3D11 harness E2E test, 10-run interleaved A/B overhead benchmark and app self-overhead check (`docs/benchmarks/overhead-v1.md`), and `docs/VALIDATION_1.md` complete. **Stopped at the Stage 1 owner validation gate** (`docs/VALIDATION_1.md`). |
-| 2 to 5, P1 | not started (`MASTER_PROMPT_v4.md` section 17; Stage 2 starts after owner validation of Stage 1) |
+| 2 Input and network | **in planning 2026-11-04**: ADR 0009 (`docs/adr/0009-stage-2-input-and-network.md`) and Stage 2 test plan (`docs/test-plans/stage-2.md`) written and reviewed; implementation starts after owner validation of Stage 1 |
+| 3 to 5, P1 | not started (`MASTER_PROMPT_v4.md` section 17) |
 
-Verified numbers (2026-11-04, full `build.ps1` locally and on GitHub Actions CI, exit 0): 0 warnings, **2,507 tests (2,506 passed, 1 skipped locally; 2,503 passed, 4 skipped on headless CI VM)** (767 Core, 1,098 Frames, 266 Harness, 344 Platform, 32 App), 0 failed; `jankscope probe` = **41 rows, 14 probes, 0 failed**; banned-symbol coverage **106 entries** proven; analyzer wiring proven for **7 product projects** (5 test projects exempt). `jankscope-app.exe` self-overhead: `0.682%` CPU (`<= 1.0%`), `198.9 MB` RAM (`<= 250 MB`), `0` TCP/UDP endpoints.
+Verified numbers (2026-11-04, full `build.ps1` locally and on GitHub Actions CI, exit 0): 0 warnings, **2,548 tests (2,547 passed, 1 skipped locally; 2,544 passed, 4 skipped on headless CI VM)** (805 Core, 1,098 Frames, 266 Harness, 344 Platform, 34 App), 0 failed; `jankscope probe` = **41 rows, 14 probes, 0 failed**; banned-symbol coverage **106 entries** proven; analyzer wiring proven for **7 product projects** (5 test projects exempt); **30 of 30** spec-listed deliverables present (`docs/` + `NOTICE` + root files). `jankscope-app.exe` self-overhead: `0.682%` CPU (`<= 1.0%`), `198.9 MB` RAM (`<= 250 MB`), `0` TCP/UDP endpoints.
 
 ## 3. Verify in two minutes
 ```
@@ -70,6 +71,6 @@ src\Jankscope.Cli\bin\Release\net10.0-windows\jankscope.exe probe
 - Not yet exercised anywhere: elevated token, 32-bit process, VM, non-English Windows, Windows 10, ARM64, true standard-user account, real game session (`docs/LIMITATIONS.md` L3, L5, L19, L20).
 
 ## 10. Background and scratch
-- **Running now:** branch `fix/redaction-short-names` (independent Stage 1b review finding 2, redaction of the person's own short names). The independent review `docs/reviews/stage-1b-independent.md` has 5 more Medium findings open; read it before calling Stage 1b verified.
+- **Current branch:** `feat/bucket-docs-and-compliance-gates` (spec-listed deliverables completion 30/30, Criteria 19/21/22/23, and Stage 2 planning ADR 0009 & test plan).
 - Sessions started from the main one that are idle: `s1a-a-detector`, `s1a-b1-parser`, `s1a-b2-runner`, `s1a-c-platform`, `s1a-d-harness` and the Stage 0 re-review session. Their work is complete and should not be relaunched.
 - Private copies of the packages: `C:\Users\tejas\Desktop\PC FPS booster - stage1a\` (safe to delete; they sit outside the repo on purpose because the lints scan everything under the repo root).

@@ -48,5 +48,13 @@ Spec §1 #8: every dated or externally sourced claim is a claim until verified f
 | F30 | The `LibraryImport` source generator emits `[DllImport]` (`System.Runtime.InteropServices.DllImportAttribute`) into `obj/.../LibraryImports.g.cs`, and the banned-API analyzer does not skip generated code, so `T:System.Runtime.InteropServices.DllImportAttribute` in `BannedSymbols.txt` fails every build that has a LibraryImport | Observed: the first build after adding the entry failed with RS0030 at `LibraryImports.g.cs(58,10)`; the isolated coverage project could not see it because it has no LibraryImport | verified (observed) |
 | F28 | A non-elevated filtered-admin token can open the Service Control Manager with `SC_MANAGER_CONNECT` and a service with `SERVICE_QUERY_STATUS` and read the state of a kernel-driver service: `vgk` (system-start) reads running, `EasyAntiCheat_EOS` (demand-start) reads stopped | `jankscope probe` on the bench | verified for this token only; a true standard-user token is untested (L9, L15) |
 
+## Stage 2 Input, Network and Platform Research (Verified 2026-11-04)
+| # | Claim | Source | Result |
+|---|---|---|---|
+| F31 | Kernel-PnP event IDs for device lifecycle: 400 (configure attempted), 410 (configure succeeded), 411 (failed to start / driver fault), 420 (deleted / removed), 430 (surprise removal / sleep transition) | Windows Event Log provider `Microsoft-Windows-Kernel-PnP` schema and MSDN driver documentation | verified |
+| F32 | Network latency probing endpoints: Commercial speed-test engines (Ookla, Cloudflare) require proprietary commercial licensing. Unprivileged ICMP Echo to the local default gateway and standard DNS query to root DNS resolvers (1.1.1.1 / 8.8.8.8) are RFC-standard, license-free, and require zero user data transmission | RFC 792 (ICMP), RFC 1035 (DNS), ADR 0009 | verified |
+| F33 | Windows 11 Wi-Fi BSSID access: `WlanGetNetworkBssList` on Windows 11 22H2+ requires Windows Location privacy permission ("Let desktop apps access your location"); if disabled, the API returns `ERROR_ACCESS_DENIED` | Windows Dev Center documentation and Windows 11 location privacy policy | verified |
+| F34 | Public repository handle: Reserved and active on GitHub | `https://github.com/TejuBoricha/jankscope`, verified live via git remote and GitHub API | verified |
+
 ## Not yet researched (gate later stages)
-Kernel-PnP / USB event IDs (Stage 2) · speed-test endpoint terms (Stage 2) · Azure Windows-client licensing (P1) · WHEA/storage event IDs (Stage 3) · TraceEvent / ScottPlot / Direct3D binding licenses (adoption time).
+Azure Windows-client licensing (P1) · WHEA/storage event IDs (Stage 3) · TraceEvent / ScottPlot / Direct3D binding licenses (adoption time).

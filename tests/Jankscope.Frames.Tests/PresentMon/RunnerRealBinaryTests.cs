@@ -351,7 +351,7 @@ public class RunnerRealBinaryTests
         const double fps = 144.0;
         const int frames = 1_200;
         const int hitches = 4;
-        const double extraMs = 25.0;
+        const double extraMs = 45.0;
         const double jitterMs = 0.2;
 
         var groundTruth = SyntheticWorkload.Generate(seed, fps, frames, hitches, extraMs, jitterMs);

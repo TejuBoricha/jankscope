@@ -237,6 +237,22 @@
                         <TextBlock Style="{StaticResource SectionTitle}" Text="This PC (read-only checks)"/>
                         <TextBlock x:Name="AboutEnvironment" TextWrapping="Wrap" Style="{StaticResource Muted}"/>
 
+                        <TextBlock Style="{StaticResource SectionTitle}" Text="Compatibility report"/>
+                        <TextBlock TextWrapping="Wrap" Style="{StaticResource Muted}"
+                                   Text="Exports a full diagnostic summary of this PC's hardware, drivers, capabilities, and probe health. Completely redacted and previewable before saving."/>
+                        <Button x:Name="ExportCompatibilityButton" Content="Export compatibility report (you see a preview first)..." Margin="0,8,0,0" HorizontalAlignment="Left"
+                                Click="OnExportCompatibilityClicked" AutomationProperties.Name="Export compatibility report"/>
+
+                        <StackPanel x:Name="SponsorPanel" Visibility="Collapsed" Margin="0,14,0,0">
+                            <TextBlock Style="{StaticResource SectionTitle}" Text="Support development"/>
+                            <TextBlock x:Name="SponsorText" TextWrapping="Wrap" Style="{StaticResource Muted}"
+                                       Text="Jankscope is free and open-source with no ads and no tracking. Voluntary support helps fund continued development."/>
+                            <StackPanel Orientation="Horizontal" Margin="0,8,0,0">
+                                <Button x:Name="SponsorButton" Content="GitHub Sponsors" Margin="0,0,10,0" Click="OnSponsorClicked" Visibility="Collapsed" AutomationProperties.Name="Open GitHub Sponsors page"/>
+                                <Button x:Name="StoreButton" Content="Microsoft Store edition" Click="OnStoreClicked" Visibility="Collapsed" AutomationProperties.Name="Open Microsoft Store listing"/>
+                            </StackPanel>
+                        </StackPanel>
+
                         <TextBlock Style="{StaticResource SectionTitle}" Text="License"/>
                         <TextBlock TextWrapping="Wrap" Text="Jankscope is free, open-source software under the MIT license, with no advertising and no telemetry."/>
                     </StackPanel>
