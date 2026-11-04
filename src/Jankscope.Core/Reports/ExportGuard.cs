@@ -41,10 +41,15 @@ public static class ExportGuard
         ArgumentNullException.ThrowIfNull(context);
 
         var found = new HashSet<RedactionCategory>();
-        var known = Redactor.KnownValuePatterns(context);
-        foreach (var (candidate, uncMeaningful) in Candidates(text))
+        var known = new Dictionary<KnownValueMode, List<(Regex Pattern, RedactionCategory Category)>>
         {
-            Inspect(candidate, uncMeaningful, known, found);
+            [KnownValueMode.Name] = Redactor.KnownValuePatterns(context, KnownValueMode.Name),
+            [KnownValueMode.Value] = Redactor.KnownValuePatterns(context, KnownValueMode.Value),
+            [KnownValueMode.FreeText] = Redactor.KnownValuePatterns(context, KnownValueMode.FreeText),
+        };
+        foreach (var (candidate, uncMeaningful, mode) in Candidates(text))
+        {
+            Inspect(candidate, uncMeaningful, known[mode], found);
         }
 
         if (found.Count > 0)
@@ -55,6 +60,8 @@ public static class ExportGuard
 
     private static void Inspect(string candidate, bool uncMeaningful, List<(Regex Pattern, RedactionCategory Category)> known, HashSet<RedactionCategory> found)
     {
+        candidate = Redactor.Nfc(candidate);
+
         // Paths and UNC hosts are judged with the tokens still in place: "C:\Users\<USER>" is fine, "C:\Users\bob" is not.
         if (ForeignProfilePath.IsMatch(candidate))
         {
@@ -94,9 +101,12 @@ public static class ExportGuard
 
     /// <summary>
     /// The text, its percent-decoded form, and (for JSON) each decoded property name and string value with its percent-decoded form. The flag says
-    /// whether a doubled backslash in the candidate is a UNC prefix (true) or possibly just JSON escaping (false).
+    /// whether a doubled backslash in the candidate is a UNC prefix (true) or possibly just JSON escaping (false). The mode says how strictly known
+    /// values are looked for in it, mirroring the redactor: a string under a free-text property (the note, the program name) strictly, other string
+    /// values by the value rule, property names and the raw text of a JSON document by the lenient name rule (the strings inside it are judged on their
+    /// own), and bare non-JSON text by the value rule.
     /// </summary>
-    private static IEnumerable<(string Text, bool UncMeaningful)> Candidates(string text)
+    private static IEnumerable<(string Text, bool UncMeaningful, KnownValueMode Mode)> Candidates(string text)
     {
         JsonDocument? document = null;
         try
@@ -109,11 +119,12 @@ public static class ExportGuard
         }
 
         var isJson = document is not null;
-        yield return (text, !isJson);
+        var rawMode = isJson ? KnownValueMode.Name : KnownValueMode.Value;
+        yield return (text, !isJson, rawMode);
         var decoded = SafeUnescape(text);
         if (!string.Equals(decoded, text, StringComparison.Ordinal))
         {
-            yield return (decoded, !isJson);
+            yield return (decoded, !isJson, rawMode);
         }
 
         if (document is null)
@@ -123,42 +134,42 @@ public static class ExportGuard
 
         using (document)
         {
-            foreach (var value in Strings(document.RootElement))
+            foreach (var (value, mode) in Strings(document.RootElement))
             {
-                yield return (value, true);
+                yield return (value, true, mode);
                 var inner = SafeUnescape(value);
                 if (!string.Equals(inner, value, StringComparison.Ordinal))
                 {
-                    yield return (inner, true);
+                    yield return (inner, true, mode);
                 }
             }
         }
     }
 
-    private static IEnumerable<string> Strings(JsonElement element)
+    private static IEnumerable<(string Text, KnownValueMode Mode)> Strings(JsonElement element)
     {
-        var stack = new Stack<JsonElement>();
-        stack.Push(element);
+        var stack = new Stack<(JsonElement Element, bool FreeText)>();
+        stack.Push((element, false));
         while (stack.Count > 0)
         {
-            var current = stack.Pop();
+            var (current, freeText) = stack.Pop();
             switch (current.ValueKind)
             {
                 case JsonValueKind.String:
-                    yield return current.GetString() ?? string.Empty;
+                    yield return (current.GetString() ?? string.Empty, freeText ? KnownValueMode.FreeText : KnownValueMode.Value);
                     break;
                 case JsonValueKind.Object:
                     foreach (var property in current.EnumerateObject())
                     {
-                        yield return property.Name;
-                        stack.Push(property.Value);
+                        yield return (property.Name, KnownValueMode.Name);
+                        stack.Push((property.Value, freeText || Redactor.IsFreeTextName(property.Name)));
                     }
 
                     break;
                 case JsonValueKind.Array:
                     foreach (var item in current.EnumerateArray())
                     {
-                        stack.Push(item);
+                        stack.Push((item, freeText));
                     }
 
                     break;

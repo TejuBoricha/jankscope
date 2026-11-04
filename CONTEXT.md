@@ -70,6 +70,6 @@ src\Jankscope.Cli\bin\Release\net10.0-windows\jankscope.exe probe
 - Not yet exercised anywhere: elevated token, 32-bit process, VM, non-English Windows, Windows 10, ARM64, true standard-user account, real game session (`docs/LIMITATIONS.md` L3, L5, L19, L20).
 
 ## 10. Background and scratch
-- **Running now:** none. Stage 1a and Stage 1b reviews and CI verification are complete.
+- **Running now:** branch `fix/redaction-short-names` (independent Stage 1b review finding 2, redaction of the person's own short names). The independent review `docs/reviews/stage-1b-independent.md` has 5 more Medium findings open; read it before calling Stage 1b verified.
 - Sessions started from the main one that are idle: `s1a-a-detector`, `s1a-b1-parser`, `s1a-b2-runner`, `s1a-c-platform`, `s1a-d-harness` and the Stage 0 re-review session. Their work is complete and should not be relaunched.
 - Private copies of the packages: `C:\Users\tejas\Desktop\PC FPS booster - stage1a\` (safe to delete; they sit outside the repo on purpose because the lints scan everything under the repo root).

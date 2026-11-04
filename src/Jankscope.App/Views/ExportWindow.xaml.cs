@@ -86,8 +86,8 @@ public partial class ExportWindow : Window
         var redaction = !preview.RedactionApplied
             ? "No personal information was removed."
             : replaced.Count == 0
-                ? "Nothing needed to be removed from this report."
-                : "Replaced with a placeholder: " + string.Join(", ", replaced) + ".";
+                ? "Nothing known needed to be removed. Only what Jankscope knows about is removed (this PC's user name and PC name, addresses): read the text below, especially your note."
+                : "Replaced with a placeholder: " + string.Join(", ", replaced) + ". Only what Jankscope knows about is removed: read the text below, especially your note.";
         return $"{size}, SHA-256 {preview.Sha256[..16]}... {redaction}";
     }
 
