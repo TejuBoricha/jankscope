@@ -200,7 +200,7 @@ public class CaptureSessionTests
     [Fact]
     public async Task The_real_runner_and_the_fake_executable_feed_the_history_and_leave_nothing_behind()
     {
-        using var fake = new FakePresentMonInstall("rows=40", "rowDelayMs=2");
+        using var fake = new FakePresentMonInstall("rows=40");
         var options = new PresentMonRunnerOptions
         {
             Executable = fake.Pin,
