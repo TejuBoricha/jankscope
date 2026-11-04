@@ -37,7 +37,7 @@
 
                 <TextBlock Style="{StaticResource SectionTitle}" Text="Reports"/>
                 <TextBlock TextWrapping="Wrap"
-                           Text="A report is only written where you choose, after you have seen exactly what is in it. Personal information is removed by default, and if anything slips through, the export is blocked instead."/>
+                           Text="A report is only written where you choose, after you have seen exactly what is in it. Jankscope removes your Windows user name, your PC name and network addresses by default, and blocks the export if one of those is still in the file. It cannot know about anything else, for example a name you type in the note, so read the preview before you save."/>
             </StackPanel>
         </ScrollViewer>
     </DockPanel>

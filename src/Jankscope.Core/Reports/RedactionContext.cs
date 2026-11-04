@@ -67,7 +67,7 @@ public sealed class RedactionContext
             return this;
         }
 
-        var trimmed = value.Trim();
+        var trimmed = Redactor.Nfc(value.Trim()); // a name typed with a combining accent must equal the same name as one character
         if (_values.Any(v => v.Category == category && string.Equals(v.Value, trimmed, StringComparison.OrdinalIgnoreCase)))
         {
             return this;

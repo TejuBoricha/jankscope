@@ -5,54 +5,112 @@ using System.Text.RegularExpressions;
 namespace Jankscope.Core.Reports;
 
 /// <summary>
+/// How strictly a known value (the person's own user name, PC name and so on) is looked for inside a string. A name that is also an ordinary word
+/// ("al", "mark") must not corrupt this tool's own text, but a person's name glued to other characters ("markgames") must not survive in text the person
+/// typed, so the rule depends on where the string sits.
+/// </summary>
+public enum KnownValueMode
+{
+    /// <summary>A JSON property name (this tool's own fixed schema): substrings only from <see cref="Redactor.SubstringMinLength"/> characters, else whole words.</summary>
+    Name = 0,
+
+    /// <summary>A string value: substrings from <see cref="Redactor.ValueSubstringMinLength"/> characters, shorter names as whole words.</summary>
+    Value = 1,
+
+    /// <summary>Text the person typed or a program name (<see cref="Redactor.IsFreeTextName"/>): substrings from <see cref="Redactor.FreeTextSubstringMinLength"/> characters.</summary>
+    FreeText = 2,
+}
+
+/// <summary>
 /// Replaces personal values in text and in whole JSON documents, and counts what it replaced per category (spec section 3.6, 16).
 /// Not thread-safe: one instance per export.
 /// <para>
-/// Known values (the context) are matched case-insensitively. A value of <see cref="SubstringMinLength"/> characters or more is matched anywhere in a
-/// string, because a distinctive name embedded in a longer word is still the name; a shorter value is matched as a whole word only (letters and
-/// digits are word characters), because a short name such as "al" or "mark" occurs inside ordinary words and inside this tool's own field names.
-/// Known limitation: a short name glued to other letters or digits ("markgames") is not caught by that rule; profile paths are cut by pattern whatever the name.
+/// Known values (the context) are matched case-insensitively, after Unicode normalisation (NFC), so a name typed with a combining accent matches the
+/// same name written as one character. How a name is matched inside a string depends on its <see cref="KnownValueMode"/>: in the person's own free text
+/// (the note, the program name) a name of two characters or more is matched anywhere in the string; in this tool's own values from four characters; in
+/// property names from six characters. Below that a name is matched as a whole word only (letters and digits are word characters), because a short
+/// name such as "al" or "mark" occurs inside ordinary words and inside this tool's own field names. A name written in a script without word
+/// boundaries (Chinese, Japanese, Korean, Thai) is always matched as a substring, because "whole word" has no meaning there.
+/// Known limitation: a name of one or two characters outside free text, or of two or three characters in this tool's own values, that is glued to other
+/// letters is not caught; profile paths are cut by pattern whatever the name.
 /// </para>
 /// </summary>
 public sealed partial class Redactor
 {
-    /// <summary>Known values at least this long are replaced as substrings; shorter ones as whole words.</summary>
+    /// <summary>In a property name, known values at least this long are replaced as substrings; shorter ones as whole words.</summary>
     public const int SubstringMinLength = 6;
 
-    private readonly List<(Regex Pattern, RedactionCategory Category)> _known;
+    /// <summary>In a string value, known values at least this long are replaced as substrings; shorter ones as whole words.</summary>
+    public const int ValueSubstringMinLength = 4;
+
+    /// <summary>In text the person typed, known values at least this long are replaced as substrings; a single character as a whole word.</summary>
+    public const int FreeTextSubstringMinLength = 2;
+
+    // Property names whose values are typed by the person or name a program: matched strictly. This tool's own prose is not in this list, so a person
+    // named "ian" does not turn "median" into "med<USER>" in every export.
+    private static readonly HashSet<string> FreeTextNames = new(StringComparer.OrdinalIgnoreCase)
+    {
+        "note", "notes", "comment", "comments", "targetProcess", "process", "processName", "program", "programName", "application",
+    };
+
+    private readonly RedactionContext _context;
+    private readonly Dictionary<KnownValueMode, List<(Regex Pattern, RedactionCategory Category)>> _known = [];
     private readonly Dictionary<RedactionCategory, int> _counts = Enum.GetValues<RedactionCategory>().ToDictionary(c => c, _ => 0);
 
     public Redactor(RedactionContext context)
     {
         ArgumentNullException.ThrowIfNull(context);
-        _known = KnownValuePatterns(context);
+        _context = context;
     }
 
     /// <summary>How many values were replaced so far, per category. Every category is present (zero when none).</summary>
     public IReadOnlyDictionary<RedactionCategory, int> Counts => _counts;
 
-    internal static List<(Regex Pattern, RedactionCategory Category)> KnownValuePatterns(RedactionContext context) =>
+    /// <summary>True for a property name whose string values are text the person typed (or a program name) and so are matched in <see cref="KnownValueMode.FreeText"/> mode.</summary>
+    internal static bool IsFreeTextName(string name) => FreeTextNames.Contains(name);
+
+    internal static List<(Regex Pattern, RedactionCategory Category)> KnownValuePatterns(RedactionContext context, KnownValueMode mode = KnownValueMode.Value) =>
         context.Values
             .OrderByDescending(v => v.Value.Length) // longer first: a host name that contains the user name is replaced whole
-            .Select(v => (KnownValuePattern(v.Value), v.Category))
+            .Select(v => (KnownValuePattern(v.Value, mode), v.Category))
             .ToList();
 
-    internal static Regex KnownValuePattern(string value)
+    internal static Regex KnownValuePattern(string value, KnownValueMode mode = KnownValueMode.Value)
     {
         var escaped = Regex.Escape(value);
-        var pattern = value.Length >= SubstringMinLength ? escaped : $@"(?<![\p{{L}}\p{{N}}]){escaped}(?![\p{{L}}\p{{N}}])";
+        var minLength = mode switch
+        {
+            KnownValueMode.Name => SubstringMinLength,
+            KnownValueMode.FreeText => FreeTextSubstringMinLength,
+            _ => ValueSubstringMinLength,
+        };
+        var substring = value.Length >= minLength || (value.Length >= 2 && UnsegmentedScriptRegex().IsMatch(value));
+        var pattern = substring ? escaped : $@"(?<![\p{{L}}\p{{N}}]){escaped}(?![\p{{L}}\p{{N}}])";
         return new Regex(pattern, RegexOptions.IgnoreCase | RegexOptions.CultureInvariant, TimeSpan.FromSeconds(2));
     }
 
+    /// <summary>The text in Unicode normal form C (a name typed with a combining accent equals the same name as one character). Text that cannot be normalised is returned unchanged.</summary>
+    internal static string Nfc(string text)
+    {
+        try
+        {
+            return text.IsNormalized(NormalizationForm.FormC) ? text : text.Normalize(NormalizationForm.FormC);
+        }
+        catch (ArgumentException)
+        {
+            return text;
+        }
+    }
+
     /// <summary>Redacts one string. Null stays null.</summary>
-    public string? Redact(string? text)
+    public string? Redact(string? text, KnownValueMode mode = KnownValueMode.Value)
     {
         if (string.IsNullOrEmpty(text))
         {
             return text;
         }
 
-        var result = text;
+        var result = Nfc(text);
 
         // An e-mail address goes first: its local part is often the user name, and the whole address is the identifier.
         result = EmailRegex().Replace(result, _ => Count(RedactionCategory.EmailAddress));
@@ -63,7 +121,7 @@ public sealed partial class Redactor
         result = OneDriveRegex().Replace(result, m => m.Groups[1].Value + Count(RedactionCategory.OrganizationName));
         result = UncHostRegex().Replace(result, m => @"\\" + Count(RedactionCategory.HostName) + @"\");
 
-        foreach (var (pattern, category) in _known)
+        foreach (var (pattern, category) in Known(mode))
         {
             result = pattern.Replace(result, _ => Count(category));
         }
@@ -115,7 +173,9 @@ public sealed partial class Redactor
     /// Redacts every string value and every property name in a JSON tree, whatever the field. A property whose name says it holds a command
     /// line is cut to the program name. Numbers, booleans and nulls are copied unchanged.
     /// </summary>
-    public JsonNode? RedactTree(JsonNode? node)
+    public JsonNode? RedactTree(JsonNode? node) => RedactTree(node, freeText: false);
+
+    private JsonNode? RedactTree(JsonNode? node, bool freeText)
     {
         switch (node)
         {
@@ -126,7 +186,7 @@ public sealed partial class Redactor
                 var copy = new JsonObject();
                 foreach (var (name, value) in obj)
                 {
-                    var newName = Redact(name) ?? string.Empty;
+                    var newName = Redact(name, KnownValueMode.Name) ?? string.Empty;
                     var unique = newName;
                     for (var n = 2; copy.ContainsKey(unique); n++)
                     {
@@ -135,7 +195,7 @@ public sealed partial class Redactor
 
                     copy[unique] = IsCommandLineName(name) && value is JsonValue v && v.GetValueKind() == System.Text.Json.JsonValueKind.String
                         ? JsonValue.Create(RedactCommandLine(v.GetValue<string>()))
-                        : RedactTree(value);
+                        : RedactTree(value, freeText || IsFreeTextName(name));
                 }
 
                 return copy;
@@ -146,17 +206,28 @@ public sealed partial class Redactor
                 var copy = new JsonArray();
                 foreach (var item in array)
                 {
-                    copy.Add(RedactTree(item));
+                    copy.Add(RedactTree(item, freeText));
                 }
 
                 return copy;
             }
 
             case JsonValue value when value.GetValueKind() == System.Text.Json.JsonValueKind.String:
-                return JsonValue.Create(Redact(value.GetValue<string>()));
+                return JsonValue.Create(Redact(value.GetValue<string>(), freeText ? KnownValueMode.FreeText : KnownValueMode.Value));
             default:
                 return node.DeepClone();
         }
+    }
+
+    private List<(Regex Pattern, RedactionCategory Category)> Known(KnownValueMode mode)
+    {
+        if (!_known.TryGetValue(mode, out var list))
+        {
+            list = KnownValuePatterns(_context, mode);
+            _known[mode] = list;
+        }
+
+        return list;
     }
 
     private static bool IsCommandLineName(string name) => CommandLineNameRegex().IsMatch(name);
@@ -172,11 +243,21 @@ public sealed partial class Redactor
     [GeneratedRegex(@"[\w.+\-]+@[\w\-]+(?:\.[\w\-]+)+", RegexOptions.CultureInvariant)]
     internal static partial Regex EmailRegex();
 
-    [GeneratedRegex(@"\b(?:[0-9A-Fa-f]{2}[:-]){5}[0-9A-Fa-f]{2}\b")]
+    // A MAC address in the three common notations: aa:bb:cc:dd:ee:ff (or with '-'), aabb.ccdd.eeff, and twelve hex digits in a row (which must contain a
+    // letter, so a plain 12-digit number is left alone, and must not be the tail of a longer hex run or of a GUID). The boundaries are "not next to another
+    // hex digit" rather than \b, so "mac=AA:BB:CC:DD:EE:FF_x" and "xAA:BB:..." are still found.
+    [GeneratedRegex(
+        @"(?<![0-9A-Fa-f])(?:[0-9A-Fa-f]{2}[:-]){5}[0-9A-Fa-f]{2}(?![0-9A-Fa-f])|(?<![0-9A-Fa-f.])(?:[0-9A-Fa-f]{4}\.){2}[0-9A-Fa-f]{4}(?![0-9A-Fa-f.])|(?<![0-9A-Fa-f-])(?=[0-9]*[A-Fa-f])[0-9A-Fa-f]{12}(?![0-9A-Fa-f-])")]
     internal static partial Regex MacRegex();
 
-    [GeneratedRegex(@"\b(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\b")]
+    // The boundaries are "not next to another digit", so "ip=192.0.2.5_x" and "x192.0.2.5" are found (a \b would miss them: letters, digits and
+    // underscores are word characters) while a four-digit last part ("31.0.101.5186") is still not an address.
+    [GeneratedRegex(@"(?<![0-9])(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)(?![0-9])")]
     internal static partial Regex Ipv4Regex();
+
+    // Chinese, Japanese, Korean and Thai text has no spaces between words, so a name in these scripts cannot be matched as a "whole word".
+    [GeneratedRegex(@"[\p{IsCJKUnifiedIdeographs}\p{IsCJKUnifiedIdeographsExtensionA}\p{IsHiragana}\p{IsKatakana}\p{IsHangulSyllables}\p{IsThai}]")]
+    private static partial Regex UnsegmentedScriptRegex();
 
     // Full form (eight groups, or six groups + IPv4), or compressed with "::" (including IPv4-mapped tails and optional %zone).
     // A bare "12:34:56" (a time) has neither and is never an address.

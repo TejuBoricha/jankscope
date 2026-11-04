@@ -25,6 +25,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
   - Bounded and redacted `%LOCALAPPDATA%\Jankscope\error.log` (`256 KB` cap with `.old` rotation) and centralized product folder naming on `Branding.DataFolderName`.
   - Centralized `<Version>0.1.0</Version>` in `Directory.Build.props` so all assemblies (`Jankscope.Core`, `Jankscope.Platform`, `Jankscope.Frames`, `Jankscope.Cli`, `Jankscope.App`) and `CapabilityMatrix.ToolVersion` report a consistent version.
 
+### Fixed
+- **Export redaction of the person's own short names (independent Stage 1b review, finding 2):** a user or PC name of 2 to 5 characters glued to other characters in the note or the program name (for example `maria225`, `MariaPC`) is now removed, and the export guard catches it too. Names are matched by where the string sits: free text (`note`, `targetProcess`, ...) from 2 characters, this tool's own values from 4, property names from 6 (so the fixed schema is not renamed); names in Chinese, Japanese, Korean and Thai are matched as substrings; names are compared after Unicode normalisation. IPv4 and MAC addresses are found when letters, digits or underscores touch them, and in the `aabb.ccdd.eeff` and 12-hex-digit notations. The welcome screen and the export dialog no longer promise that anything that slips through is blocked: only what Jankscope knows about is removed, so the note must be read.
+
 ---
 
 ## [0.1.0] - 2026-11-04
