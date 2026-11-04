@@ -1,6 +1,6 @@
 # Automated dependency & GitHub Actions security/version updates.
 # Note: Any NuGet version update MUST also update the corresponding row in docs/THIRD_PARTY.md
-# to satisfy RepoLintTests.Package_references_are_centrally_versioned_and_recorded_with_the_same_version_in_third_party_docs.
+# to satisfy RepoLintTests.Package_references_are_centrally_versioned_and_recorded_with_the_same_version_in_third_party_docs (HC-10).
 
 version: 2
 updates:
@@ -13,11 +13,14 @@ updates:
     commit-message:
       prefix: "ci(actions)"
 
+  # NuGet version bumps require co-updating docs/THIRD_PARTY.md after verifying the package's .nuspec license (HC-10).
+  # Setting open-pull-requests-limit: 0 prevents Dependabot from opening broken Directory.Packages.props-only version PRs
+  # while keeping GitHub Dependency Graph & Vulnerability Alerts active for CVE monitoring.
   - package-ecosystem: "nuget"
     directory: "/"
     schedule:
       interval: "weekly"
       day: "monday"
-    open-pull-requests-limit: 5
+    open-pull-requests-limit: 0
     commit-message:
       prefix: "chore(deps)"

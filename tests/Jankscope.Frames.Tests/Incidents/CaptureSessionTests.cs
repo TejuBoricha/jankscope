@@ -126,6 +126,22 @@ public class CaptureSessionTests
     }
 
     [Fact]
+    public async Task Out_of_order_frames_within_the_same_run_are_ignored_so_they_do_not_split_the_capture_epoch()
+    {
+        var (session, source, _) = Create();
+        session.Start();
+        source.Push(1, Frame(0, 100.0, "Composed: Flip"));
+        source.Push(1, Frame(1, 108.3, "Composed: Flip"));
+        source.Push(1, Frame(2, 100.1, "Composed: Flip")); // out-of-order DWM secondary token in same run
+        source.Push(1, Frame(3, 116.7, "Composed: Flip"));
+        await session.StopAsync();
+
+        Assert.Equal(3, session.FramesReceived);
+        Assert.Equal(1, session.IgnoredFrames);
+        Assert.Equal([0L, 1L, 3L], session.History.Snapshot().Select(f => f.Index).ToArray());
+    }
+
+    [Fact]
     public async Task A_restarted_capture_is_a_new_run_and_a_new_clock_epoch()
     {
         var (session, source, time) = Create();

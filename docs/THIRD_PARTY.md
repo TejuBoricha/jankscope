@@ -10,8 +10,8 @@ Licenses below were read from each package's own `.nuspec` after restore on 2026
 
 | Package | Version | License (from nuspec) | Used by | Ships in product? | Notes |
 |---|---|---|---|---|---|
-| System.Management | 10.0.13 | MIT | Jankscope.Platform | Yes | WMI queries (chassis type). Microsoft-maintained. |
-| System.CodeDom | 10.0.13 | MIT | (transitive of System.Management) | Yes | |
+| System.Management | 10.0.14 | MIT | Jankscope.Platform | Yes | WMI queries (chassis type). Microsoft-maintained. |
+| System.CodeDom | 10.0.14 | MIT | (transitive of System.Management) | Yes | |
 | Vortice.Direct3D11 | 3.8.3 | MIT (nuspec: `<license type="expression">MIT</license>`) | Jankscope.Harness (`tools/`) | No (development and test tool; not part of the product installer) | Direct3D 11 binding for the synthetic harness (ADR 0006). Author Amer Koleci; repository github.com/amerkoleci/Vortice.Windows. Transitive packages are the same as for Vortice.DXGI (rows below). |
 | Vortice.DXGI | 3.8.3 | MIT (nuspec: `<license type="expression">MIT</license>`) | Jankscope.Platform (GPU adapter list by LUID) | Yes | DXGI bindings; author Amer Koleci; repository github.com/amerkoleci/Vortice.Windows (nuspec commit 9e609cb). Used only through `IDXGIFactory1.EnumAdapters1` and `Description1`: no device is created and no output is enumerated, so a sleeping GPU is not woken. Chosen because hand-written COM is banned by `BannedSymbols.txt` (ADR 0006). Added with Stage 1a package C. |
 | Vortice.DirectX | 3.8.3 | MIT | (transitive of Vortice.DXGI) | Yes | Same repository and commit. |
@@ -27,7 +27,7 @@ Licenses below were read from each package's own `.nuspec` after restore on 2026
 | xunit.core / xunit.assert / xunit.extensibility.core / xunit.extensibility.execution | 2.9.3 | Apache-2.0 | tests (transitive) | No | |
 | xunit.analyzers | 1.18.0 | Apache-2.0 | tests (transitive) | No | |
 | xunit.abstractions | 2.0.3 | license URL only (xunit's repository license) | tests (transitive) | No | The nuspec declares only a URL; the xunit project is Apache-2.0. Re-check when updating. |
-| xunit.runner.visualstudio | 3.1.5 | Apache-2.0 | tests | No | |
+| xunit.runner.visualstudio | 4.0.1 | Apache-2.0 | tests | No | |
 
 ## Tools used to build (not redistributed)
 

@@ -138,6 +138,8 @@ public sealed class CaptureSession : IAsyncDisposable
 
     private async Task PumpAsync()
     {
+        var haveTimestamp = false;
+        var lastTimestampMs = 0.0;
         try
         {
             await foreach (var captured in _source.Samples.ReadAllAsync(_stop.Token).ConfigureAwait(false))
@@ -154,8 +156,22 @@ public sealed class CaptureSession : IAsyncDisposable
                 if (previousRun != 0 && captured.Run != previousRun)
                 {
                     _clock.Reset();
+                    haveTimestamp = false;
+                    lastTimestampMs = 0.0;
                 }
 
+                // When DWM transitions a windowed flip swapchain between Composed: Flip and DXGI, PresentMon can emit a secondary
+                // row whose TimeInMs is ~1 frame earlier than the immediately preceding row within the same capture run. Ignoring
+                // out-of-order rows within the same run prevents FrameRingExtensions.SelectWindow and StutterDetector from treating
+                // a single-frame DWM stream interleaving as a capture restart.
+                if (haveTimestamp && sample.TimestampMs < lastTimestampMs)
+                {
+                    Interlocked.Increment(ref _ignored);
+                    continue;
+                }
+
+                haveTimestamp = true;
+                lastTimestampMs = sample.TimestampMs;
                 _clock.Observe(ticks, sample.TimestampMs);
                 if (_history.TryWrite(in sample))
                 {
