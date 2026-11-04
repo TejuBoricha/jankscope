@@ -1,0 +1,18 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net10.0-windows</TargetFramework>
+    <RootNamespace>Jankscope.Platform</RootNamespace>
+    <AssemblyName>Jankscope.Platform</AssemblyName>
+    <!-- Hand-laid ETW structures in EtwNative use native memory; no other assembly may enable unsafe code (RepoLintTests). -->
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+  </PropertyGroup>
+  <ItemGroup>
+    <InternalsVisibleTo Include="Jankscope.Platform.Tests" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Jankscope.Core\Jankscope.Core.csproj" />
+    <PackageReference Include="System.Management" />
+    <!-- GPU adapters by LUID. Hand-written COM is banned (BannedSymbols.txt), so DXGI comes from a binding package (ADR 0006, THIRD_PARTY.md). -->
+    <PackageReference Include="Vortice.DXGI" />
+  </ItemGroup>
+</Project>

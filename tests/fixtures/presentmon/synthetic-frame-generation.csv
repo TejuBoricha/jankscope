@@ -1,0 +1,5 @@
+Application,TimeInMs,MsBetweenPresents,MsBetweenDisplayChange
+SyntheticFrameGen.exe,10.0,8.0,4.0
+SyntheticFrameGen.exe,18.0,8.0,4.0
+SyntheticFrameGen.exe,26.0,8.0,4.0
+SyntheticFrameGen.exe,34.0,8.0,4.0

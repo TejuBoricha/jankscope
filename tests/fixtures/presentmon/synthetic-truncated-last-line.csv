@@ -1,0 +1,5 @@
+TimeInMs,MsBetweenPresents,MsBetweenDisplayChange,Application
+10.0,5.0,5.0,TruncatedApp.exe
+15.0,5.0,5.0,TruncatedApp.exe
+20.0,5.0,5.0,TruncatedApp.exe
+25.0,5.0,5.

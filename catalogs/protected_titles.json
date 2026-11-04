@@ -1,0 +1,70 @@
+{
+  "schemaVersion": 1,
+  "catalog": "protected_titles",
+  "description": "Executables of games commonly protected by anti-cheat (HC-1 state 3). User-editable; the user may also add titles. Anti-cheat attribution is unverified unless marked observed.",
+  "entries": [
+    {
+      "id": "valorant",
+      "displayName": "VALORANT",
+      "processNames": ["VALORANT-Win64-Shipping.exe", "VALORANT.exe"],
+      "verification": "observed",
+      "source": "observed:reference-bench install folder C:/Riot Games/VALORANT (executables listed 2026-10-16)",
+      "lastReviewed": "2026-10-16",
+      "notes": "Protected by Riot Vanguard."
+    },
+    {
+      "id": "counter_strike_2",
+      "displayName": "Counter-Strike 2",
+      "processNames": ["cs2.exe"],
+      "verification": "community",
+      "source": "https://store.steampowered.com/app/730",
+      "lastReviewed": "2026-10-16",
+      "notes": "Executable name from community knowledge; anti-cheat attribution (VAC) unverified."
+    },
+    {
+      "id": "fortnite",
+      "displayName": "Fortnite",
+      "processNames": ["FortniteClient-Win64-Shipping.exe"],
+      "verification": "community",
+      "source": "https://www.fortnite.com/",
+      "lastReviewed": "2026-10-16",
+      "notes": "Executable name from community knowledge; anti-cheat attribution unverified."
+    },
+    {
+      "id": "apex_legends",
+      "displayName": "Apex Legends",
+      "processNames": ["r5apex.exe"],
+      "verification": "community",
+      "source": "https://store.steampowered.com/app/1172470",
+      "lastReviewed": "2026-10-16",
+      "notes": "Executable name from community knowledge; anti-cheat attribution unverified."
+    },
+    {
+      "id": "rainbow_six_siege",
+      "displayName": "Tom Clancy's Rainbow Six Siege",
+      "processNames": ["RainbowSix.exe"],
+      "verification": "community",
+      "source": "https://store.steampowered.com/app/359550",
+      "lastReviewed": "2026-10-16",
+      "notes": "Executable name from community knowledge; anti-cheat attribution unverified."
+    },
+    {
+      "id": "destiny_2",
+      "displayName": "Destiny 2",
+      "processNames": ["destiny2.exe"],
+      "verification": "community",
+      "source": "https://store.steampowered.com/app/1085660",
+      "lastReviewed": "2026-10-16",
+      "notes": "Executable name from community knowledge; anti-cheat attribution unverified."
+    },
+    {
+      "id": "elden_ring",
+      "displayName": "Elden Ring",
+      "processNames": ["eldenring.exe"],
+      "verification": "community",
+      "source": "https://store.steampowered.com/app/1245620",
+      "lastReviewed": "2026-10-16",
+      "notes": "Executable name from community knowledge; anti-cheat attribution unverified."
+    }
+  ]
+}

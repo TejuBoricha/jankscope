@@ -1,0 +1,7 @@
+Application,ProcessID,SwapChainAddress,Runtime,SyncInterval,PresentFlags,AllowsTearing,PresentMode,Dropped,TimeInSeconds,msInPresentAPI,msBetweenPresents,msBetweenDisplayChange,msUntilRenderComplete,msUntilDisplayed
+SyntheticGameV1.exe,2000,0x2000A,DXGI,1,0,0,Hardware: Independent Flip,0,0.016700,0.250,16.700,16.700,1.500,17.800
+SyntheticGameV1.exe,2000,0x2000A,DXGI,1,0,0,Hardware: Independent Flip,0,0.033300,0.260,16.600,16.650,1.400,17.900
+SyntheticGameV1.exe,2000,0x2000A,DXGI,1,0,0,Hardware: Independent Flip,0,0.050100,0.270,16.800,16.750,1.600,18.000
+SyntheticGameV1.exe,2000,0x2000A,DXGI,1,0,0,Hardware: Independent Flip,1,0.066600,0.255,16.500,NA,1.450,NA
+SyntheticGameV1.exe,2000,0x2000A,DXGI,1,0,0,Hardware: Independent Flip,0,0.100000,0.300,33.400,33.400,1.700,35.100
+SyntheticGameV1.exe,2000,0x2000A,DXGI,1,0,0,Hardware: Independent Flip,0,0.116700,0.250,16.700,16.700,1.500,17.800

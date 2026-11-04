@@ -1,0 +1,131 @@
+// Banned APIs for product code (src/ and tools/). Format: <documentation ID>;<message shown with the build error>.
+// Enforced by Microsoft.CodeAnalysis.BannedApiAnalyzers as RS0030 (an error: TreatWarningsAsErrors). Rationale: spec section 5
+// hard constraints HC-1 (no foreign-process handles, no injection), HC-5/HC-7 (nothing leaves the machine, nothing is launched
+// without an allowlisted runner), HC-8 (security posture is reported, never changed).
+//
+// A deliberate exception is a "#pragma warning disable RS0030 // <reason>" region; RepoLintTests lists every file allowed to have one.
+//
+// IMPORTANT: a METHOD entry must spell out the full parameter list of EACH overload. An entry without one matches nothing and the
+// build stays silent. Prefer banning a whole type. Every entry here is proven by tools/dev/analyzer-coverage (see docs/reviews/stage-0.md).
+
+// ---- Processes (HC-1, HC-5): the whole type is banned; the one reviewed use is the name-only snapshot in ServiceState.cs ----
+T:System.Diagnostics.Process;Foreign-process access and launching are banned (HC-1/HC-5); the only reviewed use is the name-only snapshot behind a documented pragma
+T:System.Diagnostics.ProcessStartInfo;Launching processes is allowed only in an allowlisted runner (HC-5)
+
+// ---- Network: nothing leaves the machine from this code base (HC-5, HC-7) ----
+T:System.Net.Http.HttpClient;Network access is not allowed until a later stage allowlists a specific file
+T:System.Net.Http.HttpClientHandler;Network access is not allowed until a later stage allowlists a specific file
+T:System.Net.Http.SocketsHttpHandler;Network access is not allowed until a later stage allowlists a specific file
+T:System.Net.WebClient;Network access is not allowed until a later stage allowlists a specific file
+T:System.Net.WebRequest;Network access is not allowed until a later stage allowlists a specific file
+T:System.Net.HttpWebRequest;Network access is not allowed until a later stage allowlists a specific file
+T:System.Net.FtpWebRequest;Network access is not allowed until a later stage allowlists a specific file
+T:System.Net.Sockets.Socket;Network access is not allowed until a later stage allowlists a specific file
+T:System.Net.Sockets.TcpClient;Network access is not allowed until a later stage allowlists a specific file
+T:System.Net.Sockets.TcpListener;Network access is not allowed until a later stage allowlists a specific file
+T:System.Net.Sockets.UdpClient;Network access is not allowed until a later stage allowlists a specific file
+T:System.Net.Sockets.NetworkStream;Network access is not allowed until a later stage allowlists a specific file
+T:System.Net.Security.SslStream;Network access is not allowed until a later stage allowlists a specific file
+T:System.Net.Dns;Name resolution is network access; allowed only in the network-probe stage
+T:System.Net.NetworkInformation.Ping;ICMP is network access; allowed only in the network-probe stage
+T:System.Net.NetworkInformation.NetworkInterface;Network inventory is allowed only in the network-probe stage
+T:System.Net.WebSockets.ClientWebSocket;Network access is not allowed until a later stage allowlists a specific file
+T:System.Net.Mail.SmtpClient;Sending mail is never allowed from product code
+
+// ---- Registry writes (HC-8): posture is reported, never changed, until Stage 4 behind an approval flow ----
+// Reads use RegistryKey.OpenSubKey(string), which is read-only; every other OpenSubKey overload can request write access.
+M:Microsoft.Win32.RegistryKey.SetValue(System.String,System.Object);Changing the registry is not allowed until Stage 4
+M:Microsoft.Win32.RegistryKey.SetValue(System.String,System.Object,Microsoft.Win32.RegistryValueKind);Changing the registry is not allowed until Stage 4
+M:Microsoft.Win32.RegistryKey.CreateSubKey(System.String);Changing the registry is not allowed until Stage 4
+M:Microsoft.Win32.RegistryKey.CreateSubKey(System.String,System.Boolean);Changing the registry is not allowed until Stage 4
+M:Microsoft.Win32.RegistryKey.CreateSubKey(System.String,Microsoft.Win32.RegistryKeyPermissionCheck);Changing the registry is not allowed until Stage 4
+M:Microsoft.Win32.RegistryKey.CreateSubKey(System.String,Microsoft.Win32.RegistryKeyPermissionCheck,Microsoft.Win32.RegistryOptions);Changing the registry is not allowed until Stage 4
+M:Microsoft.Win32.RegistryKey.CreateSubKey(System.String,System.Boolean,Microsoft.Win32.RegistryOptions);Changing the registry is not allowed until Stage 4
+M:Microsoft.Win32.RegistryKey.DeleteValue(System.String);Changing the registry is not allowed until Stage 4
+M:Microsoft.Win32.RegistryKey.DeleteValue(System.String,System.Boolean);Changing the registry is not allowed until Stage 4
+M:Microsoft.Win32.RegistryKey.DeleteSubKey(System.String);Changing the registry is not allowed until Stage 4
+M:Microsoft.Win32.RegistryKey.DeleteSubKey(System.String,System.Boolean);Changing the registry is not allowed until Stage 4
+M:Microsoft.Win32.RegistryKey.DeleteSubKeyTree(System.String);Changing the registry is not allowed until Stage 4
+M:Microsoft.Win32.RegistryKey.DeleteSubKeyTree(System.String,System.Boolean);Changing the registry is not allowed until Stage 4
+M:Microsoft.Win32.Registry.SetValue(System.String,System.String,System.Object);Changing the registry is not allowed until Stage 4
+M:Microsoft.Win32.Registry.SetValue(System.String,System.String,System.Object,Microsoft.Win32.RegistryValueKind);Changing the registry is not allowed until Stage 4
+M:Microsoft.Win32.RegistryKey.OpenSubKey(System.String,System.Boolean);OpenSubKey with a writable flag can open for writing; use OpenSubKey(string), which is read-only
+M:Microsoft.Win32.RegistryKey.OpenSubKey(System.String,Microsoft.Win32.RegistryKeyPermissionCheck);Can open for writing; use OpenSubKey(string), which is read-only
+M:Microsoft.Win32.RegistryKey.OpenSubKey(System.String,System.Security.AccessControl.RegistryRights);Can open for writing; use OpenSubKey(string), which is read-only
+M:Microsoft.Win32.RegistryKey.OpenSubKey(System.String,Microsoft.Win32.RegistryKeyPermissionCheck,System.Security.AccessControl.RegistryRights);Can open for writing; use OpenSubKey(string), which is read-only
+
+// ---- Dynamic invocation and loading would hide a banned or native call from review ----
+T:System.Activator;Reflection could construct a banned type without naming it
+T:System.Reflection.MethodBase;Reflection could call a banned API without naming it
+T:System.Reflection.MethodInfo;Reflection could call a banned API without naming it
+T:System.Reflection.ConstructorInfo;Reflection could construct a banned type without naming it
+T:System.Runtime.InteropServices.NativeLibrary;Dynamic native loading hides entry points from the approved-set test; use LibraryImport
+M:System.Type.GetType(System.String);Reflection could reach a banned type without naming it
+M:System.Type.GetType(System.String,System.Boolean);Reflection could reach a banned type without naming it
+M:System.Type.GetType(System.String,System.Boolean,System.Boolean);Reflection could reach a banned type without naming it
+M:System.Type.GetMethod(System.String);Reflection could call a banned API without naming it
+M:System.Type.GetMethod(System.String,System.Reflection.BindingFlags);Reflection could call a banned API without naming it
+M:System.Type.GetMethods;Reflection could call a banned API without naming it
+M:System.Type.GetMethods(System.Reflection.BindingFlags);Reflection could call a banned API without naming it
+M:System.Type.InvokeMember(System.String,System.Reflection.BindingFlags,System.Reflection.Binder,System.Object,System.Object[]);Reflection could call a banned API without naming it
+M:System.Delegate.DynamicInvoke(System.Object[]);Dynamic invocation could call a banned API without naming it
+M:System.Reflection.Assembly.Load(System.String);Loading code at run time is not allowed
+M:System.Reflection.Assembly.Load(System.Reflection.AssemblyName);Loading code at run time is not allowed
+M:System.Reflection.Assembly.Load(System.Byte[]);Loading code at run time is not allowed
+M:System.Reflection.Assembly.LoadFrom(System.String);Loading code at run time is not allowed
+M:System.Reflection.Assembly.LoadFile(System.String);Loading code at run time is not allowed
+M:System.Runtime.InteropServices.Marshal.GetDelegateForFunctionPointer(System.IntPtr,System.Type);Calling native code through a raw pointer hides it from the approved-set test
+M:System.Runtime.InteropServices.Marshal.GetDelegateForFunctionPointer``1(System.IntPtr);Calling native code through a raw pointer hides it from the approved-set test
+
+// ---- Execution and control without naming Process; code generation; COM activation (review pass 2 #4) ----
+// DllImportAttribute is deliberately NOT listed: the LibraryImport source generator emits [DllImport] into obj/.../LibraryImports.g.cs, so
+// a symbol ban would break every legitimate import. [DllImport] written in source is rejected by RepoLintTests (native-name rule and the
+// exact-set test, which only accepts [LibraryImport] with literal arguments).
+T:System.Management.ManagementClass;WMI class methods can start or stop programs and services
+M:System.Management.ManagementObject.InvokeMethod(System.String,System.Object[]);WMI method calls can start or stop programs and services
+M:System.Management.ManagementObject.InvokeMethod(System.String,System.Management.ManagementBaseObject,System.Management.InvokeMethodOptions);WMI method calls can start or stop programs and services
+M:System.Management.ManagementObject.Put;WMI writes change the system
+M:System.Management.ManagementObject.Delete;WMI deletes change the system
+T:Microsoft.VisualBasic.Interaction;Shell execution is not allowed
+T:System.Runtime.Loader.AssemblyLoadContext;Loading code at run time is not allowed
+T:System.Net.HttpListener;Network access is not allowed until a later stage allowlists a specific file
+T:System.Net.Quic.QuicConnection;Network access is not allowed until a later stage allowlists a specific file
+T:System.Net.Quic.QuicListener;Network access is not allowed until a later stage allowlists a specific file
+T:System.Net.Quic.QuicStream;Network access is not allowed until a later stage allowlists a specific file
+T:System.Reflection.Emit.ILGenerator;Run-time code generation hides calls from review
+T:System.Reflection.Emit.DynamicMethod;Run-time code generation hides calls from review
+T:System.Reflection.Emit.AssemblyBuilder;Run-time code generation hides calls from review
+M:System.Type.GetTypeFromProgID(System.String);COM activation can start programs
+M:System.Type.GetTypeFromProgID(System.String,System.Boolean);COM activation can start programs
+M:System.Type.GetTypeFromProgID(System.String,System.String);COM activation can start programs
+M:System.Type.GetTypeFromProgID(System.String,System.String,System.Boolean);COM activation can start programs
+M:System.Type.GetMethod(System.String,System.Type[]);Reflection could call a banned API without naming it
+M:System.Type.GetMethod(System.String,System.Int32,System.Type[]);Reflection could call a banned API without naming it
+M:System.Type.GetMethod(System.String,System.Reflection.BindingFlags,System.Type[]);Reflection could call a banned API without naming it
+M:System.Type.GetMethod(System.String,System.Type[],System.Reflection.ParameterModifier[]);Reflection could call a banned API without naming it
+M:System.Type.GetMethod(System.String,System.Reflection.BindingFlags,System.Reflection.Binder,System.Type[],System.Reflection.ParameterModifier[]);Reflection could call a banned API without naming it
+
+// ---- Residual families found by the stage-0 re-verification (R3) ----
+T:System.Management.ManagementObject;WMI objects can start or stop programs and services and change the system
+M:System.Management.ManagementObject.Put(System.Management.PutOptions);WMI writes change the system
+M:System.Management.ManagementObject.Put(System.Management.ManagementOperationObserver);WMI writes change the system
+M:System.Management.ManagementObject.Delete(System.Management.DeleteOptions);WMI deletes change the system
+M:System.Management.ManagementObject.Delete(System.Management.ManagementOperationObserver);WMI deletes change the system
+T:System.Runtime.InteropServices.ComImportAttribute;COM activation can start programs without any native import
+T:System.Runtime.InteropServices.CoClassAttribute;COM activation can start programs without any native import
+T:System.Runtime.InteropServices.Marshalling.GeneratedComInterfaceAttribute;COM interop can reach code without any native import
+T:System.Runtime.InteropServices.Marshalling.GeneratedComClassAttribute;COM interop can reach code without any native import
+T:System.Runtime.InteropServices.ComWrappers;COM interop can reach code without any native import
+M:System.Runtime.InteropServices.Marshal.GetObjectForIUnknown(System.IntPtr);COM interop can reach code without any native import
+M:System.Runtime.InteropServices.Marshal.GetTypedObjectForIUnknown(System.IntPtr,System.Type);COM interop can reach code without any native import
+M:System.Runtime.InteropServices.Marshal.GetFunctionPointerForDelegate(System.Delegate);Raw function pointers hide native calls from the approved-set test
+M:System.Runtime.InteropServices.Marshal.GetFunctionPointerForDelegate``1(``0);Raw function pointers hide native calls from the approved-set test
+M:System.Reflection.Assembly.UnsafeLoadFrom(System.String);Loading code at run time is not allowed
+M:System.Reflection.Assembly.Load(System.Byte[],System.Byte[]);Loading code at run time is not allowed
+M:System.Reflection.Assembly.CreateInstance(System.String);Reflection could construct a banned type without naming it
+M:System.Reflection.Assembly.CreateInstance(System.String,System.Boolean);Reflection could construct a banned type without naming it
+M:System.Reflection.Assembly.CreateInstance(System.String,System.Boolean,System.Reflection.BindingFlags,System.Reflection.Binder,System.Object[],System.Globalization.CultureInfo,System.Object[]);Reflection could construct a banned type without naming it
+T:System.AppDomain;AppDomain.Load and CreateInstance load or run code at run time; use AppContext for base directory
+T:System.IO.Pipes.NamedPipeClientStream;Pipes can reach other machines or processes; a later stage allowlists the helper channel explicitly
+M:Microsoft.Win32.RegistryKey.OpenRemoteBaseKey(Microsoft.Win32.RegistryHive,System.String);Remote registry access leaves the machine
+M:Microsoft.Win32.RegistryKey.OpenRemoteBaseKey(Microsoft.Win32.RegistryHive,System.String,Microsoft.Win32.RegistryView);Remote registry access leaves the machine

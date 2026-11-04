@@ -1,0 +1,11 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <RootNamespace>Jankscope.Frames</RootNamespace>
+    <AssemblyName>Jankscope.Frames</AssemblyName>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Jankscope.Core\Jankscope.Core.csproj" />
+    <InternalsVisibleTo Include="Jankscope.Frames.Tests" />
+  </ItemGroup>
+</Project>

@@ -1,0 +1,154 @@
+// Probe file for tools/dev/verify-banned-symbols.ps1. It is compiled in a throw-away project with BannedSymbols.txt and the banned-API
+// analyzer; it is NOT part of the product (the .txt extension keeps it out of every project and out of the source lints).
+//   "// EXPECT <doc id>"  the line must raise RS0030, and the doc id must be an entry of BannedSymbols.txt
+//   "// OK"               the line must NOT raise RS0030 (allowed-API control)
+// Every entry of BannedSymbols.txt needs exactly one EXPECT line; the script fails if one is missing or unknown. A method entry
+// that does not match the real overload silently bans nothing, which is why this proof exists.
+#pragma warning disable CS0219, CS8321, CS0618, SYSLIB0014, CA1416
+using System;
+using System.Diagnostics;
+using System.Reflection;
+using System.Runtime.InteropServices;
+using System.IO.Pipes;
+using System.Management;
+using System.Reflection.Emit;
+using System.Runtime.Loader;
+using Microsoft.Win32;
+
+internal static class Coverage
+{
+    internal static void Run(RegistryKey k, Type t, Delegate d, ManagementObject mo, Assembly asm)
+    {
+        // ---- processes ----
+        _ = typeof(Process); // EXPECT T:System.Diagnostics.Process
+        _ = typeof(ProcessStartInfo); // EXPECT T:System.Diagnostics.ProcessStartInfo
+        Process.Start("x"); // EXPECT T:System.Diagnostics.Process
+        _ = Process.GetProcessById(4); // EXPECT T:System.Diagnostics.Process
+        _ = Process.GetProcesses(); // EXPECT T:System.Diagnostics.Process
+        _ = Environment.ProcessId; // OK
+        _ = Environment.MachineName; // OK
+
+        // ---- network types ----
+        _ = typeof(System.Net.Http.HttpClient); // EXPECT T:System.Net.Http.HttpClient
+        _ = typeof(System.Net.Http.HttpClientHandler); // EXPECT T:System.Net.Http.HttpClientHandler
+        _ = typeof(System.Net.Http.SocketsHttpHandler); // EXPECT T:System.Net.Http.SocketsHttpHandler
+        _ = typeof(System.Net.WebClient); // EXPECT T:System.Net.WebClient
+        _ = typeof(System.Net.WebRequest); // EXPECT T:System.Net.WebRequest
+        _ = typeof(System.Net.HttpWebRequest); // EXPECT T:System.Net.HttpWebRequest
+        _ = typeof(System.Net.FtpWebRequest); // EXPECT T:System.Net.FtpWebRequest
+        _ = typeof(System.Net.Sockets.Socket); // EXPECT T:System.Net.Sockets.Socket
+        _ = typeof(System.Net.Sockets.TcpClient); // EXPECT T:System.Net.Sockets.TcpClient
+        _ = typeof(System.Net.Sockets.TcpListener); // EXPECT T:System.Net.Sockets.TcpListener
+        _ = typeof(System.Net.Sockets.UdpClient); // EXPECT T:System.Net.Sockets.UdpClient
+        _ = typeof(System.Net.Sockets.NetworkStream); // EXPECT T:System.Net.Sockets.NetworkStream
+        _ = typeof(System.Net.Security.SslStream); // EXPECT T:System.Net.Security.SslStream
+        _ = typeof(System.Net.Dns); // EXPECT T:System.Net.Dns
+        _ = typeof(System.Net.NetworkInformation.Ping); // EXPECT T:System.Net.NetworkInformation.Ping
+        _ = typeof(System.Net.NetworkInformation.NetworkInterface); // EXPECT T:System.Net.NetworkInformation.NetworkInterface
+        _ = typeof(System.Net.WebSockets.ClientWebSocket); // EXPECT T:System.Net.WebSockets.ClientWebSocket
+        _ = typeof(System.Net.Mail.SmtpClient); // EXPECT T:System.Net.Mail.SmtpClient
+        _ = typeof(System.Net.IPAddress); // OK
+
+        // ---- registry writes; reads stay allowed ----
+        k.SetValue("a", 1); // EXPECT M:Microsoft.Win32.RegistryKey.SetValue(System.String,System.Object)
+        k.SetValue("a", 1, RegistryValueKind.DWord); // EXPECT M:Microsoft.Win32.RegistryKey.SetValue(System.String,System.Object,Microsoft.Win32.RegistryValueKind)
+        k.CreateSubKey("a"); // EXPECT M:Microsoft.Win32.RegistryKey.CreateSubKey(System.String)
+        k.CreateSubKey("a", true); // EXPECT M:Microsoft.Win32.RegistryKey.CreateSubKey(System.String,System.Boolean)
+        k.CreateSubKey("a", RegistryKeyPermissionCheck.Default); // EXPECT M:Microsoft.Win32.RegistryKey.CreateSubKey(System.String,Microsoft.Win32.RegistryKeyPermissionCheck)
+        k.CreateSubKey("a", RegistryKeyPermissionCheck.Default, RegistryOptions.None); // EXPECT M:Microsoft.Win32.RegistryKey.CreateSubKey(System.String,Microsoft.Win32.RegistryKeyPermissionCheck,Microsoft.Win32.RegistryOptions)
+        k.CreateSubKey("a", true, RegistryOptions.None); // EXPECT M:Microsoft.Win32.RegistryKey.CreateSubKey(System.String,System.Boolean,Microsoft.Win32.RegistryOptions)
+        k.DeleteValue("a"); // EXPECT M:Microsoft.Win32.RegistryKey.DeleteValue(System.String)
+        k.DeleteValue("a", false); // EXPECT M:Microsoft.Win32.RegistryKey.DeleteValue(System.String,System.Boolean)
+        k.DeleteSubKey("a"); // EXPECT M:Microsoft.Win32.RegistryKey.DeleteSubKey(System.String)
+        k.DeleteSubKey("a", false); // EXPECT M:Microsoft.Win32.RegistryKey.DeleteSubKey(System.String,System.Boolean)
+        k.DeleteSubKeyTree("a"); // EXPECT M:Microsoft.Win32.RegistryKey.DeleteSubKeyTree(System.String)
+        k.DeleteSubKeyTree("a", false); // EXPECT M:Microsoft.Win32.RegistryKey.DeleteSubKeyTree(System.String,System.Boolean)
+        Registry.SetValue("HKEY_CURRENT_USER\\x", "n", 1); // EXPECT M:Microsoft.Win32.Registry.SetValue(System.String,System.String,System.Object)
+        Registry.SetValue("HKEY_CURRENT_USER\\x", "n", 1, RegistryValueKind.DWord); // EXPECT M:Microsoft.Win32.Registry.SetValue(System.String,System.String,System.Object,Microsoft.Win32.RegistryValueKind)
+        k.OpenSubKey("a", true); // EXPECT M:Microsoft.Win32.RegistryKey.OpenSubKey(System.String,System.Boolean)
+        k.OpenSubKey("a", RegistryKeyPermissionCheck.ReadWriteSubTree); // EXPECT M:Microsoft.Win32.RegistryKey.OpenSubKey(System.String,Microsoft.Win32.RegistryKeyPermissionCheck)
+        k.OpenSubKey("a", System.Security.AccessControl.RegistryRights.ReadKey); // EXPECT M:Microsoft.Win32.RegistryKey.OpenSubKey(System.String,System.Security.AccessControl.RegistryRights)
+        k.OpenSubKey("a", RegistryKeyPermissionCheck.Default, System.Security.AccessControl.RegistryRights.ReadKey); // EXPECT M:Microsoft.Win32.RegistryKey.OpenSubKey(System.String,Microsoft.Win32.RegistryKeyPermissionCheck,System.Security.AccessControl.RegistryRights)
+        k.OpenSubKey("a"); // OK
+        k.GetValue("a"); // OK
+        k.GetSubKeyNames(); // OK
+
+        // ---- reflection and dynamic loading ----
+        _ = typeof(Activator); // EXPECT T:System.Activator
+        _ = typeof(MethodBase); // EXPECT T:System.Reflection.MethodBase
+        _ = typeof(MethodInfo); // EXPECT T:System.Reflection.MethodInfo
+        _ = typeof(ConstructorInfo); // EXPECT T:System.Reflection.ConstructorInfo
+        _ = typeof(NativeLibrary); // EXPECT T:System.Runtime.InteropServices.NativeLibrary
+        _ = Type.GetType("x"); // EXPECT M:System.Type.GetType(System.String)
+        _ = Type.GetType("x", false); // EXPECT M:System.Type.GetType(System.String,System.Boolean)
+        _ = Type.GetType("x", false, false); // EXPECT M:System.Type.GetType(System.String,System.Boolean,System.Boolean)
+        _ = t.GetMethod("x"); // EXPECT M:System.Type.GetMethod(System.String)
+        _ = t.GetMethod("x", BindingFlags.Public); // EXPECT M:System.Type.GetMethod(System.String,System.Reflection.BindingFlags)
+        _ = t.GetMethods(); // EXPECT M:System.Type.GetMethods
+        _ = t.GetMethods(BindingFlags.Public); // EXPECT M:System.Type.GetMethods(System.Reflection.BindingFlags)
+        t.InvokeMember("x", BindingFlags.InvokeMethod, null, null, null); // EXPECT M:System.Type.InvokeMember(System.String,System.Reflection.BindingFlags,System.Reflection.Binder,System.Object,System.Object[])
+        d.DynamicInvoke(); // EXPECT M:System.Delegate.DynamicInvoke(System.Object[])
+        _ = Assembly.Load("x"); // EXPECT M:System.Reflection.Assembly.Load(System.String)
+        _ = Assembly.Load(new AssemblyName("x")); // EXPECT M:System.Reflection.Assembly.Load(System.Reflection.AssemblyName)
+        _ = Assembly.Load(new byte[1]); // EXPECT M:System.Reflection.Assembly.Load(System.Byte[])
+        _ = Assembly.LoadFrom("x"); // EXPECT M:System.Reflection.Assembly.LoadFrom(System.String)
+        _ = Assembly.LoadFile("x"); // EXPECT M:System.Reflection.Assembly.LoadFile(System.String)
+        _ = Marshal.GetDelegateForFunctionPointer(IntPtr.Zero, typeof(Action)); // EXPECT M:System.Runtime.InteropServices.Marshal.GetDelegateForFunctionPointer(System.IntPtr,System.Type)
+        _ = Marshal.GetDelegateForFunctionPointer<Action>(IntPtr.Zero); // EXPECT M:System.Runtime.InteropServices.Marshal.GetDelegateForFunctionPointer``1(System.IntPtr)
+        _ = typeof(string).Assembly.GetCustomAttribute<AssemblyInformationalVersionAttribute>(); // OK
+        _ = t.FullName; // OK
+        _ = Marshal.GetLastPInvokeError(); // OK
+
+        // ---- residual families (stage-0 re-verification R3) ----
+        _ = typeof(ManagementObject); // EXPECT T:System.Management.ManagementObject
+        mo.Put(new PutOptions()); // EXPECT M:System.Management.ManagementObject.Put(System.Management.PutOptions)
+        mo.Put((ManagementOperationObserver)null!); // EXPECT M:System.Management.ManagementObject.Put(System.Management.ManagementOperationObserver)
+        mo.Delete(new DeleteOptions()); // EXPECT M:System.Management.ManagementObject.Delete(System.Management.DeleteOptions)
+        mo.Delete((ManagementOperationObserver)null!); // EXPECT M:System.Management.ManagementObject.Delete(System.Management.ManagementOperationObserver)
+        _ = typeof(System.Runtime.InteropServices.ComImportAttribute); // EXPECT T:System.Runtime.InteropServices.ComImportAttribute
+        _ = typeof(System.Runtime.InteropServices.CoClassAttribute); // EXPECT T:System.Runtime.InteropServices.CoClassAttribute
+        _ = typeof(System.Runtime.InteropServices.Marshalling.GeneratedComInterfaceAttribute); // EXPECT T:System.Runtime.InteropServices.Marshalling.GeneratedComInterfaceAttribute
+        _ = typeof(System.Runtime.InteropServices.Marshalling.GeneratedComClassAttribute); // EXPECT T:System.Runtime.InteropServices.Marshalling.GeneratedComClassAttribute
+        _ = typeof(System.Runtime.InteropServices.ComWrappers); // EXPECT T:System.Runtime.InteropServices.ComWrappers
+        _ = Marshal.GetObjectForIUnknown(IntPtr.Zero); // EXPECT M:System.Runtime.InteropServices.Marshal.GetObjectForIUnknown(System.IntPtr)
+        _ = Marshal.GetTypedObjectForIUnknown(IntPtr.Zero, t); // EXPECT M:System.Runtime.InteropServices.Marshal.GetTypedObjectForIUnknown(System.IntPtr,System.Type)
+        _ = Marshal.GetFunctionPointerForDelegate(d); // EXPECT M:System.Runtime.InteropServices.Marshal.GetFunctionPointerForDelegate(System.Delegate)
+        _ = Marshal.GetFunctionPointerForDelegate<Action>(() => { }); // EXPECT M:System.Runtime.InteropServices.Marshal.GetFunctionPointerForDelegate``1(``0)
+        _ = Assembly.UnsafeLoadFrom("x"); // EXPECT M:System.Reflection.Assembly.UnsafeLoadFrom(System.String)
+        _ = Assembly.Load(new byte[1], new byte[1]); // EXPECT M:System.Reflection.Assembly.Load(System.Byte[],System.Byte[])
+        _ = asm.CreateInstance("x"); // EXPECT M:System.Reflection.Assembly.CreateInstance(System.String)
+        _ = asm.CreateInstance("x", false); // EXPECT M:System.Reflection.Assembly.CreateInstance(System.String,System.Boolean)
+        _ = asm.CreateInstance("x", false, BindingFlags.Public, null, null, null, null); // EXPECT M:System.Reflection.Assembly.CreateInstance(System.String,System.Boolean,System.Reflection.BindingFlags,System.Reflection.Binder,System.Object[],System.Globalization.CultureInfo,System.Object[])
+        _ = typeof(AppDomain); // EXPECT T:System.AppDomain
+        _ = typeof(NamedPipeClientStream); // EXPECT T:System.IO.Pipes.NamedPipeClientStream
+        _ = RegistryKey.OpenRemoteBaseKey(RegistryHive.CurrentUser, "pc"); // EXPECT M:Microsoft.Win32.RegistryKey.OpenRemoteBaseKey(Microsoft.Win32.RegistryHive,System.String)
+        _ = RegistryKey.OpenRemoteBaseKey(RegistryHive.CurrentUser, "pc", RegistryView.Default); // EXPECT M:Microsoft.Win32.RegistryKey.OpenRemoteBaseKey(Microsoft.Win32.RegistryHive,System.String,Microsoft.Win32.RegistryView)
+
+        // ---- execution and control without naming Process; code generation; COM activation ----
+        _ = typeof(ManagementClass); // EXPECT T:System.Management.ManagementClass
+        mo.InvokeMethod("Create", new object[0]); // EXPECT M:System.Management.ManagementObject.InvokeMethod(System.String,System.Object[])
+        mo.InvokeMethod("Create", null, null); // EXPECT M:System.Management.ManagementObject.InvokeMethod(System.String,System.Management.ManagementBaseObject,System.Management.InvokeMethodOptions)
+        mo.Put(); // EXPECT M:System.Management.ManagementObject.Put
+        mo.Delete(); // EXPECT M:System.Management.ManagementObject.Delete
+        _ = typeof(Microsoft.VisualBasic.Interaction); // EXPECT T:Microsoft.VisualBasic.Interaction
+        _ = typeof(AssemblyLoadContext); // EXPECT T:System.Runtime.Loader.AssemblyLoadContext
+        _ = typeof(System.Net.HttpListener); // EXPECT T:System.Net.HttpListener
+        _ = typeof(System.Net.Quic.QuicConnection); // EXPECT T:System.Net.Quic.QuicConnection
+        _ = typeof(System.Net.Quic.QuicListener); // EXPECT T:System.Net.Quic.QuicListener
+        _ = typeof(System.Net.Quic.QuicStream); // EXPECT T:System.Net.Quic.QuicStream
+        _ = typeof(ILGenerator); // EXPECT T:System.Reflection.Emit.ILGenerator
+        _ = typeof(DynamicMethod); // EXPECT T:System.Reflection.Emit.DynamicMethod
+        _ = typeof(AssemblyBuilder); // EXPECT T:System.Reflection.Emit.AssemblyBuilder
+        _ = Type.GetTypeFromProgID("x"); // EXPECT M:System.Type.GetTypeFromProgID(System.String)
+        _ = Type.GetTypeFromProgID("x", false); // EXPECT M:System.Type.GetTypeFromProgID(System.String,System.Boolean)
+        _ = Type.GetTypeFromProgID("x", "server"); // EXPECT M:System.Type.GetTypeFromProgID(System.String,System.String)
+        _ = Type.GetTypeFromProgID("x", "server", false); // EXPECT M:System.Type.GetTypeFromProgID(System.String,System.String,System.Boolean)
+        _ = t.GetMethod("x", Type.EmptyTypes); // EXPECT M:System.Type.GetMethod(System.String,System.Type[])
+        _ = t.GetMethod("x", 0, Type.EmptyTypes); // EXPECT M:System.Type.GetMethod(System.String,System.Int32,System.Type[])
+        _ = t.GetMethod("x", BindingFlags.Public, Type.EmptyTypes); // EXPECT M:System.Type.GetMethod(System.String,System.Reflection.BindingFlags,System.Type[])
+        _ = t.GetMethod("x", Type.EmptyTypes, null); // EXPECT M:System.Type.GetMethod(System.String,System.Type[],System.Reflection.ParameterModifier[])
+        _ = t.GetMethod("x", BindingFlags.Public, null, Type.EmptyTypes, null); // EXPECT M:System.Type.GetMethod(System.String,System.Reflection.BindingFlags,System.Reflection.Binder,System.Type[],System.Reflection.ParameterModifier[])
+        _ = typeof(ManagementObjectSearcher); // OK
+        _ = typeof(ManagementScope); // OK
+    }
+}

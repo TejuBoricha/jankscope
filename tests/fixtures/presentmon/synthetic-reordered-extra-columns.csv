@@ -1,0 +1,4 @@
+Extra_Vendor_Column,msbetweenpresents,TIMEINMS,ProcessID,Application,MsBetweenDisplayChange,PresentMode,MsGPUBusy,NewInSomeFutureVersion,MsCPUBusy
+x1,6.5,10.25,1500,ReorderedApp.exe,6.75,Hardware: Independent Flip,3.25,foo,1.5
+x2,7.5,17.75,1500,ReorderedApp.exe,NA,Composed: Flip,NA,foo,2.5
+x3,16.0,33.75,1500,ReorderedApp.exe,16.5,Composed: Flip,4.5,foo,NA

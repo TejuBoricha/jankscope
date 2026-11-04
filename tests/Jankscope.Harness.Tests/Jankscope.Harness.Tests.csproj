@@ -1,0 +1,24 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <!-- net10.0-windows because the harness project is (WinForms window); a plain net10.0 project cannot reference it. -->
+    <TargetFramework>net10.0-windows</TargetFramework>
+    <IsPackable>false</IsPackable>
+    <IsTestProject>true</IsTestProject>
+    <RootNamespace>Jankscope.Harness.Tests</RootNamespace>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="Microsoft.NET.Test.Sdk" />
+    <PackageReference Include="xunit" />
+    <PackageReference Include="xunit.runner.visualstudio" PrivateAssets="all" />
+    <ProjectReference Include="..\..\src\Jankscope.Core\Jankscope.Core.csproj" />
+    <ProjectReference Include="..\..\src\Jankscope.Frames\Jankscope.Frames.csproj" />
+    <ProjectReference Include="..\..\tools\Jankscope.Harness\Jankscope.Harness.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <Using Include="Xunit" />
+  </ItemGroup>
+  <ItemGroup>
+    <!-- The real PresentMon fixture is the reference for column names: read it from AppContext.BaseDirectory/fixtures/presentmon/... -->
+    <Content Include="..\fixtures\presentmon\*" Link="fixtures\presentmon\%(Filename)%(Extension)" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+</Project>

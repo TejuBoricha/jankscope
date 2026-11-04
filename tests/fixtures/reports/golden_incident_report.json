@@ -1,0 +1,101 @@
+{
+  "metadata": {
+    "reportId": "11111111-2222-3333-4444-555555555555",
+    "timestampUtc": "2026-10-18T12:00:00+00:00",
+    "toolVersion": "0.1.0",
+    "trigger": "UserMarked",
+    "targetProcess": "C:\\Users\\<USER>\\Games\\TestGame.exe",
+    "provenance": "Simulated"
+  },
+  "metrics": {
+    "totalSamples": 150,
+    "durationSeconds": 2.57,
+    "averageFps": 58.37,
+    "medianFrameTimeMs": 16.67,
+    "p99FrameTimeMs": 51.67,
+    "p999FrameTimeMs": 51.67,
+    "stutterEventsCount": 2,
+    "stutterClustersCount": 2,
+    "insufficientHistoryFrames": 10,
+    "clockDiscontinuities": 0,
+    "rejectedFrames": 0
+  },
+  "hypotheses": [
+    {
+      "name": "Frame pacing hitch",
+      "grade": "B",
+      "summary": "Detected 2 presentation delay event(s) exceeding normal interval by > 4.0 ms.",
+      "supportingEvidence": "Maximum excess was 35.0 ms (ratio 3.1x baseline).",
+      "whatWouldFalsify": "GPU render completion logs showing frame ready before target present interval."
+    },
+    {
+      "name": "Resident kernel anti-cheat presence",
+      "grade": "C",
+      "summary": "A resident kernel-level anti-cheat driver is running on this system.",
+      "supportingEvidence": "Riot Vanguard (service vgk running)",
+      "whatWouldFalsify": "DPC/ISR latency capture proving zero interrupted present calls during hitches."
+    }
+  ],
+  "systemEnvironment": [
+    {
+      "id": "os.version",
+      "title": "Windows version",
+      "tier": "A",
+      "availability": "Available",
+      "source": "Environment",
+      "provenance": "Measured",
+      "value": "Windows 11 build 26300",
+      "isSensitive": false
+    },
+    {
+      "id": "os.locale",
+      "title": "Display language and region",
+      "tier": "A",
+      "availability": "Available",
+      "source": "CultureInfo",
+      "provenance": "Measured",
+      "value": "[REDACTED: sensitive]",
+      "isSensitive": true
+    },
+    {
+      "id": "anticheat.resident",
+      "title": "Resident anti-cheat",
+      "tier": "A",
+      "availability": "Available",
+      "source": "SCM",
+      "provenance": "Measured",
+      "value": "Riot Vanguard (service vgk running)",
+      "isSensitive": false
+    },
+    {
+      "id": "mode.optimize",
+      "title": "Optimize mode eligibility",
+      "tier": "A",
+      "availability": "Available",
+      "source": "derived",
+      "provenance": "Measured",
+      "value": "eligible",
+      "isSensitive": false
+    }
+  ],
+  "events": [
+    {
+      "index": 73,
+      "timestampMs": 1216.67,
+      "frameTimeMs": 51.67,
+      "baselineMedianMs": 16.67,
+      "excessMs": 35,
+      "ratio": 3.1,
+      "severity": "Major"
+    },
+    {
+      "index": 106,
+      "timestampMs": 1801.67,
+      "frameTimeMs": 51.67,
+      "baselineMedianMs": 16.67,
+      "excessMs": 35,
+      "ratio": 3.1,
+      "severity": "Major"
+    }
+  ]
+}

@@ -1,0 +1,18 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net10.0-windows</TargetFramework>
+    <RootNamespace>Jankscope.Cli</RootNamespace>
+    <AssemblyName>jankscope</AssemblyName>
+    <Version>0.1.0</Version>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Jankscope.Core\Jankscope.Core.csproj" />
+    <ProjectReference Include="..\Jankscope.Frames\Jankscope.Frames.csproj" />
+    <ProjectReference Include="..\Jankscope.Platform\Jankscope.Platform.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <!-- Catalogs ship next to the executable and are validated on load (fail closed). -->
+    <Content Include="..\..\catalogs\*.json" Link="catalogs\%(Filename)%(Extension)" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+</Project>

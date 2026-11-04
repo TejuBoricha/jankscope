@@ -1,0 +1,4 @@
+# Observed on the reference bench, 2026-10-17: PDH instance names of \GPU Adapter Memory(*)\Dedicated Usage.
+luid_0x00000000_0x00011B0C_phys_0
+luid_0x00000000_0x00011FA1_phys_0
+luid_0x00000000_0x00011FD6_phys_0

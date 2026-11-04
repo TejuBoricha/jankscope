@@ -1,0 +1,101 @@
+{
+  "schemaVersion": 1,
+  "catalog": "vm_markers",
+  "description": "Substrings that appear in the SMBIOS-derived strings of virtual machines (system manufacturer and model, baseboard, BIOS). Matched as a case-insensitive substring against Win32_ComputerSystem, Win32_BaseBoard and Win32_BIOS properties. A match makes the environment.virtual_machine row report this display name; no name is in code. Properties are documented by Microsoft; the marker values are community-reported and were not re-verified on a virtual machine (the reference bench is physical), so none is marked observed.",
+  "entries": [
+    {
+      "id": "hyperv",
+      "displayName": "Microsoft Hyper-V",
+      "modelMarkers": ["Virtual Machine"],
+      "verification": "community",
+      "source": "https://learn.microsoft.com/windows/win32/cimwin32prov/win32-computersystem (Model is a documented property; the value is community-reported)",
+      "lastReviewed": "2026-10-17",
+      "notes": "Also used by Windows Sandbox and by cloud services built on Hyper-V. The manufacturer alone is not a marker because physical machines can carry the same manufacturer string."
+    },
+    {
+      "id": "vmware",
+      "displayName": "VMware",
+      "manufacturerMarkers": ["VMware"],
+      "modelMarkers": ["VMware"],
+      "verification": "community",
+      "source": "https://learn.microsoft.com/windows/win32/cimwin32prov/win32-computersystem (Manufacturer and Model are documented properties; the values are community-reported)",
+      "lastReviewed": "2026-10-17",
+      "notes": "Model strings reported include 'VMware Virtual Platform' and 'VMware7,1'; the manufacturer string reported contains a comma, which is why the marker is only the product word."
+    },
+    {
+      "id": "virtualbox",
+      "displayName": "Oracle VirtualBox",
+      "manufacturerMarkers": ["innotek"],
+      "modelMarkers": ["VirtualBox"],
+      "biosMarkers": ["VirtualBox"],
+      "verification": "community",
+      "source": "https://learn.microsoft.com/windows/win32/cimwin32prov/win32-computersystem (Manufacturer and Model are documented properties; the values are community-reported)",
+      "lastReviewed": "2026-10-17"
+    },
+    {
+      "id": "qemu_kvm",
+      "displayName": "QEMU/KVM",
+      "manufacturerMarkers": ["QEMU"],
+      "modelMarkers": ["QEMU"],
+      "verification": "community",
+      "source": "https://learn.microsoft.com/windows/win32/cimwin32prov/win32-computersystem (Manufacturer and Model are documented properties; the values are community-reported)",
+      "lastReviewed": "2026-10-17",
+      "notes": "Covers guests of libvirt, Proxmox and similar tools that use QEMU's default SMBIOS strings; a host that overrides those strings is not recognised by this entry."
+    },
+    {
+      "id": "xen",
+      "displayName": "Xen",
+      "manufacturerMarkers": ["Xen"],
+      "modelMarkers": ["HVM domU"],
+      "biosMarkers": ["Xen"],
+      "verification": "community",
+      "source": "https://learn.microsoft.com/windows/win32/cimwin32prov/win32-computersystem (Manufacturer and Model are documented properties; the values are community-reported)",
+      "lastReviewed": "2026-10-17",
+      "notes": "The marker 'Xen' is a substring test, so an unrelated physical product name that merely begins with those letters would also match; such a case blocks optimize mode (the safe direction) and can be fixed by editing this entry."
+    },
+    {
+      "id": "parallels",
+      "displayName": "Parallels",
+      "manufacturerMarkers": ["Parallels"],
+      "modelMarkers": ["Parallels"],
+      "verification": "community",
+      "source": "https://learn.microsoft.com/windows/win32/cimwin32prov/win32-computersystem (Manufacturer and Model are documented properties; the values are community-reported)",
+      "lastReviewed": "2026-10-17"
+    },
+    {
+      "id": "bochs",
+      "displayName": "Bochs",
+      "manufacturerMarkers": ["Bochs"],
+      "biosMarkers": ["Bochs"],
+      "verification": "unverified",
+      "source": "https://learn.microsoft.com/windows/win32/cimwin32prov/win32-bios (BIOS properties are documented; the value is reported in emulator documentation and not checked here)",
+      "lastReviewed": "2026-10-17"
+    },
+    {
+      "id": "amazon_ec2",
+      "displayName": "Amazon EC2",
+      "manufacturerMarkers": ["Amazon EC2"],
+      "verification": "community",
+      "source": "https://learn.microsoft.com/windows/win32/cimwin32prov/win32-computersystem (Manufacturer is a documented property; the value is community-reported)",
+      "lastReviewed": "2026-10-17"
+    },
+    {
+      "id": "google_compute_engine",
+      "displayName": "Google Compute Engine",
+      "modelMarkers": ["Google Compute Engine"],
+      "verification": "community",
+      "source": "https://learn.microsoft.com/windows/win32/cimwin32prov/win32-computersystem (Model is a documented property; the value is community-reported)",
+      "lastReviewed": "2026-10-17",
+      "notes": "The manufacturer alone is not a marker because physical products can carry the same manufacturer string."
+    },
+    {
+      "id": "nutanix_ahv",
+      "displayName": "Nutanix AHV",
+      "manufacturerMarkers": ["Nutanix"],
+      "modelMarkers": ["AHV"],
+      "verification": "unverified",
+      "source": "https://learn.microsoft.com/windows/win32/cimwin32prov/win32-computersystem (Manufacturer and Model are documented properties; the values are reported by the vendor's community and not checked here)",
+      "lastReviewed": "2026-10-17"
+    }
+  ]
+}

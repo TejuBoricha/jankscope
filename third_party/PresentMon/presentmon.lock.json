@@ -1,0 +1,17 @@
+{
+  "name": "PresentMon (console)",
+  "version": "2.6.0",
+  "license": "MIT (Copyright Intel Corporation)",
+  "file": "2.6.0/PresentMon-2.6.0-x64.exe",
+  "sizeBytes": 980320,
+  "sha256": "b2a706bc6ad475749e3b7e3409263aa1e6906d45bdcf993f6dbc0f660188f1af",
+  "source": "https://github.com/GameTechDev/PresentMon/releases/download/v2.6.0/PresentMon-2.6.0-x64.exe",
+  "publishedUtc": "2026-09-21T17:30:36Z",
+  "approvedByOwner": "2026-10-16, chat: 'yes' to downloading exactly this file",
+  "verification": {
+    "downloadedUtc": "2026-10-16",
+    "sha256MatchesPublishedDigest": true,
+    "authenticode": "Valid; signer CN=Intel Corporation, O=Intel Corporation, S=California, C=US"
+  },
+  "notes": "Pinned. The product bundles this file at build time and verifies its SHA-256 before every launch (ADR 0003, HC-7). It is never downloaded at run time. The binary itself is git-ignored; this lock file is the record."
+}

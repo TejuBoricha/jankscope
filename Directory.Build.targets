@@ -1,0 +1,12 @@
+<Project>
+  <!--
+    Symbol-based banned-API enforcement (rule RS0030) for product code in src/ and tools/. BannedSymbols.txt is the list; the
+    text-level lints in tests/Jankscope.Core.Tests (RepoLintTests) stay as a second, independent layer. Test projects are not
+    product code and do not get the analyzer. A narrow exception needs a #pragma warning disable RS0030 with a written reason,
+    and RepoLintTests lists every file that has one.
+  -->
+  <ItemGroup Condition="'$(IsTestProject)' != 'true'">
+    <PackageReference Include="Microsoft.CodeAnalysis.BannedApiAnalyzers" PrivateAssets="all" />
+    <AdditionalFiles Include="$(MSBuildThisFileDirectory)BannedSymbols.txt" Link="BannedSymbols.txt" />
+  </ItemGroup>
+</Project>

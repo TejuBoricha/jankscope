@@ -1,0 +1,34 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net10.0-windows</TargetFramework>
+    <UseWPF>true</UseWPF>
+    <!-- Windows Forms is referenced for one type only: the notification-area icon (ADR 0001). -->
+    <UseWindowsForms>true</UseWindowsForms>
+    <RootNamespace>Jankscope.App</RootNamespace>
+    <AssemblyName>jankscope-app</AssemblyName>
+    <Version>0.1.0</Version>
+    <ApplicationManifest>app.manifest</ApplicationManifest>
+    <!-- WFO0003 wants DPI awareness set through a Windows Forms API; this is a WPF application, where the manifest (PerMonitorV2) is the supported place. -->
+    <NoWarn>$(NoWarn);WFO0003</NoWarn>
+  </PropertyGroup>
+  <ItemGroup>
+    <!-- WPF and Windows Forms share type names (Application, Color, MessageBox...). Only the tray class uses Forms, with full names. -->
+    <Using Remove="System.Windows.Forms" />
+    <Using Remove="System.Drawing" />
+    <!-- The WPF SDK removes System.IO (to keep System.IO.Path from clashing with System.Windows.Shapes.Path); no file here uses Shapes. -->
+    <Using Include="System.IO" />
+  </ItemGroup>
+  <ItemGroup>
+    <InternalsVisibleTo Include="Jankscope.App.Tests" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Jankscope.Core\Jankscope.Core.csproj" />
+    <ProjectReference Include="..\Jankscope.Frames\Jankscope.Frames.csproj" />
+    <ProjectReference Include="..\Jankscope.Platform\Jankscope.Platform.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <!-- Catalogs ship next to the executable and are validated on load (fail closed). -->
+    <Content Include="..\..\catalogs\*.json" Link="catalogs\%(Filename)%(Extension)" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+</Project>

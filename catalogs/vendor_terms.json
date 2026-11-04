@@ -1,0 +1,34 @@
+{
+  "schemaVersion": 1,
+  "catalog": "vendor_terms",
+  "description": "Vendor, OEM, peripheral and anti-cheat names that must not appear in product logic (HC-12, acceptance #17). The lint scans src/ and tools/ outside allowlisted vendor-adapter assemblies. Matches are whole words, case-insensitive, comments ignored.",
+  "entries": [
+    {
+      "id": "gpu_cpu_vendors",
+      "displayName": "GPU and CPU vendors and their API names",
+      "terms": ["nvidia", "geforce", "radeon", "amd", "ryzen", "intel", "nvml", "nvapi", "adlx", "igcl"],
+      "verification": "documented",
+      "source": "docs/CATALOGS.md (project policy HC-12)",
+      "lastReviewed": "2026-10-16",
+      "notes": "Vendor APIs belong in allowlisted adapter assemblies only."
+    },
+    {
+      "id": "oem_peripheral_vendors",
+      "displayName": "OEM and peripheral vendors",
+      "terms": ["razer", "logitech", "corsair", "steelseries", "lenovo", "asus", "acer", "dell", "msi"],
+      "verification": "documented",
+      "source": "docs/CATALOGS.md (project policy HC-12)",
+      "lastReviewed": "2026-10-16",
+      "notes": "OEM and peripheral behaviour must come from data catalogs, not code."
+    },
+    {
+      "id": "anticheat_vendors",
+      "displayName": "Anti-cheat vendors and product names",
+      "terms": ["riot", "vanguard", "easyanticheat", "battleye", "faceit", "vgk", "vgc"],
+      "verification": "documented",
+      "source": "docs/CATALOGS.md (project policy HC-12)",
+      "lastReviewed": "2026-10-16",
+      "notes": "Anti-cheat knowledge lives in catalogs/anticheat.json and catalogs/protected_titles.json."
+    }
+  ]
+}

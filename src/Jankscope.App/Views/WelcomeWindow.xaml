@@ -1,0 +1,44 @@
+<Window x:Class="Jankscope.App.Views.WelcomeWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Welcome to Jankscope" Width="760" Height="720" MinWidth="560" MinHeight="520"
+        WindowStartupLocation="CenterScreen"
+        Background="{DynamicResource WindowBackgroundBrush}" Foreground="{DynamicResource ForegroundBrush}"
+        FontFamily="Segoe UI" FontSize="13">
+    <DockPanel Margin="24">
+        <StackPanel DockPanel.Dock="Bottom" Margin="0,16,0,0">
+            <TextBlock x:Name="HotkeyState" TextWrapping="Wrap" Margin="0,0,0,10"/>
+            <Button x:Name="StartButton" Content="Got it, let's start" Style="{StaticResource PrimaryButton}" HorizontalAlignment="Right" Margin="0" Click="OnStartClicked" IsDefault="True"/>
+        </StackPanel>
+        <ScrollViewer VerticalScrollBarVisibility="Auto">
+            <StackPanel>
+                <TextBlock Style="{StaticResource Heading}" Text="Welcome to Jankscope"/>
+                <TextBlock Style="{StaticResource Muted}"
+                           Text="Jankscope helps you find out why a game stutters. You press a key when you feel it, and it looks at the frames around that moment and tells you what it can and cannot see."/>
+
+                <TextBlock Style="{StaticResource SectionTitle}" Text="What it reads, and why"/>
+                <TextBlock TextWrapping="Wrap">
+                    <Run FontWeight="SemiBold">Frame timing</Run><Run Text=" of the one program you choose, only while you are capturing: to find the stutter."/>
+                    <LineBreak/>
+                    <Run FontWeight="SemiBold">Your two hotkeys</Run><Run Text=" (Windows tells it only when exactly that chord is pressed): to mark a moment."/>
+                    <LineBreak/>
+                    <Run FontWeight="SemiBold">Your Windows user name and PC name</Run><Run Text=": only so they can be removed from any report you export."/>
+                    <LineBreak/>
+                    <Run FontWeight="SemiBold">Read-only checks of this PC</Run><Run Text=" (Windows version, graphics and processor class, power state, whether anti-cheat software is installed): to explain results."/>
+                </TextBlock>
+
+                <TextBlock Style="{StaticResource SectionTitle}" Text="What it never does"/>
+                <TextBlock TextWrapping="Wrap"
+                           Text="It does not read what you type, where your mouse is, your screen, files, browsing data or passwords. It sends nothing anywhere: no telemetry, no automatic update check, no upload. It shows nothing over your game. In this version it changes no setting at all: it only diagnoses."/>
+
+                <TextBlock Style="{StaticResource SectionTitle}" Text="Anti-cheat"/>
+                <TextBlock TextWrapping="Wrap"
+                           Text="Jankscope uses only documented, user-mode Windows interfaces. It does not open or modify the game, inject code, install drivers or draw overlays. No anti-cheat provider has approved it and none publishes a list of what is safe, so whether a particular game accepts any capture tool is for you to confirm. If you are unsure, do not use it with that game."/>
+
+                <TextBlock Style="{StaticResource SectionTitle}" Text="Reports"/>
+                <TextBlock TextWrapping="Wrap"
+                           Text="A report is only written where you choose, after you have seen exactly what is in it. Personal information is removed by default, and if anything slips through, the export is blocked instead."/>
+            </StackPanel>
+        </ScrollViewer>
+    </DockPanel>
+</Window>

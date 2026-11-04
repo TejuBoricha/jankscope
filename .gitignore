@@ -1,0 +1,16 @@
+bin/
+obj/
+dist/
+artifacts/
+TestResults/
+.vs/
+*.user
+*.suo
+*.log
+*.etl
+*.pdb
+.claude/
+# Third-party binaries are pinned by hash in third_party/**/*.lock.json and never committed.
+third_party/**/*.exe
+third_party/**/*.msi
+third_party/**/*.dll

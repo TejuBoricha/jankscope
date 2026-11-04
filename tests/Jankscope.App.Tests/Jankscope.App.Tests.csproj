@@ -1,0 +1,26 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net10.0-windows</TargetFramework>
+    <UseWPF>true</UseWPF>
+    <!-- Only so the tray icons (System.Drawing.Icon) can be created and checked. -->
+    <UseWindowsForms>true</UseWindowsForms>
+    <IsPackable>false</IsPackable>
+    <IsTestProject>true</IsTestProject>
+    <RootNamespace>Jankscope.App.Tests</RootNamespace>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="Microsoft.NET.Test.Sdk" />
+    <PackageReference Include="xunit" />
+    <PackageReference Include="xunit.runner.visualstudio" PrivateAssets="all" />
+    <ProjectReference Include="..\..\src\Jankscope.App\Jankscope.App.csproj" />
+    <ProjectReference Include="..\..\src\Jankscope.Core\Jankscope.Core.csproj" />
+    <ProjectReference Include="..\..\src\Jankscope.Frames\Jankscope.Frames.csproj" />
+    <ProjectReference Include="..\..\src\Jankscope.Platform\Jankscope.Platform.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <Using Remove="System.Windows.Forms" />
+    <Using Remove="System.Drawing" />
+    <Using Include="Xunit" />
+    <Using Include="System.IO" />
+  </ItemGroup>
+</Project>

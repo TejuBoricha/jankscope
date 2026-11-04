@@ -1,0 +1,24 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <IsPackable>false</IsPackable>
+    <IsTestProject>true</IsTestProject>
+    <RootNamespace>Jankscope.Frames.Tests</RootNamespace>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="Microsoft.NET.Test.Sdk" />
+    <PackageReference Include="xunit" />
+    <PackageReference Include="xunit.runner.visualstudio" PrivateAssets="all" />
+    <ProjectReference Include="..\..\src\Jankscope.Core\Jankscope.Core.csproj" />
+    <ProjectReference Include="..\..\src\Jankscope.Frames\Jankscope.Frames.csproj" />
+    <!-- The fake PresentMon executable (tools/, product-style code) that the runner tests launch through the real launcher. -->
+    <ProjectReference Include="..\..\tools\Jankscope.FakePresentMon\Jankscope.FakePresentMon.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <Using Include="Xunit" />
+  </ItemGroup>
+  <ItemGroup>
+    <!-- Fixtures are copied next to the test assembly: read them from AppContext.BaseDirectory/fixtures/... -->
+    <Content Include="..\fixtures\**\*" Link="fixtures\%(RecursiveDir)%(Filename)%(Extension)" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+</Project>

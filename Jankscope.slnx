@@ -1,0 +1,20 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/Jankscope.App/Jankscope.App.csproj" />
+    <Project Path="src/Jankscope.Cli/Jankscope.Cli.csproj" />
+    <Project Path="src/Jankscope.Core/Jankscope.Core.csproj" />
+    <Project Path="src/Jankscope.Frames/Jankscope.Frames.csproj" />
+    <Project Path="src/Jankscope.Platform/Jankscope.Platform.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/Jankscope.App.Tests/Jankscope.App.Tests.csproj" />
+    <Project Path="tests/Jankscope.Core.Tests/Jankscope.Core.Tests.csproj" />
+    <Project Path="tests/Jankscope.Frames.Tests/Jankscope.Frames.Tests.csproj" />
+    <Project Path="tests/Jankscope.Harness.Tests/Jankscope.Harness.Tests.csproj" />
+    <Project Path="tests/Jankscope.Platform.Tests/Jankscope.Platform.Tests.csproj" />
+  </Folder>
+  <Folder Name="/tools/">
+    <Project Path="tools/Jankscope.FakePresentMon/Jankscope.FakePresentMon.csproj" />
+    <Project Path="tools/Jankscope.Harness/Jankscope.Harness.csproj" />
+  </Folder>
+</Solution>

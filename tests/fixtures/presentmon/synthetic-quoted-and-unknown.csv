@@ -1,0 +1,4 @@
+Application,ProcessID,PresentMode,TimeInMs,MsBetweenPresents,MsBetweenDisplayChange,MsCPUBusy,MsGPUBusy
+"My Game, Deluxe ""Edition"".exe",3000,"Hardware, Composed: ""Flip""",10.0,5.0,5.0,1.0,2.0
+<unknown>,NA,Hardware Composed: Independent Flip,15.0,5.0,NA,NA,NA
+"  spaced name.exe  ",3001,Unknown,20.0,5.0,5.0,1.5,2.5

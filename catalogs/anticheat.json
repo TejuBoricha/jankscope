@@ -1,0 +1,36 @@
+{
+  "schemaVersion": 1,
+  "catalog": "anticheat",
+  "description": "Anti-cheat services, drivers and helper processes used to detect a RESIDENT anti-cheat (HC-1 state 1). Data only. 'observed' entries were seen on the reference bench on lastReviewed; others need verification in Stage 3.",
+  "entries": [
+    {
+      "id": "vanguard",
+      "displayName": "Riot Vanguard",
+      "serviceNames": ["vgk", "vgc"],
+      "processNames": ["vgtray.exe", "vgc.exe"],
+      "verification": "observed",
+      "source": "observed:reference-bench service keys vgk (kernel driver, boot start) and vgc, process vgtray.exe; install folder lists vgk.sys, vgc.exe, vgtray.exe",
+      "lastReviewed": "2026-10-16",
+      "notes": "vgk is a boot-start kernel driver: resident even when no game runs."
+    },
+    {
+      "id": "easy_anti_cheat",
+      "displayName": "Easy Anti-Cheat",
+      "serviceNames": ["EasyAntiCheat", "EasyAntiCheat_EOS"],
+      "verification": "observed",
+      "source": "observed:reference-bench service key EasyAntiCheat_EOS (demand start); vendor site https://www.easy.ac/",
+      "lastReviewed": "2026-10-16",
+      "notes": "Only EasyAntiCheat_EOS was present on the bench; the plain EasyAntiCheat name is from community reports and unverified."
+    },
+    {
+      "id": "battleye",
+      "displayName": "BattlEye",
+      "serviceNames": ["BEService", "BEDaisy"],
+      "processNames": ["BEService.exe"],
+      "verification": "community",
+      "source": "https://www.battleye.com/",
+      "lastReviewed": "2026-10-16",
+      "notes": "Service and driver names are widely reported but were not observed on the reference bench; verify in Stage 3."
+    }
+  ]
+}

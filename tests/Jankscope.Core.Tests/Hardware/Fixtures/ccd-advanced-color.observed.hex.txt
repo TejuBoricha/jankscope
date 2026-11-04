@@ -1,0 +1,2 @@
+# Observed on the reference bench, 2026-10-17: raw DISPLAYCONFIG_GET_ADVANCED_COLOR_INFO reply (32 bytes) for the path above, hex, no separators.
+09000000200000000c1b01000000000050008000050000000000000008000000
