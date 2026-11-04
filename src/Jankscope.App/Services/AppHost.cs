@@ -1,5 +1,6 @@
 using Jankscope.Core;
 using Jankscope.Core.Hotkeys;
+using Jankscope.Core.Reports;
 using Jankscope.Frames.Incidents;
 using Jankscope.Platform;
 using Jankscope.Platform.Hotkeys;
@@ -78,6 +79,14 @@ public sealed class AppHost : IAsyncDisposable
     public IReadOnlyList<string> Problems { get; private set; }
 
     public bool CanCapture => Factory is not null;
+
+    /// <summary>Builds the redacted Compatibility Report export preview (HC-16, Acceptance #19).</summary>
+    public ExportPreview PrepareCompatibilityExport(bool redact, RedactionContext? context = null)
+    {
+        var matrix = MatrixTask.GetAwaiter().GetResult();
+        var report = CompatibilityReportBuilder.Build(matrix, Problems, redact: redact);
+        return ExportPipeline.Prepare(report, context ?? RedactionContext.ForThisMachine(), redact);
+    }
 
     /// <summary>Raised from whichever thread changed a mark (added, chosen anchor, note).</summary>
     public event Action<IncidentMark>? MarkChanged;

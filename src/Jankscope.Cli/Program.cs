@@ -13,11 +13,19 @@ Console.OutputEncoding = Encoding.UTF8;
 var command = args.Length > 0 ? args[0].ToLowerInvariant() : "help";
 var asJson = args.Contains("--json", StringComparer.OrdinalIgnoreCase);
 var redact = args.Contains("--redact", StringComparer.OrdinalIgnoreCase);
+string? reportPath = null;
+for (var i = 0; i < args.Length; i++)
+{
+    if (string.Equals(args[i], "--report", StringComparison.OrdinalIgnoreCase) && i + 1 < args.Length)
+    {
+        reportPath = args[++i];
+    }
+}
 
 switch (command)
 {
     case "probe":
-        return Probe(asJson, redact);
+        return Probe(asJson, redact, reportPath);
     case "incident":
         return Incident(args);
     case "version":
@@ -29,6 +37,7 @@ switch (command)
 
             Usage:
               jankscope probe [--json] [--redact]      Show the runtime capability matrix for this PC
+                              [--report <path>]        Export a redacted Compatibility Report to JSON
               jankscope incident --from-csv <path>      Generate an incident diagnosis report from a frame capture
                                  [--out <path>] [--no-redact] [--process <name>]
               jankscope version                         Show the version
@@ -53,10 +62,20 @@ static CatalogSet LoadCatalogs()
     }
 }
 
-static int Probe(bool asJson, bool redact)
+static int Probe(bool asJson, bool redact, string? reportPath)
 {
     var catalogs = LoadCatalogs();
     var matrix = new CapabilityMatrixBuilder(DefaultProbes.Create(catalogs)).Build();
+
+    if (!string.IsNullOrWhiteSpace(reportPath))
+    {
+        var report = CompatibilityReportBuilder.Build(matrix, redact: redact);
+        var preview = ExportPipeline.Prepare(report, RedactionContext.ForThisMachine(), redact);
+        ExportPipeline.WriteAtomic(preview, reportPath, overwrite: true);
+        Console.WriteLine($"Compatibility report written to {reportPath} (SHA-256: {preview.Sha256[..16]}...)");
+        return 0;
+    }
+
     if (redact)
     {
         matrix = matrix.Redacted();

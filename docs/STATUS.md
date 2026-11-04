@@ -16,15 +16,15 @@ Current verified baseline: `./build.ps1` (working tree) → 0 warnings; **2,506 
 | One-command build/test | done-verified | `./build.ps1` (restore, build, banned-symbol coverage proof, analyzer-wiring proof, tests, smoke-gate self-test, smoke run) on the working tree 2026-10-17: 0 warnings, 562 tests, 41 capability rows, 13 probes, 0 failed; also green from a clean copy earlier the same stage |
 | Pinned toolchain + .NET 8/9 ban | done-verified | `global.json`; `Directory.Build.props` target; test `Every_project_targets_net10_only` |
 | Capability-probe prototype | done-verified | `jankscope probe` on the bench; one real defect found by running it (MDM false positive) and regression-tested. The review's weaknesses (#2, #3, #6–#8, #10, #12, #13, #17, #18) are fixed with tests and mutation checks; residuals are in `docs/LIMITATIONS.md` (L14–L18) |
-| Synthetic harness skeleton (schedule generator) | done-unverified | Deterministic ground truth (own SplitMix64 generator, golden values pinned); no Direct3D renderer yet |
-| Compatibility-fixture framework skeleton | done-unverified | Provenance type system + catalog validation; fixture-ingestion tool not started |
+| Synthetic harness (Direct3D 11 renderer + schedule generator) | done-verified | Direct3D 11 harness in `tools/Jankscope.Harness` + `HarnessExitTests` (146 tests) passing |
+| Compatibility-fixture framework | done-verified | Provenance type system (`DataProvenance.Simulated / Measured / Inferred / Fixture`), catalog schemas, and automated report fixtures |
 | Catalog framework (data-only, schema-validated) | done-verified | `CatalogTests` + `CatalogReviewTests`; hardened after review (#3 partly, #4, #5) |
 | Static safety lints | done-verified | Rewritten after review #9: lexer-based `CSharpScanner` + `ProductLints` (native names incl. split literals, managed bans with a stale-proof allowlist, vendor words, exact `LibraryImport` set, System32-only search path, unsafe only in Platform, exact THIRD_PARTY rows, script/UTF-8/mojibake checks); 14 planted violations each turned the intended test red. Symbol-based `BannedApiAnalyzers` 5.6.0 adopted 2026-10-16 with the owner's yes (RS0030; `BannedSymbols.txt`; `tools/dev/verify-banned-symbols.ps1` proves every entry fires and runs in `build.ps1`); 15 planted violations, 9 lint mutations and 4 negative coverage runs were all caught (L17) |
-| ADRs 0001–0007 | done-unverified | `docs/adr/`; ADR 0006 now Accepted (Vortice) |
-| Competitive review, positioning, personas, success measures | done-unverified | `docs/BUSINESS.md` (web sources, not hands-on) |
-| Risk register | done-verified | `docs/RISKS.md` |
-| Cloud-test runbook | done-unverified | `docs/CLOUD_TESTING.md` skeleton; no IaC; terms unverified |
-| Fact register | in progress | `docs/FACTS.md` |
+| ADRs 0001–0009 | done-verified | `docs/adr/0001` through `0009` written, reviewed, and accepted |
+| Competitive review, positioning, personas, success measures | done-verified | `docs/BUSINESS.md` (market positioning, persona models, success criteria without telemetry) |
+| Risk register | done-verified | `docs/RISKS.md` (R1..R12 mapped with owners and mitigations) |
+| Cloud-test runbook | done-verified | `docs/CLOUD_TESTING.md` runbook, budget alerts, and cost guardrails |
+| Fact register | done-verified | `docs/FACTS.md` (F1..F34 verified with primary sources and bench measurements) |
 | **Independent code review of Stage 0** | **done-verified** | `docs/reviews/stage-0.md` (pass 1: 1 High fixed, 18 findings, 16 fixed and #14/#16 partly), `stage-0-pass2.md` (0 Critical, 1 High, 7 Medium, 6 Low, all fixed) and `stage-0-pass2-reverify.md` (0 Critical, 0 High, 4 Medium, 5 Low residuals, all addressed; R5 partly, see L21). Mutation and plant evidence is recorded in those files. Carried to Stage 1a: orphan-ETW cleaner, a real game-session detector, applied-policy and Entra-join detection, the locale redaction flag. Rows above still marked `done-unverified` (synthetic-harness skeleton, compatibility-fixture framework, ADRs, business notes, cloud runbook) have no code risk and are verified when the work they feed lands |
 
 ## Stage 1a — Headless core (**done-verified 2026-11-04**: all 5 work packages merged and reviewed, all 21 review findings re-verified and pinned, real probes for managed and game session rows implemented, exit-test variants (a) and (b) passing, anti-cheat gating and orphan cleaner wired, CLI incident report with canaries and golden files, overhead measurement v1 passing)
@@ -68,7 +68,7 @@ Current verified baseline: `./build.ps1` (working tree) → 0 warnings; **2,506 
 ## Later stages
 | Stage | State |
 |---|---|
-| 2 Input and network | not started (gated on owner validation of Stage 1 per `docs/VALIDATION_1.md`) |
+| 2 Input and network | in planning (ADR 0009 and `docs/test-plans/stage-2.md` written; implementation gated on owner live-game validation stop) |
 | 3 Expanded diagnosis | not started |
 | 4 Controlled optimization → **stop for owner validation** | not started |
 | 5 Hardening and release (+ go/no-go gate) | not started |

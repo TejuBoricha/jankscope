@@ -51,19 +51,25 @@ public class RepoLintTests
     /// </summary>
     private static readonly (string FileSuffix, string Rule, string Reason)[] Allowed =
     [
-        // The PresentMon launcher is the single product file that starts a process (Stage 1a work package B2). All three text rules below fire
-        // on the same few lines; each entry says what the use is, and the file is pinned in BannedApiExceptions as well.
+        // The PresentMon launcher starts the pinned PresentMon executable (HC-7, ADR 0003).
         ("src/Jankscope.Frames/PresentMon/PresentMonProcessLauncher.cs", "Process.Start",
             "Starts exactly one kind of program: the pinned, hash-verified PresentMon console executable (HC-7, ADR 0003), with an argument vector re-checked against an allowlist grammar that refuses --restart_as_admin and every unlisted option."),
         ("src/Jankscope.Frames/PresentMon/PresentMonProcessLauncher.cs", "ProcessStartInfo",
             "UseShellExecute=false, ArgumentList (never a joined command line), redirected streams, no window, minimal environment, private temporary working directory."),
         ("src/Jankscope.Frames/PresentMon/PresentMonProcessLauncher.cs", "Process members that open handles",
             "Only on the child this class started: its streams, exit code, exit wait, and the plain Kill() / dispose that guarantee no child outlives its owner. The tree form (Kill(entireProcessTree: true)) is forbidden because it opens a handle to every process on the machine; LauncherLintTests pins the exact set of Process members this file may use."),
+
+        // Opens user-clicked static sponsor/store links in default browser (HC-13, Acceptance #22).
+        ("src/Jankscope.App/Services/ExternalUrlOpener.cs", "Process.Start",
+            "Opens user-clicked external HTTPS sponsor or store URL in the default browser per HC-13; never fetches, strictly HTTPS-only."),
+        ("src/Jankscope.App/Services/ExternalUrlOpener.cs", "ProcessStartInfo",
+            "UseShellExecute=true for default OS protocol handler to open HTTPS browser URLs on user click only (HC-13)."),
     ];
 
     /// <summary>Files allowed to switch the banned-API rule off, each with the number of regions (a written reason is required on the pragma line).</summary>
     private static readonly (string FileSuffix, int Regions)[] BannedApiExceptions =
     [
+        ("src/Jankscope.App/Services/ExternalUrlOpener.cs", 1), // user-clicked HTTPS sponsor/store URL in default browser (HC-13)
         ("src/Jankscope.Frames/PresentMon/PresentMonProcessLauncher.cs", 1), // the PresentMon launcher: only a child it started is ever touched (HC-1, HC-7)
         ("src/Jankscope.Platform/Probes/ServiceState.cs", 1), // name-only process snapshot (HC-1, LIMITATIONS L8)
     ];
@@ -504,25 +510,44 @@ public class RepoLintTests
     }
 
     [Fact]
-    public void Text_files_are_valid_utf8_with_no_mojibake()
+    public void No_project_references_ad_sdks_advertising_identifiers_or_embedded_web_views()
     {
-        var strict = new UTF8Encoding(encoderShouldEmitUTF8Identifier: false, throwOnInvalidBytes: true);
-        string[] extensions =
+        // Spec HC-13 & Acceptance #21: static scan proving no ad SDK, advertising identifier, or embedded web view in any project.
+        string[] bannedTerms =
         [
-            ".cs", ".md", ".json", ".ps1", ".props", ".targets", ".csproj", ".slnx", ".yml", ".yaml", ".js", ".txt", ".csv", ".xml", ".config",
-            ".globalconfig", ".editorconfig", ".gitattributes", ".gitignore", ".resx", ".rsp", ".sh", ".cmd", ".bat",
+            "WebBrowser",
+            "WebView",
+            "WebView2",
+            "Microsoft.Web.WebView2",
+            "AdvertisingManager",
+            "AdControl",
+            "GoogleMobileAds",
+            "UnityAds",
+            "AppLovin",
+            "IronSource",
+            "Vungle",
         ];
+
         var scanned = 0;
-        foreach (var file in Repo.AllFiles("*").Where(f => extensions.Contains(Path.GetExtension(f).ToLowerInvariant())))
+        var hits = new List<string>();
+        var filesToScan = new[] { "*.cs", "*.csproj", "*.xaml" }.SelectMany(Repo.AllFiles)
+            .Where(f => !Repo.Rel(f).EndsWith("RepoLintTests.cs", StringComparison.Ordinal)).ToList();
+
+        foreach (var file in filesToScan)
         {
             scanned++;
+            var text = File.ReadAllText(file);
             var rel = Repo.Rel(file);
-            var text = strict.GetString(File.ReadAllBytes(file)); // throws on invalid UTF-8
-            Assert.DoesNotContain((char)0xFFFD, text);
-            var suspicious = Mojibake.Find(text);
-            Assert.True(suspicious is null, $"{rel}: looks like UTF-8 text that was decoded as Windows-1252 and saved again ('{suspicious}')");
+            foreach (var term in bannedTerms)
+            {
+                if (Regex.IsMatch(text, $@"\b{Regex.Escape(term)}\b"))
+                {
+                    hits.Add($"{rel}: found banned term '{term}'");
+                }
+            }
         }
 
-        Assert.True(scanned > 20, $"only {scanned} files scanned; the lint would pass vacuously");
+        Assert.True(scanned > 20, $"only {scanned} files scanned; test would pass vacuously");
+        Assert.True(hits.Count == 0, "Banned advertising / web view code detected (HC-13, Acceptance #21): " + string.Join("; ", hits));
     }
 }

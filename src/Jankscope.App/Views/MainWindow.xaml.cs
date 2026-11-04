@@ -736,5 +736,42 @@ public partial class MainWindow : Window
             .Select(r => $"{r.Title}: {(r.Availability == Availability.Available ? r.Value : r.Availability + " - " + r.Reason)}");
         var lines = rows.Concat(_host.Problems).ToList();
         AboutEnvironment.Text = lines.Count == 0 ? "Nothing to report." : string.Join(Environment.NewLine, lines);
+
+        // Sponsor and store links appear only on Support & About, never during an active game session (HC-13, Criterion 22/23)
+        var isGameSession = _host.Controller.IsCapturing;
+        var hasSponsor = !string.IsNullOrWhiteSpace(Branding.SponsorUrl);
+        var hasStore = !string.IsNullOrWhiteSpace(Branding.StoreUrl);
+
+        if (!isGameSession && (hasSponsor || hasStore))
+        {
+            SponsorPanel.Visibility = Visibility.Visible;
+            SponsorButton.Visibility = hasSponsor ? Visibility.Visible : Visibility.Collapsed;
+            StoreButton.Visibility = hasStore ? Visibility.Visible : Visibility.Collapsed;
+        }
+        else
+        {
+            SponsorPanel.Visibility = Visibility.Collapsed;
+        }
     }
+
+    private void OnExportCompatibilityClicked(object sender, RoutedEventArgs e)
+    {
+        var timestamp = DateTime.Now.ToString("yyyyMMdd-HHmmss", CultureInfo.InvariantCulture);
+        var fileName = $"jankscope-compatibility-{timestamp}.json";
+        new ExportWindow(
+            _host,
+            redact => _host.PrepareCompatibilityExport(redact),
+            fileName,
+            "Jankscope compatibility report (*.json)|*.json",
+            "Save the compatibility report")
+        {
+            Owner = this,
+        }.ShowDialog();
+    }
+
+    private void OnSponsorClicked(object sender, RoutedEventArgs e) =>
+        ExternalUrlOpener.TryOpen(Branding.SponsorUrl);
+
+    private void OnStoreClicked(object sender, RoutedEventArgs e) =>
+        ExternalUrlOpener.TryOpen(Branding.StoreUrl);
 }

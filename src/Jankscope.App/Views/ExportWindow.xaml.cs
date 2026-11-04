@@ -14,14 +14,35 @@ namespace Jankscope.App.Views;
 public partial class ExportWindow : Window
 {
     private readonly AppHost _host;
-    private readonly IncidentMark _mark;
+    private readonly Func<bool, ExportPreview> _previewFactory;
+    private readonly string _defaultFileName;
+    private readonly string _fileFilter;
+    private readonly string _dialogTitle;
     private ExportPreview? _preview;
     private int _generation;
 
     public ExportWindow(AppHost host, IncidentMark mark)
+        : this(
+            host,
+            redact => host.Controller.PrepareExport(mark, redact),
+            $"jankscope-{mark.Id}-{DateTime.Now.ToString("yyyyMMdd-HHmmss", CultureInfo.InvariantCulture)}.json",
+            "Jankscope incident (*.json)|*.json",
+            "Save the incident report")
+    {
+    }
+
+    public ExportWindow(
+        AppHost host,
+        Func<bool, ExportPreview> previewFactory,
+        string defaultFileName,
+        string fileFilter = "Jankscope report (*.json)|*.json",
+        string dialogTitle = "Save the report")
     {
         _host = host;
-        _mark = mark;
+        _previewFactory = previewFactory;
+        _defaultFileName = defaultFileName;
+        _fileFilter = fileFilter;
+        _dialogTitle = dialogTitle;
         InitializeComponent();
         Loaded += (_, _) => _ = BuildAsync();
     }
@@ -47,7 +68,7 @@ public partial class ExportWindow : Window
 
         try
         {
-            var preview = await Task.Run(() => _host.Controller.PrepareExport(_mark, redact));
+            var preview = await Task.Run(() => _previewFactory(redact));
             if (generation != _generation)
             {
                 return; // the person changed the option while this was running
@@ -115,12 +136,12 @@ public partial class ExportWindow : Window
 
         var dialog = new Microsoft.Win32.SaveFileDialog
         {
-            Title = "Save the incident report",
-            Filter = "Jankscope incident (*.json)|*.json",
+            Title = _dialogTitle,
+            Filter = _fileFilter,
             DefaultExt = ".json",
             AddExtension = true,
             OverwritePrompt = true,
-            FileName = $"jankscope-{_mark.Id}-{DateTime.Now.ToString("yyyyMMdd-HHmmss", CultureInfo.InvariantCulture)}.json",
+            FileName = _defaultFileName,
             InitialDirectory = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments),
         };
         if (dialog.ShowDialog(this) != true)

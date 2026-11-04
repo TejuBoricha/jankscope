@@ -474,4 +474,37 @@ public class AppHostTests
         await host.Controller.StopAsync();
         Assert.False(host.Controller.IsCapturing);
     }
+
+    [Fact]
+    public void ExternalUrlOpener_refuses_invalid_or_non_allowlisted_urls()
+    {
+        Assert.False(ExternalUrlOpener.TryOpen(null!));
+        Assert.False(ExternalUrlOpener.TryOpen(string.Empty));
+        Assert.False(ExternalUrlOpener.TryOpen("http://insecure.com"));
+        Assert.False(ExternalUrlOpener.TryOpen("ftp://files.com"));
+        Assert.False(ExternalUrlOpener.TryOpen("file:///C:/Users/test.exe"));
+        Assert.False(ExternalUrlOpener.TryOpen("https://evil-unlisted-site.com"));
+    }
+
+    [Fact]
+    public async Task AppHost_prepares_compatibility_export_cleanly()
+    {
+        var matrix = TestData.Matrix(
+            TestData.Row("os.build", "Windows 11 Build 26100"),
+            TestData.Row("hardware.cpu", "AMD Ryzen 7 7800X3D"));
+
+        await using var host = new AppHost(
+            AppContext.BaseDirectory,
+            new SettingsStore(TestData.TempFile("settings.json")),
+            new UnavailableCaptureFactory(),
+            new SilentCue(),
+            () => matrix);
+
+        var preview = host.PrepareCompatibilityExport(redact: true);
+        Assert.NotNull(preview);
+        Assert.True(preview.RedactionApplied);
+        Assert.Contains("Windows 11 Build 26100", preview.Text);
+        Assert.Contains("AMD Ryzen 7 7800X3D", preview.Text);
+        Assert.True(preview.Bytes.Length > 0);
+    }
 }
