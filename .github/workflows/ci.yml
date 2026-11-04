@@ -1,4 +1,4 @@
-name: CI — Build, Static Safety Proofs & Test Suite
+name: CI - Build, Static Safety Proofs & Test Suite
 
 on:
   push:
@@ -7,25 +7,44 @@ on:
     branches: [ main ]
   workflow_dispatch:
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
 permissions:
   contents: read
 
+env:
+  DOTNET_CLI_TELEMETRY_OPTOUT: '1'
+  DOTNET_NOLOGO: '1'
+  DOTNET_SKIP_FIRST_TIME_EXPERIENCE: '1'
+  NUGET_XMLDOC_MODE: 'skip'
+
 jobs:
   verify-windows:
-    name: Windows x64 (.NET 10.0.402 · Proofs · 2,505 Tests)
+    name: Windows x64 (.NET 10 SDK | Safety Proofs | 2,505 Tests | Smoke Gate)
     runs-on: windows-latest
-    timeout-minutes: 20
+    timeout-minutes: 15
 
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
 
       - name: Setup pinned .NET 10 SDK (global.json)
         uses: actions/setup-dotnet@v4
         with:
           global-json-file: global.json
 
-      - name: Run full build, banned-symbol proof, analyzer wiring proof, tests & smoke gate
+      - name: Cache NuGet global packages
+        uses: actions/cache@v4
+        with:
+          path: ~/.nuget/packages
+          key: nuget-${{ runner.os }}-${{ hashFiles('Directory.Packages.props', 'Directory.Build.props', 'Directory.Build.targets', '**/*.csproj') }}
+          restore-keys: |
+            nuget-${{ runner.os }}-
+
+      - name: Run build, banned-symbol proof, analyzer wiring proof, test suite & CLI smoke gate
         shell: pwsh
-        run: |
-          powershell -NoProfile -ExecutionPolicy Bypass -File .\build.ps1
+        run: ./build.ps1 -Configuration Release

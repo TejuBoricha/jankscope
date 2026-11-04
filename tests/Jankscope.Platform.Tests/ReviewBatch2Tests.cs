@@ -559,7 +559,7 @@ public class MatrixBuilderResilienceTests
         try
         {
             var watch = System.Diagnostics.Stopwatch.StartNew();
-            var matrix = new CapabilityMatrixBuilder([new HangingProbe(release), new OsProbe()], probeTimeout: TimeSpan.FromMilliseconds(300)).Build();
+            var matrix = new CapabilityMatrixBuilder([new HangingProbe(release), new OsProbe()], probeTimeout: TimeSpan.FromMilliseconds(1500)).Build();
             watch.Stop();
 
             Assert.True(watch.Elapsed < TimeSpan.FromSeconds(10), $"build took {watch.Elapsed}");

@@ -271,13 +271,6 @@ public class MainWindowSmokeTests
         var (host, factory, shell) = await Make();
         await using var owner = host;
         Assert.True(host.Controller.Start("game.exe").Started);
-        var (frames, end) = TestData.Stream(45, (1800, 95), (2200, 40));
-        foreach (var frame in frames)
-        {
-            factory.Capture.Push(frame);
-        }
-
-        await TestData.WaitUntil(() => host.Controller.Session!.FramesReceived == frames.Length);
 
         MainWindow? window = null;
         await WpfHost.RunAsync(() =>
@@ -287,6 +280,14 @@ public class MainWindowSmokeTests
             ((RadioButton)window.FindName("NavInvestigator")).IsChecked = true;
             window.UpdateLayout();
         });
+
+        var (frames, end) = TestData.Stream(45, (1800, 95), (2200, 40), (2550, 65));
+        foreach (var frame in frames)
+        {
+            factory.Capture.Push(frame);
+        }
+
+        await TestData.WaitUntil(() => host.Controller.Session!.FramesReceived == frames.Length);
 
         var outcome = await host.MarkAsync(MarkKind.Stutter);
         Assert.Equal(MarkOutcomeKind.Recorded, outcome.Kind);

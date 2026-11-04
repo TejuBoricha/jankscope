@@ -38,7 +38,7 @@ public sealed class CapabilityMatrixBuilder(IEnumerable<IProbe> probes, TimeProv
             string? error = null;
             try
             {
-                var task = Task.Run(probe.Run);
+                var task = Task.Factory.StartNew(probe.Run, CancellationToken.None, TaskCreationOptions.LongRunning, TaskScheduler.Default);
                 if (((IAsyncResult)task).AsyncWaitHandle.WaitOne(_timeout))
                 {
                     entries.AddRange(task.GetAwaiter().GetResult());

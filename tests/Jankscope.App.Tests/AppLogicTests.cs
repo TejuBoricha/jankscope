@@ -337,7 +337,7 @@ public class AppHostTests
         var (host, factory, _) = Create(matrix);
         await using var owner = host;
         host.Controller.Start("game.exe");
-        var (frames, _) = TestData.Stream(40, (2000, 90));
+        var (frames, _) = TestData.Stream(40, (2000, 90), (2280, 75));
         await FeedAndWait(host, factory, frames);
 
         var outcome = await host.MarkAsync(MarkKind.Stutter);

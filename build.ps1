@@ -34,10 +34,25 @@ function Find-Dotnet {
     throw "The .NET SDK was not found. Install the version pinned in global.json (see docs/INSTALL.md)."
 }
 
+$stepTimings = New-Object System.Collections.Generic.List[pscustomobject]
+$isCi = ($env:GITHUB_ACTIONS -eq 'true')
+
 function Invoke-Step([string]$Name, [scriptblock]$Action) {
+    if ($isCi) { Write-Host "::group::$Name" }
     Write-Host "==> $Name" -ForegroundColor Cyan
-    & $Action
-    if ($LASTEXITCODE -ne 0) { throw "Step failed: $Name (exit code $LASTEXITCODE)" }
+    $sw = [System.Diagnostics.Stopwatch]::StartNew()
+    try {
+        & $Action
+        if ($LASTEXITCODE -ne 0) { throw "Step failed: $Name (exit code $LASTEXITCODE)" }
+        $sw.Stop()
+        $script:stepTimings.Add([pscustomobject]@{ Step = $Name; Status = 'Passed'; Seconds = [Math]::Round($sw.Elapsed.TotalSeconds, 1) })
+    } catch {
+        $sw.Stop()
+        $script:stepTimings.Add([pscustomobject]@{ Step = $Name; Status = 'Failed'; Seconds = [Math]::Round($sw.Elapsed.TotalSeconds, 1) })
+        throw
+    } finally {
+        if ($isCi) { Write-Host "::endgroup::" }
+    }
 }
 
 $dotnet = Find-Dotnet
@@ -88,9 +103,26 @@ if (-not $NoSmoke) {
         $json = & $cli probe --json
         if ($LASTEXITCODE -ne 0) { return }
         $matrix = $json | Out-String | ConvertFrom-Json
-        Write-Host ("    " + (Assert-ProbeMatrix -Matrix $matrix))
+        $script:smokeSummary = Assert-ProbeMatrix -Matrix $matrix
+        Write-Host ("    " + $script:smokeSummary)
         $global:LASTEXITCODE = 0
     }
+}
+
+if ($env:GITHUB_STEP_SUMMARY -and (Test-Path (Split-Path -Parent $env:GITHUB_STEP_SUMMARY))) {
+    $lines = New-Object System.Collections.Generic.List[string]
+    $lines.Add('### Jankscope CI Verification Summary')
+    $lines.Add('')
+    $lines.Add("| Step | Status | Duration (s) |")
+    $lines.Add("| :--- | :--- | ---: |")
+    foreach ($row in $stepTimings) {
+        $lines.Add("| $($row.Step) | $($row.Status) | $($row.Seconds.ToString('0.0', [System.Globalization.CultureInfo]::InvariantCulture)) |")
+    }
+    if ($script:smokeSummary) {
+        $lines.Add('')
+        $lines.Add(('**Smoke Gate (`jankscope probe --json`):** `' + $script:smokeSummary + '`'))
+    }
+    $lines | Set-Content -Path $env:GITHUB_STEP_SUMMARY -Encoding UTF8
 }
 
 Write-Host "==> OK" -ForegroundColor Green
