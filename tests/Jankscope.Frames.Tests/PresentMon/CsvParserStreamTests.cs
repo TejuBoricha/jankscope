@@ -5,7 +5,11 @@ using Xunit.Abstractions;
 
 namespace Jankscope.Frames.Tests.PresentMon;
 
+[CollectionDefinition("NonParallelMemory", DisableParallelization = true)]
+public sealed class NonParallelMemoryCollection;
+
 /// <summary>ReadAll and the streaming reader: encodings, line endings, problem reporting, laziness and the 1 M-row memory/time bound.</summary>
+[Collection("NonParallelMemory")]
 public class CsvParserStreamTests(ITestOutputHelper output)
 {
     private const string Header = "TimeInMs,MsBetweenPresents,Application";
@@ -266,6 +270,9 @@ public class CsvParserStreamTests(ITestOutputHelper output)
         }
 
         var source = new GeneratedLogReader(pool, rows);
+        GC.Collect();
+        GC.WaitForPendingFinalizers();
+        GC.Collect();
         var baseline = GC.GetTotalMemory(forceFullCollection: true);
         long worstLive = 0;
         double sum = 0;
