@@ -1,0 +1,210 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 680" width="100%" height="100%">
+  <defs>
+    <linearGradient id="bgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#070B14"/>
+      <stop offset="50%" stop-color="#0B1220"/>
+      <stop offset="100%" stop-color="#080D1A"/>
+    </linearGradient>
+    <linearGradient id="cardGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#111A2E"/>
+      <stop offset="100%" stop-color="#0C1323"/>
+    </linearGradient>
+    <linearGradient id="cyanBar" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#06B6D4"/>
+      <stop offset="100%" stop-color="#22D3EE"/>
+    </linearGradient>
+    <linearGradient id="emeraldBar" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#059669"/>
+      <stop offset="100%" stop-color="#10B981"/>
+    </linearGradient>
+    <linearGradient id="amberBar" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#D97706"/>
+      <stop offset="100%" stop-color="#F59E0B"/>
+    </linearGradient>
+    <pattern id="grid" width="32" height="32" patternUnits="userSpaceOnUse">
+      <path d="M 32 0 L 0 0 0 32" fill="none" stroke="#1E293B" stroke-width="0.6" stroke-opacity="0.45"/>
+    </pattern>
+  </defs>
+
+  <!-- Background -->
+  <rect width="1200" height="680" rx="16" fill="url(#bgGrad)" stroke="#1E293B" stroke-width="1.5"/>
+  <rect width="1200" height="680" rx="16" fill="url(#grid)"/>
+
+  <!-- Header Banner -->
+  <rect x="28" y="24" width="1144" height="78" rx="12" fill="url(#cardGrad)" stroke="#1E293B" stroke-width="1.2"/>
+  <circle cx="62" cy="63" r="16" fill="#06B6D4" fill-opacity="0.15" stroke="#22D3EE" stroke-width="1.8"/>
+  <path d="M 55 63 L 60 68 L 70 57" fill="none" stroke="#22D3EE" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>
+  <text x="92" y="56" font-family="Segoe UI, Inter, system-ui, sans-serif" font-size="20" font-weight="700" fill="#F8FAFC" letter-spacing="0.4">JANKSCOPE — END-TO-END ENGINEERING MATURITY AUDIT SCORECARD</text>
+  <text x="92" y="79" font-family="Consolas, JetBrains Mono, monospace" font-size="12.5" fill="#94A3B8">10-Domain Assessment · Before vs. After Remediation · .NET 10.0.402 · 2,507 Automated Tests · Zero-Trust Safety Gates</text>
+
+  <!-- Overall Maturity Badge -->
+  <rect x="930" y="36" width="224" height="54" rx="10" fill="#06281E" stroke="#10B981" stroke-width="1.4"/>
+  <text x="946" y="57" font-family="Consolas, monospace" font-size="11" font-weight="700" fill="#34D399" letter-spacing="0.8">OVERALL MATURITY INDEX</text>
+  <text x="946" y="79" font-family="Segoe UI, sans-serif" font-size="20" font-weight="800" fill="#F8FAFC">84% <tspan fill="#64748B" font-size="15">→</tspan> <tspan fill="#10B981">97% (A+)</tspan></text>
+
+  <!-- Left Panel: 10-Category Maturity Breakdown (Before vs After) -->
+  <rect x="28" y="118" width="720" height="534" rx="12" fill="url(#cardGrad)" stroke="#1E293B" stroke-width="1.2"/>
+  <text x="50" y="150" font-family="Segoe UI, sans-serif" font-size="15" font-weight="700" fill="#F8FAFC">CATEGORY-WISE MATURITY BREAKDOWN (PRE-AUDIT vs. POST-AUDIT)</text>
+
+  <!-- Legend -->
+  <rect x="495" y="138" width="12" height="12" rx="3" fill="#475569"/>
+  <text x="513" y="149" font-family="Consolas, monospace" font-size="11.5" fill="#94A3B8">Pre-Audit Baseline</text>
+  <rect x="635" y="138" width="12" height="12" rx="3" fill="url(#emeraldBar)"/>
+  <text x="653" y="149" font-family="Consolas, monospace" font-size="11.5" fill="#34D399">Post-Audit Verified</text>
+
+  <!-- Row 1: Architecture & Modularity -->
+  <g transform="translate(50, 175)">
+    <text x="0" y="14" font-family="Segoe UI, sans-serif" font-size="13" font-weight="600" fill="#E2E8F0">1. Architecture &amp; Boundary Isolation</text>
+    <rect x="255" y="2" width="340" height="16" rx="4" fill="#090E1A" stroke="#1E293B"/>
+    <rect x="255" y="2" width="323" height="16" rx="4" fill="#475569"/>
+    <rect x="255" y="2" width="336" height="16" rx="4" fill="url(#emeraldBar)" fill-opacity="0.88"/>
+    <text x="605" y="15" font-family="Consolas, monospace" font-size="12" fill="#34D399" font-weight="700">95% → 99%</text>
+  </g>
+
+  <!-- Row 2: Compile-Time Safety & Static Proofs -->
+  <g transform="translate(50, 221)">
+    <text x="0" y="14" font-family="Segoe UI, sans-serif" font-size="13" font-weight="600" fill="#E2E8F0">2. Static Analysis &amp; Safety Proofs</text>
+    <rect x="255" y="2" width="340" height="16" rx="4" fill="#090E1A" stroke="#1E293B"/>
+    <rect x="255" y="2" width="333" height="16" rx="4" fill="#475569"/>
+    <rect x="255" y="2" width="340" height="16" rx="4" fill="url(#emeraldBar)" fill-opacity="0.88"/>
+    <text x="605" y="15" font-family="Consolas, monospace" font-size="12" fill="#34D399" font-weight="700">98% → 100%</text>
+  </g>
+
+  <!-- Row 3: Privacy & Export Redaction -->
+  <g transform="translate(50, 267)">
+    <text x="0" y="14" font-family="Segoe UI, sans-serif" font-size="13" font-weight="600" fill="#E2E8F0">3. Privacy, Redaction &amp; Export Guard</text>
+    <rect x="255" y="2" width="340" height="16" rx="4" fill="#090E1A" stroke="#1E293B"/>
+    <rect x="255" y="2" width="278" height="16" rx="4" fill="url(#emeraldBar)" fill-opacity="0.35"/>
+    <rect x="255" y="2" width="336" height="16" rx="4" fill="url(#emeraldBar)" fill-opacity="0.88"/>
+    <rect x="255" y="2" width="278" height="6" rx="2" fill="#F59E0B"/>
+    <text x="605" y="15" font-family="Consolas, monospace" font-size="12" fill="#34D399" font-weight="700">82% → 99%</text>
+  </g>
+
+  <!-- Row 4: Supply-Chain & Vulnerability Governance -->
+  <g transform="translate(50, 313)">
+    <text x="0" y="14" font-family="Segoe UI, sans-serif" font-size="13" font-weight="600" fill="#E2E8F0">4. Supply-Chain &amp; Vulnerability Mgmt</text>
+    <rect x="255" y="2" width="340" height="16" rx="4" fill="#090E1A" stroke="#1E293B"/>
+    <rect x="255" y="2" width="326" height="16" rx="4" fill="url(#emeraldBar)" fill-opacity="0.88"/>
+    <rect x="255" y="2" width="231" height="6" rx="2" fill="#F59E0B"/>
+    <text x="605" y="15" font-family="Consolas, monospace" font-size="12" fill="#34D399" font-weight="700">68% → 96%</text>
+  </g>
+
+  <!-- Row 5: CI/CD Pipeline & Cloud VM Resilience -->
+  <g transform="translate(50, 359)">
+    <text x="0" y="14" font-family="Segoe UI, sans-serif" font-size="13" font-weight="600" fill="#E2E8F0">5. CI/CD Speed &amp; Cloud VM Resilience</text>
+    <rect x="255" y="2" width="340" height="16" rx="4" fill="#090E1A" stroke="#1E293B"/>
+    <rect x="255" y="2" width="333" height="16" rx="4" fill="url(#emeraldBar)" fill-opacity="0.88"/>
+    <rect x="255" y="2" width="245" height="6" rx="2" fill="#F59E0B"/>
+    <text x="605" y="15" font-family="Consolas, monospace" font-size="12" fill="#34D399" font-weight="700">72% → 98%</text>
+  </g>
+
+  <!-- Row 6: Git Branching & Repo Governance -->
+  <g transform="translate(50, 405)">
+    <text x="0" y="14" font-family="Segoe UI, sans-serif" font-size="13" font-weight="600" fill="#E2E8F0">6. Git Branching &amp; PR Governance</text>
+    <rect x="255" y="2" width="340" height="16" rx="4" fill="#090E1A" stroke="#1E293B"/>
+    <rect x="255" y="2" width="333" height="16" rx="4" fill="url(#emeraldBar)" fill-opacity="0.88"/>
+    <rect x="255" y="2" width="221" height="6" rx="2" fill="#F59E0B"/>
+    <text x="605" y="15" font-family="Consolas, monospace" font-size="12" fill="#34D399" font-weight="700">65% → 98%</text>
+  </g>
+
+  <!-- Row 7: Release Automation, Versioning & SBOM -->
+  <g transform="translate(50, 451)">
+    <text x="0" y="14" font-family="Segoe UI, sans-serif" font-size="13" font-weight="600" fill="#E2E8F0">7. Release Automation, SemVer &amp; SBOM</text>
+    <rect x="255" y="2" width="340" height="16" rx="4" fill="#090E1A" stroke="#1E293B"/>
+    <rect x="255" y="2" width="320" height="16" rx="4" fill="url(#emeraldBar)" fill-opacity="0.88"/>
+    <rect x="255" y="2" width="204" height="6" rx="2" fill="#F59E0B"/>
+    <text x="605" y="15" font-family="Consolas, monospace" font-size="12" fill="#34D399" font-weight="700">60% → 94%</text>
+  </g>
+
+  <!-- Row 8: Automated Testing & Mutation QA -->
+  <g transform="translate(50, 497)">
+    <text x="0" y="14" font-family="Segoe UI, sans-serif" font-size="13" font-weight="600" fill="#E2E8F0">8. Automated Testing &amp; E2E QA</text>
+    <rect x="255" y="2" width="340" height="16" rx="4" fill="#090E1A" stroke="#1E293B"/>
+    <rect x="255" y="2" width="336" height="16" rx="4" fill="url(#emeraldBar)" fill-opacity="0.88"/>
+    <rect x="255" y="2" width="312" height="6" rx="2" fill="#475569"/>
+    <text x="605" y="15" font-family="Consolas, monospace" font-size="12" fill="#34D399" font-weight="700">92% → 99%</text>
+  </g>
+
+  <!-- Row 9: Performance & Self-Overhead Discipline -->
+  <g transform="translate(50, 543)">
+    <text x="0" y="14" font-family="Segoe UI, sans-serif" font-size="13" font-weight="600" fill="#E2E8F0">9. Performance &amp; Observer Budget</text>
+    <rect x="255" y="2" width="340" height="16" rx="4" fill="#090E1A" stroke="#1E293B"/>
+    <rect x="255" y="2" width="333" height="16" rx="4" fill="url(#emeraldBar)" fill-opacity="0.88"/>
+    <rect x="255" y="2" width="326" height="6" rx="2" fill="#475569"/>
+    <text x="605" y="15" font-family="Consolas, monospace" font-size="12" fill="#34D399" font-weight="700">96% → 98%</text>
+  </g>
+
+  <!-- Row 10: Documentation & AI-Agent Onboarding -->
+  <g transform="translate(50, 589)">
+    <text x="0" y="14" font-family="Segoe UI, sans-serif" font-size="13" font-weight="600" fill="#E2E8F0">10. Documentation &amp; Agent Governance</text>
+    <rect x="255" y="2" width="340" height="16" rx="4" fill="#090E1A" stroke="#1E293B"/>
+    <rect x="255" y="2" width="333" height="16" rx="4" fill="url(#emeraldBar)" fill-opacity="0.88"/>
+    <rect x="255" y="2" width="272" height="6" rx="2" fill="#F59E0B"/>
+    <text x="605" y="15" font-family="Consolas, monospace" font-size="12" fill="#34D399" font-weight="700">80% → 98%</text>
+  </g>
+
+  <!-- Right Panel Top: Audit Findings & Remediation Status -->
+  <rect x="768" y="118" width="404" height="252" rx="12" fill="url(#cardGrad)" stroke="#1E293B" stroke-width="1.2"/>
+  <text x="790" y="150" font-family="Segoe UI, sans-serif" font-size="15" font-weight="700" fill="#F8FAFC">AUDIT FINDINGS &amp; REMEDIATION STATUS</text>
+
+  <!-- Severity Cards -->
+  <rect x="790" y="168" width="172" height="82" rx="8" fill="#0B1324" stroke="#10B981" stroke-width="1.2"/>
+  <text x="806" y="190" font-family="Consolas, monospace" font-size="11" font-weight="700" fill="#34D399">CRITICAL / HIGH ISSUES</text>
+  <text x="806" y="220" font-family="Segoe UI, sans-serif" font-size="24" font-weight="800" fill="#F8FAFC">2 Found → <tspan fill="#10B981">0 Open</tspan></text>
+  <text x="806" y="238" font-family="Consolas, monospace" font-size="10.5" fill="#94A3B8">100% Remediated &amp; Tested</text>
+
+  <rect x="978" y="168" width="172" height="82" rx="8" fill="#0B1324" stroke="#22D3EE" stroke-width="1.2"/>
+  <text x="994" y="190" font-family="Consolas, monospace" font-size="11" font-weight="700" fill="#22D3EE">MEDIUM / LOW GAPS</text>
+  <text x="994" y="220" font-family="Segoe UI, sans-serif" font-size="24" font-weight="800" fill="#F8FAFC">10 Found → <tspan fill="#22D3EE">0 Open</tspan></text>
+  <text x="994" y="238" font-family="Consolas, monospace" font-size="10.5" fill="#94A3B8">All Code &amp; Repo Fixes Merged</text>
+
+  <!-- Key Metrics Strip -->
+  <rect x="790" y="264" width="360" height="88" rx="8" fill="#090F1D" stroke="#1E293B"/>
+  <text x="806" y="286" font-family="Consolas, monospace" font-size="11.5" fill="#E2E8F0"><tspan fill="#10B981">●</tspan> Redaction Engines:   <tspan fill="#94A3B8">2 divergent →</tspan> <tspan fill="#34D399">1 Unified + ExportGuard</tspan></text>
+  <text x="806" y="306" font-family="Consolas, monospace" font-size="11.5" fill="#E2E8F0"><tspan fill="#10B981">●</tspan> Assembly Versioning: <tspan fill="#94A3B8">1.0.0/0.1.0 →</tspan> <tspan fill="#34D399">Central 0.1.0 (Lint-Pinned)</tspan></text>
+  <text x="806" y="326" font-family="Consolas, monospace" font-size="11.5" fill="#E2E8F0"><tspan fill="#10B981">●</tspan> Supply-Chain &amp; Sec:  <tspan fill="#94A3B8">Disabled    →</tspan> <tspan fill="#34D399">PVR + Dependabot + SBOM</tspan></text>
+  <text x="806" y="344" font-family="Consolas, monospace" font-size="11.5" fill="#E2E8F0"><tspan fill="#10B981">●</tspan> Stale Scratch Files: <tspan fill="#94A3B8">4 files (73KB) →</tspan> <tspan fill="#34D399">0 (Purged &amp; Docs Synced)</tspan></text>
+
+  <!-- Right Panel Bottom: Industry Practice Coverage Heatmap -->
+  <rect x="768" y="386" width="404" height="266" rx="12" fill="url(#cardGrad)" stroke="#1E293B" stroke-width="1.2"/>
+  <text x="790" y="418" font-family="Segoe UI, sans-serif" font-size="15" font-weight="700" fill="#F8FAFC">MODERN PRACTICE COVERAGE MATRIX</text>
+
+  <!-- Grid of 12 Practice Pills -->
+  <g font-family="Consolas, monospace" font-size="11" font-weight="600">
+    <rect x="790" y="434" width="174" height="28" rx="6" fill="#06281E" stroke="#10B981"/>
+    <text x="802" y="452" fill="#34D399">✓ RS0030 Banned APIs (106)</text>
+
+    <rect x="976" y="434" width="174" height="28" rx="6" fill="#06281E" stroke="#10B981"/>
+    <text x="988" y="452" fill="#34D399">✓ System32 P/Invoke (26)</text>
+
+    <rect x="790" y="470" width="174" height="28" rx="6" fill="#06281E" stroke="#10B981"/>
+    <text x="802" y="488" fill="#34D399">✓ 2-Layer Redaction Guard</text>
+
+    <rect x="976" y="470" width="174" height="28" rx="6" fill="#06281E" stroke="#10B981"/>
+    <text x="988" y="488" fill="#34D399">✓ GitHub Flow + PR Gate</text>
+
+    <rect x="790" y="506" width="174" height="28" rx="6" fill="#06281E" stroke="#10B981"/>
+    <text x="802" y="524" fill="#34D399">✓ Dependabot + Vuln Alerts</text>
+
+    <rect x="976" y="506" width="174" height="28" rx="6" fill="#06281E" stroke="#10B981"/>
+    <text x="988" y="524" fill="#34D399">✓ Private Vuln Reporting</text>
+
+    <rect x="790" y="542" width="174" height="28" rx="6" fill="#06281E" stroke="#10B981"/>
+    <text x="802" y="560" fill="#34D399">✓ CycloneDX 1.5 SBOM CI</text>
+
+    <rect x="976" y="542" width="174" height="28" rx="6" fill="#06281E" stroke="#10B981"/>
+    <text x="988" y="560" fill="#34D399">✓ Authenticode Lock Check</text>
+
+    <rect x="790" y="578" width="174" height="28" rx="6" fill="#06281E" stroke="#10B981"/>
+    <text x="802" y="596" fill="#34D399">✓ CODEOWNERS Protection</text>
+
+    <rect x="976" y="578" width="174" height="28" rx="6" fill="#06281E" stroke="#10B981"/>
+    <text x="988" y="596" fill="#34D399">✓ Keep-a-Changelog SemVer</text>
+
+    <rect x="790" y="614" width="174" height="28" rx="6" fill="#06281E" stroke="#10B981"/>
+    <text x="802" y="632" fill="#34D399">✓ 10-Run A/B Perf Budget</text>
+
+    <rect x="976" y="614" width="174" height="28" rx="6" fill="#1C1917" stroke="#F59E0B"/>
+    <text x="988" y="632" fill="#FBBF24">⧗ SignPath Signing (Stg 5)</text>
+  </g>
+</svg>

@@ -5,7 +5,7 @@
 Updated 2026-11-04 (Stage 1b closed; at the Stage 1 owner validation stop), at a **safe point**: the repository builds with 0 warnings, all **2,505 tests (2,504 passed, 1 skipped)** pass, Stages 0, 1a, and 1b are complete and independently reviewed (`docs/reviews/stage-0*.md`, `docs/reviews/stage-1a*.md`, `docs/reviews/stage-1b.md`), and nothing is half-edited. Everything a new session needs is in files; nothing depends on chat memory.
 
 ## 1. What this project is
-**Jankscope** — a free, open-source (MIT), no-telemetry Windows tool that explains *why* a game stutters, a wireless mouse freezes, or online play lags, with evidence-graded hypotheses; it changes settings only when it can prove the benefit and undo the change. Owner: Tejas (India, Windows 11 Home laptop with Intel + NVIDIA hybrid graphics; kernel anti-cheat present). Funding: GitHub Sponsors + optional paid Store edition, **no ads**. Spec: `MASTER_PROMPT_v4.md` (v3 kept for history; `PROMPT_REVIEW.md` explains the changes). Decisions are final in §2.2/§2.3/§4.1 of v4.
+**Jankscope** — a free, open-source (MIT), no-telemetry Windows tool that explains *why* a game stutters, a wireless mouse freezes, or online play lags, with evidence-graded hypotheses; it changes settings only when it can prove the benefit and undo the change. Owner: Tejas (India, Windows 11 Home laptop with Intel + NVIDIA hybrid graphics; kernel anti-cheat present). Funding: GitHub Sponsors + optional paid Store edition, **no ads**. Spec: `MASTER_PROMPT_v4.md`. Decisions are final in §2.2/§2.3/§4.1 of v4.
 
 ## 2. Verify the state in 2 minutes
 ```
@@ -13,9 +13,9 @@ cd "C:\Users\tejas\Desktop\PC FPS booster"
 powershell -NoProfile -ExecutionPolicy Bypass -File .\build.ps1     # restore, build (0 warnings), all tests, CLI smoke
 src\Jankscope.Cli\bin\Release\net10.0-windows\jankscope.exe probe  # capability matrix of this PC
 ```
-Expected: 765 Core + 344 Platform + 1,098 Frames (1,097 passed, 1 skipped) + 266 Harness + 32 App tests green; "banned-symbol coverage proven" (106 entries); "analyzer wiring proven for 7 product projects"; "smoke gate self-test passed"; "41 capability rows, 14 probes, 0 failed". (The ETW and Direct3D tests skip, with a visible reason, on an account or machine that cannot run them; here none of the ETW or D3D tests skip.)
+Expected: 766 Core + 344 Platform + 1,098 Frames (1,097 passed, 1 skipped) + 266 Harness + 32 App tests green; "banned-symbol coverage proven" (106 entries); "analyzer wiring proven for 7 product projects"; "smoke gate self-test passed"; "41 capability rows, 14 probes, 0 failed". (The ETW and Direct3D tests skip, with a visible reason, on an account or machine that cannot run them; here none of the ETW or D3D tests skip.)
 
-**Git:** branch `main`, no remote. One commit so far, `d0b3e7f` (2026-11-04, made at the owner's request; it holds Stages 0 to 1a and the Stage 1b build). Commit again only when asked, with the trailer from the harness instructions; never push without a per-action yes. Three stray `PresentMon-*.csv` captures in the repo root are intentionally not committed.
+**Git & Governance:** Published at `https://github.com/TejuBoricha/jankscope` under **GitHub Flow** (`main` protected with required CI status check, linear history, and Squash/Rebase merges; all changes land via `<type>/<short-kebab-slug>` topic branches and Pull Requests — see `CONTRIBUTING.md`).
 
 ## 3. Read order
 1. This file → 2. `docs/STATUS.md` (ledger with evidence) → 3. `docs/reviews/stage-0.md` (open review findings) → 4. `docs/test-plans/stage-1a.md` → 5. `docs/FACTS.md` (which claims are verified) → 6. `docs/adr/*` → 7. `MASTER_PROMPT_v4.md` as needed (§5 hard constraints HC-1…HC-13 matter most).
@@ -28,7 +28,7 @@ Expected: 765 Core + 344 Platform + 1,098 Frames (1,097 passed, 1 skipped) + 266
 | 1b Interactive slice | **done-verified 2026-11-04**. Global hotkeys, audible cue, capture clock map, candidate anchors, incident recorder, two-layer redaction (`Redactor` + `ExportGuard`), WPF app (`Jankscope.App`), independent review (`docs/reviews/stage-1b.md`), live E2E test, 10-run interleaved A/B overhead benchmark, and `docs/VALIDATION_1.md` are complete. **Awaiting owner live-game validation (`docs/VALIDATION_1.md`).** |
 | 2 … 5, P1 | not started |
 
-Source map: `src/Jankscope.Core` (portable logic) · `src/Jankscope.Platform` (Windows probes, P/Invoke) · `src/Jankscope.Cli` (`jankscope probe`) · `src/Jankscope.Frames` (FrameSample + IFrameLogParser contracts only) · `tools/Jankscope.Harness` (schedule generator only) · `catalogs/*.json` (data-only knowledge) · `third_party/PresentMon` (pinned binary, git-ignored; lock file committed) · `tools/fetch-third-party.ps1` · `tools/dev/apply-edits.js` (helper that applies OLD/NEW/LINE/SECTION edit blocks atomically).
+Source map: `src/Jankscope.Core` (portable domain logic, redaction, catalogs) · `src/Jankscope.Platform` (Windows probes, P/Invoke, hotkeys, PDH, orphan cleaner) · `src/Jankscope.Frames` (ring buffer, stutter detector, PresentMon parser & supervised runner, clock map, candidate anchors, incident recorder/bundles) · `src/Jankscope.Cli` (`jankscope probe` / `incident` / `version`) · `src/Jankscope.App` (WPF desktop app, `TimelineView`, export preview, tray host) · `tools/Jankscope.Harness` (Direct3D 11 flip-model synthetic stutter harness) · `tools/Jankscope.FakePresentMon` (runner test double) · `catalogs/*.json` (data-only knowledge) · `third_party/PresentMon` (pinned binary, git-ignored; lock file committed) · `tools/fetch-third-party.ps1`.
 
 ## 5. Next actions, in order
 

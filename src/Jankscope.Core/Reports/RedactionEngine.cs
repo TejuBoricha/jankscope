@@ -1,22 +1,11 @@
-using System.Text.RegularExpressions;
-
 namespace Jankscope.Core.Reports;
 
 /// <summary>
-/// Redacts identifying and personal information from incident reports before export (spec §3.6, §7.3).
-/// Handles Windows usernames, hostnames, MAC addresses, and IPv4 addresses.
+/// Redacts identifying and personal information from incident reports before export (spec section 3.6, section 7.3).
+/// Delegates to <see cref="Redactor"/> so CLI and desktop exports share identical word-boundary, path, email, MAC, IPv4, IPv6, UNC, and OneDrive rules.
 /// </summary>
-public static partial class RedactionEngine
+public static class RedactionEngine
 {
-    [GeneratedRegex(@"\b(?:[0-9A-Fa-f]{2}[:-]){5}[0-9A-Fa-f]{2}\b")]
-    private static partial Regex MacRegex();
-
-    [GeneratedRegex(@"\b(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\b")]
-    private static partial Regex Ipv4Regex();
-
-    [GeneratedRegex(@"([a-zA-Z]:\\Users\\)([^\\]+)", RegexOptions.IgnoreCase)]
-    private static partial Regex UserPathRegex();
-
     public static string RedactText(string input, string? userName = null, string? hostName = null)
     {
         if (string.IsNullOrEmpty(input))
@@ -24,30 +13,13 @@ public static partial class RedactionEngine
             return input;
         }
 
-        var text = input;
+        var context = userName is null && hostName is null
+            ? RedactionContext.ForThisMachine()
+            : RedactionContext.Empty
+                .With(RedactionCategory.UserName, userName ?? Environment.UserName)
+                .With(RedactionCategory.HostName, hostName ?? Environment.MachineName);
 
-        // User name in path or standalone
-        var user = userName ?? Environment.UserName;
-        if (!string.IsNullOrWhiteSpace(user) && user.Length > 1)
-        {
-            text = text.Replace(user, "<USER>", StringComparison.OrdinalIgnoreCase);
-        }
-
-        // Generic C:\Users\<name> pattern
-        text = UserPathRegex().Replace(text, "$1<USER>");
-
-        // Hostname
-        var host = hostName ?? Environment.MachineName;
-        if (!string.IsNullOrWhiteSpace(host) && host.Length > 1)
-        {
-            text = text.Replace(host, "<HOST>", StringComparison.OrdinalIgnoreCase);
-        }
-
-        // Network identifiers
-        text = MacRegex().Replace(text, "<MAC>");
-        text = Ipv4Regex().Replace(text, "<IP>");
-
-        return text;
+        return new Redactor(context).Redact(input) ?? string.Empty;
     }
 
     /// <summary>

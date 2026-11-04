@@ -4,7 +4,7 @@ Single source of truth for progress (spec §1 #1, #7). States: `not started` · 
 
 Quality gates at **every** stage (owner request, 2026-10-16): build green with 0 warnings · tests green · **independent code review, every finding fixed or recorded** (`docs/reviews/stage-N.md`; no stage is `done-verified` with an open Critical/High) · simplification pass · safety-critical tests shown able to fail · STATUS/LIMITATIONS updated.
 
-Current verified baseline: `./build.ps1` (working tree) → 0 warnings; **2,505 tests (2,504 passed, 1 skipped)**: 765 Core, 344 Platform, 1,098 Frames (1,097 passed, 1 skipped), 266 Harness, 32 App; the banned-symbol coverage proof (106 entries), the analyzer-wiring proof (7 product projects) and the smoke-gate self-test pass; `jankscope probe` → 41 capability rows, 14 probes, 0 failed.
+Current verified baseline: `./build.ps1` (working tree) → 0 warnings; **2,506 tests (2,505 passed, 1 skipped)**: 766 Core, 344 Platform, 1,098 Frames (1,097 passed, 1 skipped), 266 Harness, 32 App; the banned-symbol coverage proof (106 entries), the analyzer-wiring proof (7 product projects) and the smoke-gate self-test pass; `jankscope probe` → 41 capability rows, 14 probes, 0 failed.
 
 ## Stage 0 — Bootstrap (**done-verified 2026-10-17** on the owner's call: two independent review passes plus a re-verification, every finding fixed or recorded, no Critical/High open; residuals are in `docs/LIMITATIONS.md`)
 

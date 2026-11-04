@@ -2,7 +2,9 @@ using System.Windows;
 using System.Windows.Threading;
 using Jankscope.App.Services;
 using Jankscope.App.Views;
+using Jankscope.Core;
 using Jankscope.Core.Hotkeys;
+using Jankscope.Core.Reports;
 using Jankscope.Frames.Incidents;
 using Jankscope.Platform.Hotkeys;
 
@@ -14,8 +16,9 @@ namespace Jankscope.App;
 /// </summary>
 public partial class App : Application, IShell
 {
-    private const string InstanceName = @"Local\Jankscope.App.SingleInstance";
-    private const string ShowEventName = @"Local\Jankscope.App.Show";
+    private const string InstanceName = @"Local\" + Branding.ProductName + ".App.SingleInstance";
+    private const string ShowEventName = @"Local\" + Branding.ProductName + ".App.Show";
+    private const long MaxErrorLogBytes = 256 * 1024;
 
     private Mutex? _instance;
     private EventWaitHandle? _showEvent;
@@ -235,9 +238,16 @@ public partial class App : Application, IShell
     {
         try
         {
-            var directory = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Jankscope");
+            var directory = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), Branding.DataFolderName);
             Directory.CreateDirectory(directory);
-            File.AppendAllText(Path.Combine(directory, "error.log"), DateTime.UtcNow.ToString("O") + " " + exception + Environment.NewLine);
+            var logPath = Path.Combine(directory, "error.log");
+            if (File.Exists(logPath) && new FileInfo(logPath).Length >= MaxErrorLogBytes)
+            {
+                File.Move(logPath, logPath + ".old", overwrite: true);
+            }
+
+            var redacted = RedactionEngine.RedactText(exception.ToString());
+            File.AppendAllText(logPath, DateTime.UtcNow.ToString("O") + " " + redacted + Environment.NewLine);
         }
         catch (Exception e) when (e is IOException or UnauthorizedAccessException)
         {

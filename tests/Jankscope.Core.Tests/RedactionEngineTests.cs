@@ -22,6 +22,21 @@ public class RedactionEngineTests
     }
 
     [Fact]
+    public void Short_username_uses_word_boundaries_and_does_not_corrupt_ordinary_words()
+    {
+        const string raw = "User al opened C:\\Users\\al\\AppData\\Local\\Temp on host pc1 with email al@example.com and IPv6 fe80::1ff:fe23:4567:890a";
+        var redacted = RedactionEngine.RedactText(raw, userName: "al", hostName: "pc1");
+
+        Assert.Contains("Local", redacted);
+        Assert.Contains("C:\\Users\\<USER>\\AppData\\Local\\Temp", redacted);
+        Assert.DoesNotContain("al@example.com", redacted);
+        Assert.Contains("<EMAIL>", redacted);
+        Assert.DoesNotContain("fe80::1ff:fe23:4567:890a", redacted);
+        Assert.Contains("<IP>", redacted);
+        Assert.Contains("<HOST>", redacted);
+    }
+
+    [Fact]
     public void Canary_assertion_passes_when_no_canary_survives()
     {
         const string text = "System report: clean output with <USER> and <HOST>";

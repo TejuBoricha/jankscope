@@ -39,7 +39,7 @@ jobs:
               Write-Host "::error::Pull requests must target 'main' (found '$env:BASE_REF')."
               exit 1
           }
-          $pattern = '^(feat|fix|hotfix|docs|test|ci|chore|refactor)/[a-z0-9][a-z0-9._-]*$'
+          $pattern = '^((feat|fix|hotfix|docs|test|ci|chore|refactor)/[a-z0-9][a-z0-9._-]*|dependabot/[a-z0-9._/-]+)$'
           if ($env:HEAD_REF -notmatch $pattern) {
               Write-Host "::error::Branch name '$env:HEAD_REF' does not follow the required convention '<type>/<short-kebab-slug>' (allowed types: feat, fix, hotfix, docs, test, ci, chore, refactor). See CONTRIBUTING.md."
               exit 1

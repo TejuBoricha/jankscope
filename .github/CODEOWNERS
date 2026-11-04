@@ -1,0 +1,32 @@
+# Jankscope Code Ownership & Security Review Mapping
+# Every pull request touching safety-critical boundaries, build gates, or third-party pins
+# automatically requests review from the repository owner.
+
+# Default owner for everything in the repository
+*                                                           @TejuBoricha
+
+# Hard-constraint & compile-time safety enforcement (HC-1 .. HC-13)
+/BannedSymbols.txt                                          @TejuBoricha
+/Directory.Build.props                                      @TejuBoricha
+/Directory.Build.targets                                    @TejuBoricha
+/Directory.Packages.props                                   @TejuBoricha
+/global.json                                                @TejuBoricha
+/build.ps1                                                  @TejuBoricha
+/tools/dev/                                                 @TejuBoricha
+/tools/fetch-third-party.ps1                                @TejuBoricha
+/third_party/                                               @TejuBoricha
+/catalogs/                                                  @TejuBoricha
+
+# Reviewed process-launch, native-interop & redaction boundaries
+/src/Jankscope.Frames/PresentMon/PresentMonProcessLauncher.cs @TejuBoricha
+/src/Jankscope.Frames/PresentMon/FileHashVerifier.cs        @TejuBoricha
+/src/Jankscope.Frames/PresentMon/PresentMonArguments.cs     @TejuBoricha
+/src/Jankscope.Core/Reports/                                @TejuBoricha
+/src/Jankscope.Platform/                                    @TejuBoricha
+/tests/Jankscope.Core.Tests/RepoLintTests.cs                @TejuBoricha
+/tests/Jankscope.Core.Tests/LauncherLintTests.cs            @TejuBoricha
+
+# CI/CD & governance workflows
+/.github/                                                   @TejuBoricha
+/SECURITY.md                                                @TejuBoricha
+/CONTRIBUTING.md                                            @TejuBoricha
