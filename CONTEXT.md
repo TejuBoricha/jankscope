@@ -72,6 +72,6 @@ src\Jankscope.Cli\bin\Release\net10.0-windows\jankscope.exe probe
 - Not yet exercised anywhere: elevated token, 32-bit process, VM, non-English Windows, Windows 10, ARM64, true standard-user account, real game session (`docs/LIMITATIONS.md` L3, L5, L19, L20).
 
 ## 10. Background and scratch
-- **Current branch:** nothing in flight on `main` (`e20e8da`). The earlier `feat/bucket-docs-and-compliance-gates` was merged as #8 (30/30 spec deliverables, Criteria 19/21/22/23, Stage 2 ADR 0009 and test plan). A docs-only status correction from a cloud session sits on `ccr-8927703f-0vmag6`; that name does not match the CI branch-name gate, so rename it (for example `docs/status-corrections`) before opening a PR.
+- **Current branch:** nothing in flight on `main` (`e20e8da`). The earlier `feat/bucket-docs-and-compliance-gates` was merged as #8 (30/30 spec deliverables, Criteria 19/21/22/23, Stage 2 ADR 0009 and test plan). The docs-only status correction from a cloud session lands through the PR from `docs/status-corrections`.
 - Sessions started from the main one that are idle: `s1a-a-detector`, `s1a-b1-parser`, `s1a-b2-runner`, `s1a-c-platform`, `s1a-d-harness` and the Stage 0 re-review session. Their work is complete and should not be relaunched.
 - Private copies of the packages: `C:\Users\tejas\Desktop\PC FPS booster - stage1a\` (safe to delete; they sit outside the repo on purpose because the lints scan everything under the repo root).
