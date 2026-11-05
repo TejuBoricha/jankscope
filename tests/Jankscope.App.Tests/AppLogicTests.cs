@@ -327,6 +327,42 @@ public class AppHostTests
     }
 
     [Fact]
+    public async Task Out_of_order_frames_and_clock_jumps_are_counted_in_the_status_apart_from_ignored_frames()
+    {
+        var (host, factory, _) = Create();
+        await using var owner = host;
+        host.Controller.Start("game.exe");
+        var (frames, endMs) = TestData.Stream(5);
+        await FeedAndWait(host, factory, frames);
+
+        factory.Capture.Push(new FrameSample(1000, endMs - 8.0, TestData.Frame, PresentMode: "Composed: Flip", Application: "game.exe", Provenance: DataProvenance.Fixture));
+        factory.Capture.Push(new FrameSample(1001, endMs - 4000.0, TestData.Frame, PresentMode: "Composed: Flip", Application: "game.exe", Provenance: DataProvenance.Fixture));
+        await TestData.WaitUntil(() => host.Controller.Status() is { OutOfOrderFrames: 1, BackwardJumps: 1 });
+
+        var status = host.Controller.Status();
+        Assert.Equal(0, status.IgnoredFrames);
+        Assert.Equal(frames.Length + 1, status.FramesReceived);
+    }
+
+    [Fact]
+    public async Task Frames_left_out_for_being_out_of_order_are_stated_in_the_export()
+    {
+        var (host, factory, _) = Create();
+        await using var owner = host;
+        host.Controller.Start("game.exe");
+        var (frames, endMs) = TestData.Stream(22, (1200, 90));
+        await FeedAndWait(host, factory, frames);
+        factory.Capture.Push(new FrameSample(2000, endMs - 8.0, TestData.Frame, PresentMode: "Composed: Flip", Application: "game.exe", Provenance: DataProvenance.Fixture));
+        await TestData.WaitUntil(() => host.Controller.Status().OutOfOrderFrames == 1);
+
+        var outcome = await host.MarkAsync(MarkKind.Stutter);
+        var preview = await Task.Run(() => host.Controller.PrepareExport(outcome.Mark!, redact: true, RedactionContext.Empty));
+
+        Assert.Contains("\"outOfOrderFrames\"", preview.Text);
+        Assert.Contains("1 frame(s) were left out of the series", preview.Text);
+    }
+
+    [Fact]
     public async Task The_whole_flow_from_a_key_press_to_a_redacted_file_leaks_nothing()
     {
         const string user = "Zanzibar_Quinn";

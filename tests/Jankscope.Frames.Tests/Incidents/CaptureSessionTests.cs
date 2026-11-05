@@ -126,9 +126,9 @@ public class CaptureSessionTests
     }
 
     [Fact]
-    public async Task Out_of_order_frames_within_the_same_run_are_ignored_so_they_do_not_split_the_capture_epoch()
+    public async Task Out_of_order_frames_within_the_same_run_are_left_out_counted_on_their_own_and_do_not_split_the_capture_epoch()
     {
-        var (session, source, _) = Create();
+        var (session, source, time) = Create();
         session.Start();
         source.Push(1, Frame(0, 100.0, "Composed: Flip"));
         source.Push(1, Frame(1, 108.3, "Composed: Flip"));
@@ -137,8 +137,70 @@ public class CaptureSessionTests
         await session.StopAsync();
 
         Assert.Equal(3, session.FramesReceived);
-        Assert.Equal(1, session.IgnoredFrames);
+        Assert.Equal(1, session.OutOfOrderFrames);
+        Assert.Equal(0, session.IgnoredFrames); // "ignored" means "not a swap-chain present"; a reordered row is not that (review of Stage 1b, finding 4)
+        Assert.Equal(0, session.BackwardJumps);
         Assert.Equal([0L, 1L, 3L], session.History.Snapshot().Select(f => f.Index).ToArray());
+        Assert.Equal(0, session.Clock.Estimate(time.GetTimestamp())!.Value.Epoch);
+    }
+
+    [Fact]
+    public async Task A_row_exactly_the_tolerance_behind_is_left_out_and_a_row_just_beyond_it_is_kept_as_a_jump()
+    {
+        var (session, source, _) = Create();
+        session.Start();
+        source.Push(1, Frame(0, 1000.0));
+        source.Push(1, Frame(1, 1000.0 - CaptureSession.ReorderToleranceMs));       // at the tolerance: a reordering
+        source.Push(1, Frame(2, 1000.0 - CaptureSession.ReorderToleranceMs - 1.0)); // beyond it: the clock jumped
+        await session.StopAsync();
+
+        Assert.Equal(2, session.FramesReceived);
+        Assert.Equal(1, session.OutOfOrderFrames);
+        Assert.Equal(1, session.BackwardJumps);
+        Assert.Equal([0L, 2L], session.History.Snapshot().Select(f => f.Index).ToArray());
+    }
+
+    [Fact]
+    public async Task One_wrong_time_far_ahead_does_not_silence_the_rest_of_the_capture()
+    {
+        // Review of Stage 1b, E8: one row 30 s ahead and then 5,000 normal rows left 4,322 of them dropped, silently, until the clock caught up.
+        var (session, source, time) = Create(capacity: 8192);
+        session.Start();
+        for (var i = 0; i < 100; i++)
+        {
+            source.Push(1, Frame(i, (i + 1) * 16.667));
+        }
+
+        source.Push(1, Frame(100, 31_666.7)); // the wrong time, about 30 s ahead
+        for (var i = 101; i < 5101; i++)
+        {
+            source.Push(1, Frame(i, (i + 1) * 16.667));
+        }
+
+        await session.StopAsync();
+
+        Assert.Equal(5101, session.FramesReceived);
+        Assert.Equal(0, session.OutOfOrderFrames);
+        Assert.Equal(1, session.BackwardJumps);
+        Assert.Equal(1, session.Clock.Estimate(time.GetTimestamp())!.Value.Epoch); // the jump is a new epoch, so the wrong row is cut off from the rest
+    }
+
+    [Fact]
+    public async Task Frames_in_a_row_that_never_go_backwards_are_never_counted_as_out_of_order_or_as_jumps()
+    {
+        var (session, source, _) = Create();
+        session.Start();
+        for (var i = 0; i < 200; i++)
+        {
+            source.Push(1, Frame(i, (i + 1) * 16.667));
+        }
+
+        source.Push(1, Frame(200, 200 * 16.667)); // the same time as the row before is not "earlier"
+        await session.StopAsync();
+
+        Assert.Equal(201, session.FramesReceived);
+        Assert.Equal(0, session.OutOfOrderFrames);
+        Assert.Equal(0, session.BackwardJumps);
     }
 
     [Fact]

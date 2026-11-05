@@ -42,9 +42,18 @@ public sealed class RunnerFrameSource(PresentMonRunner runner) : IFrameSource
 /// Frames whose present mode is "Other" are not swap-chain presents of a game (the CLI report ignores them the same way) and are counted in
 /// <see cref="IgnoredFrames"/>, never silently dropped. Frames the source's queue dropped are in <c>Health.DroppedFrames</c>.
 /// </para>
+/// <para>
+/// A frame stamped a little earlier than the frame before it (at most <see cref="ReorderToleranceMs"/>; Windows can emit such a row when it changes how
+/// a window is composed) is left out and counted in <see cref="OutOfOrderFrames"/>. A frame stamped much earlier is not a reordering: either the
+/// frame before it carried a wrong time far ahead or the tool's clock started again. It is kept, counted in <see cref="BackwardJumps"/>, and the
+/// capture clock map starts a new epoch, so one wrong time cannot silence the rest of the capture (review of Stage 1b, finding 4).
+/// </para>
 /// </summary>
 public sealed class CaptureSession : IAsyncDisposable
 {
+    /// <summary>How far behind the previous frame a frame may be stamped and still count as a reordering (a few frames) rather than a jump of the clock.</summary>
+    public const double ReorderToleranceMs = 100.0;
+
     private readonly IFrameSource _source;
     private readonly RingBuffer<FrameSample> _history;
     private readonly CaptureClockMap _clock;
@@ -54,6 +63,8 @@ public sealed class CaptureSession : IAsyncDisposable
     private int _started;
     private long _received;
     private long _ignored;
+    private long _outOfOrder;
+    private long _backwardJumps;
     private long _writeFailures;
     private long _lastFrameTicks;
     private int _run;
@@ -78,6 +89,12 @@ public sealed class CaptureSession : IAsyncDisposable
 
     /// <summary>Frames not written because their present mode is "Other".</summary>
     public long IgnoredFrames => Interlocked.Read(ref _ignored);
+
+    /// <summary>Frames left out because they were stamped slightly earlier than the frame before them (at most <see cref="ReorderToleranceMs"/>). Shown and exported.</summary>
+    public long OutOfOrderFrames => Interlocked.Read(ref _outOfOrder);
+
+    /// <summary>Times a frame was stamped much earlier than the frame before it; the frame was kept and the capture clock map started a new epoch. Shown and exported.</summary>
+    public long BackwardJumps => Interlocked.Read(ref _backwardJumps);
 
     /// <summary>Frames the ring refused (only possible if the single-writer rule were broken); should always be zero.</summary>
     public long WriteFailures => Interlocked.Read(ref _writeFailures);
@@ -161,13 +178,21 @@ public sealed class CaptureSession : IAsyncDisposable
                 }
 
                 // When DWM transitions a windowed flip swapchain between Composed: Flip and DXGI, PresentMon can emit a secondary
-                // row whose TimeInMs is ~1 frame earlier than the immediately preceding row within the same capture run. Ignoring
-                // out-of-order rows within the same run prevents FrameRingExtensions.SelectWindow and StutterDetector from treating
-                // a single-frame DWM stream interleaving as a capture restart.
+                // row whose TimeInMs is ~1 frame earlier than the immediately preceding row within the same capture run. Leaving
+                // such a row out prevents FrameRingExtensions.SelectWindow and StutterDetector from treating a single-frame DWM
+                // stream interleaving as a capture restart. It is counted on its own (OutOfOrderFrames), never as "ignored".
+                // A row far behind is not that: the reference row had a wrong time far ahead, or the clock started again. Comparing
+                // every later row with a reference that is too far ahead would drop all of them until the clock caught up (one
+                // such row silenced 4,322 of 5,101 rows in the review), so the row is kept and the clock map starts a new epoch.
                 if (haveTimestamp && sample.TimestampMs < lastTimestampMs)
                 {
-                    Interlocked.Increment(ref _ignored);
-                    continue;
+                    if (lastTimestampMs - sample.TimestampMs <= ReorderToleranceMs)
+                    {
+                        Interlocked.Increment(ref _outOfOrder);
+                        continue;
+                    }
+
+                    Interlocked.Increment(ref _backwardJumps);
                 }
 
                 haveTimestamp = true;

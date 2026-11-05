@@ -31,6 +31,57 @@ public class CaptureClockMapTests
         Assert.True(estimate.Observations > 100);
     }
 
+    [Theory]
+    [InlineData(1, false)]
+    [InlineData(19, false)]
+    [InlineData(20, true)]
+    [InlineData(21, true)]
+    public void The_jitter_figure_is_meaningful_only_from_twenty_frames_so_a_few_frames_never_read_as_exact(int frames, bool meaningful)
+    {
+        var map = new CaptureClockMap(Frequency);
+        for (var i = 0; i < frames; i++)
+        {
+            map.Observe(Ticks(i * 8.0 + 50), i * 8.0);
+        }
+
+        var estimate = map.Estimate(Ticks(5000))!.Value;
+
+        Assert.Equal(20, CaptureClockMap.MinObservationsForJitter);
+        Assert.Equal(frames, estimate.Observations);
+        Assert.Equal(meaningful, estimate.UncertaintyIsMeaningful);
+    }
+
+    [Fact]
+    public void A_single_late_frame_gives_an_uncertainty_of_zero_that_is_not_meaningful()
+    {
+        // Review of Stage 1b, E2A: one observation (delivery 300 ms) gave "uncertainty 0.0", which reads as exact.
+        var map = new CaptureClockMap(Frequency);
+        map.Observe(Ticks(1300), 1000.0);
+
+        var estimate = map.Estimate(Ticks(2000))!.Value;
+
+        Assert.Equal(0.0, estimate.UncertaintyMs, 3);
+        Assert.False(estimate.UncertaintyIsMeaningful);
+    }
+
+    [Fact]
+    public void After_a_restart_of_the_capture_clock_the_figure_is_not_meaningful_again_until_enough_new_frames_arrived()
+    {
+        var map = new CaptureClockMap(Frequency);
+        for (var i = 0; i < 100; i++)
+        {
+            map.Observe(Ticks(i * 8.0 + 50), i * 8.0);
+        }
+
+        Assert.True(map.Estimate(Ticks(5000))!.Value.UncertaintyIsMeaningful);
+
+        map.Observe(Ticks(6000), 10.0); // the capture tool started again: its clock is back near zero
+
+        var after = map.Estimate(Ticks(6100))!.Value;
+        Assert.Equal(1, after.Observations);
+        Assert.False(after.UncertaintyIsMeaningful);
+    }
+
     [Fact]
     public void Jittery_delivery_is_reported_as_uncertainty_equal_to_the_spread()
     {

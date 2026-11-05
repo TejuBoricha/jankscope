@@ -32,6 +32,8 @@ public sealed record BundleDataQuality(
     double RequestedPostRollSeconds,
     double PostRollCollectedSeconds,
     long DroppedFrames,
+    long OutOfOrderFrames,
+    long BackwardJumps,
     long RejectedFrames,
     string StutterDefinition,
     string Calibration,
@@ -58,6 +60,8 @@ public static class IncidentBundleBuilder
     /// Builds the bundle for a mark. Throws <see cref="InvalidOperationException"/> when the window holds no usable frame: there is nothing to export.
     /// </summary>
     /// <param name="droppedFrames">Frames the capture pipeline dropped (queue overflow); stated in the data-quality block.</param>
+    /// <param name="outOfOrderFrames">Frames the capture session left out because they were stamped slightly earlier than the frame before; stated in the data-quality block.</param>
+    /// <param name="backwardJumps">Times the capture clock jumped back and the frame was kept as the start of a new epoch; stated in the data-quality block.</param>
     /// <param name="redactSensitiveRows">Applies the capability matrix's own sensitive-row policy (for example the locale). Free text is redacted later by the pipeline.</param>
     public static IncidentBundle Build(
         IncidentMark mark,
@@ -65,7 +69,9 @@ public static class IncidentBundleBuilder
         CapabilityMatrix matrix,
         long droppedFrames = 0,
         bool redactSensitiveRows = true,
-        StutterOptions? stutterOptions = null)
+        StutterOptions? stutterOptions = null,
+        long outOfOrderFrames = 0,
+        long backwardJumps = 0)
     {
         ArgumentNullException.ThrowIfNull(mark);
         ArgumentNullException.ThrowIfNull(window);
@@ -114,14 +120,26 @@ public static class IncidentBundleBuilder
             notes.Add($"{droppedFrames.ToString(CultureInfo.InvariantCulture)} frame(s) were dropped by the capture pipeline during this session; the series may have gaps.");
         }
 
+        if (outOfOrderFrames > 0)
+        {
+            notes.Add($"{outOfOrderFrames.ToString(CultureInfo.InvariantCulture)} frame(s) were left out of the series because the capture tool stamped them slightly earlier than the frame before (for example when Windows changes how a window is composed).");
+        }
+
+        if (backwardJumps > 0)
+        {
+            notes.Add($"The capture clock jumped back {backwardJumps.ToString(CultureInfo.InvariantCulture)} time(s) during this session; each jump was treated as a restart of the capture, so frames before it are not part of the same continuous series.");
+        }
+
         if (rejected > 0)
         {
             notes.Add($"{rejected.ToString(CultureInfo.InvariantCulture)} frame(s) with an unusable frame time were left out of the statistics and the series.");
         }
 
-        if (mark.CaptureTime is { } time && time.UncertaintyMs >= 20)
+        if (mark.CaptureTime is { } time)
         {
-            notes.Add($"The mark time on the capture clock is uncertain by about {Number(time.UncertaintyMs)} ms (frame delivery jitter); the event itself is earlier by the delivery delay and the person's reaction time.");
+            notes.Add(time.UncertaintyIsMeaningful
+                ? $"The mark time on the capture clock has a frame-delivery jitter of about {Number(time.UncertaintyMs)} ms. That is the jitter only: the capture tool's own minimum delay cannot be measured here and is not included, and the event itself happened before the key press by the person's reaction time."
+                : $"The mark time on the capture clock rests on only {time.Observations.ToString(CultureInfo.InvariantCulture)} frame(s), too few to estimate its jitter, so no uncertainty is given (it is unknown, not zero). The capture tool's own minimum delay cannot be measured here and is not included, and the event itself happened before the key press by the person's reaction time.");
         }
 
         notes.Add("The stutter thresholds are the uncalibrated defaults; grades derived from them are capped until a baseline exists.");
@@ -146,6 +164,8 @@ public static class IncidentBundleBuilder
             mark.Window.PostRollSeconds,
             Math.Round(window.PostRollCollectedSeconds, 1),
             droppedFrames,
+            outOfOrderFrames,
+            backwardJumps,
             rejected,
             $"a frame is a stutter if it takes at least {Number(options.Multiplier)}x the median of the previous {Number(options.RollingWindowMs)} ms and at least {Number(options.MinExcessMs)} ms more",
             stutter.CalibrationLabel,
@@ -157,7 +177,7 @@ public static class IncidentBundleBuilder
             mark.Kind == MarkKind.Stutter ? "The person pressed the stutter key after feeling a stutter." : "The person pressed the input-stall key after input froze.",
             mark.PressedUtc,
             mark.CaptureTime is { } t ? Math.Round(t.Ms, 3) : null,
-            mark.CaptureTime is { } u ? Math.Round(u.UncertaintyMs, 3) : null,
+            mark.CaptureTime is { UncertaintyIsMeaningful: true } u ? Math.Round(u.UncertaintyMs, 3) : null,
             mark.TargetProcess,
             mark.Note);
 
