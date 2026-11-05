@@ -255,6 +255,18 @@ public class ProductLintEngineTests
     [InlineData("var t = Type.GetTypeFromProgID(\"WScript.Shell\");", "WMI methods, shell and COM activation")]
     [InlineData("var g = new DynamicMethod(\"m\", typeof(void), null);", "code generation")]
     [InlineData("dynamic d = something; d.Run();", "dynamic keyword")]
+    [InlineData("protected override void OnPreviewKeyDown(KeyEventArgs e) { log.Add(e.Key); }", "managed keyboard reading")]
+    [InlineData("var down = Keyboard.IsKeyDown(Key.A);", "managed keyboard reading")]
+    [InlineData("var m = Keyboard.Modifiers;", "managed keyboard reading")]
+    [InlineData("window.PreviewKeyDown += (s, e) => keys.Add(e.Key);", "managed keyboard reading")]
+    [InlineData("window.KeyUp += OnKey;", "managed keyboard reading")]
+    [InlineData("box.TextInput += OnText;", "managed keyboard reading")]
+    [InlineData("InputManager.Current.PreProcessInput += Handler;", "managed keyboard reading")]
+    [InlineData("ComponentDispatcher.ThreadFilterMessage += Filter;", "managed keyboard reading")]
+    [InlineData("Application.AddMessageFilter(filter);", "managed keyboard reading")]
+    [InlineData("source.AddHook(WndProc);", "managed keyboard reading")]
+    [InlineData("var vk = KeyInterop.VirtualKeyFromKey(e.Key);", "managed keyboard reading")]
+    [InlineData("var b = new KeyBinding(cmd, Key.A, ModifierKeys.None);", "managed keyboard reading")]
     public void Banned_managed_apis_are_found(string code, string expectedRule)
     {
         Assert.Contains(expectedRule, ProductLints.ManagedBanHits(Scan(code)));
@@ -268,6 +280,10 @@ public class ProductLintEngineTests
     [InlineData("var k = Registry.LocalMachine.OpenSubKey(p);")]
     [InlineData("var k = Registry.LocalMachine.OpenSubKey(p, writable: false);")]
     [InlineData("var searcher = new ManagementObjectSearcher(scope, query, options);")]
+    [InlineData("// Keyboard.IsKeyDown and PreviewKeyDown are banned")]
+    [InlineData("var s = \"PreviewKeyDown and KeyEventArgs\";")]
+    [InlineData("var chord = HotkeyModifiers.Control | HotkeyModifiers.Alt;")] // naming a modifier of a registered hotkey reads no key
+    [InlineData("var name = settings.KeyName; var id = item.Key;")]
     public void Comments_strings_and_allowed_reads_do_not_trigger_the_managed_lint(string code)
     {
         // OpenSubKey(p, writable: false) is allowed by this text lint but banned by the analyzer (BannedSymbols.txt): the layers differ on purpose.
