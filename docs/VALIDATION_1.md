@@ -1,7 +1,7 @@
 # Stage 1 Owner Validation Guide (`VALIDATION_1.md`)
 
 **Milestone:** End of Stage 1 (Stage 1a Headless Core + Stage 1b Interactive Slice)
-**Status:** Ready for owner live-game validation (`2,504` tests passing, `0` warnings, `0` errors)
+**Status:** Ready for owner live-game validation (`2,660` tests on Windows CI: `2,656` passing and `4` skipped on the headless runner, `0` failed, `0` warnings, `0` errors)
 
 This guide walks through validating `jankscope-app.exe` against a real game on your PC (such as **Aim Lab** or **PC Building Simulator**) before proceeding to Stage 2 (Raw Input timing, display/GPU correlations, and kernel ETW opt-in).
 
@@ -36,6 +36,8 @@ Run the desktop app from PowerShell:
    - Click **Start capture**.
 3. Verify the status banner changes to **Capturing `<game>.exe`**, the live FPS / frame-time / 99th-percentile counters update every 500 ms, and the 60-second scrolling frame-time timeline draws smoothly.
 
+> **Dry run with the synthetic harness.** If you first capture `jankscope-harness.exe` instead of a game, the exported file is labelled **SIMULATED**: its trigger is `SyntheticHarness` and it carries a notice that it is not a measurement of a real game. That is correct. It exercises the same path, but only a capture of a real game counts as the validation below.
+
 ### Step 3 — Trigger an In-Game Incident Mark (`Ctrl+Alt+F9`)
 1. While playing (or right after inducing a stutter, such as changing graphics quality, alt-tabbing, or loading an asset), press **`Ctrl+Alt+F9`** (or **`Ctrl+Alt+F10`** for an input stall).
 2. Verify:
@@ -46,7 +48,7 @@ Run the desktop app from PowerShell:
 1. Switch back to Jankscope and open the **Investigator** tab.
 2. Select your mark in the left-hand list.
 3. Verify:
-   - The timeline shows the pre-roll window leading up to your mark, the mark's capture-clock uncertainty band, and numbered markers for the top **Candidate Anchors** found in the 10 seconds before your key press.
+   - The timeline shows the pre-roll window leading up to your mark, the mark's capture-clock uncertainty band (drawn only once at least 20 frames had been seen; it covers frame-delivery jitter only, and the capture tool's own minimum delay is not part of it), and numbered markers for the top **Candidate Anchors** found in the 10 seconds before your key press.
    - **No candidate is auto-selected** (the key press is never silently treated as the event time).
 4. Click **Candidate 1** (or click directly on a spike on the timeline to set a custom adjusted time, or click **Use key-press time**), and optionally add a short note describing what you saw.
 
@@ -55,6 +57,7 @@ Run the desktop app from PowerShell:
 2. In the **Export Preview** window, verify:
    - The summary header lists how many personal identifiers (`UserName`, `HostName`, `IpAddress`, etc.) were replaced and shows the exact SHA-256 hash of the output bytes.
    - Scroll through the JSON lines to verify your Windows username and PC hostname are replaced with `<USER>` and `<HOST>`.
+   - The data-quality notes state anything that was lost or left out (frames dropped by the capture queue, frames left out for being out of order, jumps of the capture clock) and what the key-press uncertainty covers. With fewer than 20 frames seen, the uncertainty is `null` (unknown), not `0`.
 3. Click **Save redacted JSON...** and save the report to disk.
 4. (Optional) Verify the saved file matches the preview SHA-256:
    ```powershell

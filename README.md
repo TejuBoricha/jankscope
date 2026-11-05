@@ -157,7 +157,7 @@ Full per-run data (`A1..B5`) is recorded in [`docs/benchmarks/overhead-v1.md`](d
 - **SDK:** [.NET 10 SDK (`10.0.402`)](https://dotnet.microsoft.com/download/dotnet/10.0) (pinned via [`global.json`](global.json); see [`docs/INSTALL.md`](docs/INSTALL.md))
 - **ETW Capture Rights:** Your Windows user account should belong to the built-in **Performance Log Users** group so PresentMon 2.6.0 can open an unelevated user-mode ETW session without Administrator prompts.
 
-### 1. Build, Prove & Run the Full Test Suite (`2,548` Tests)
+### 1. Build, Prove & Run the Full Test Suite (`2,660` Tests)
 
 ```powershell
 # Clone the repository
@@ -167,7 +167,7 @@ cd jankscope
 # Optional: Fetch and verify the pinned PresentMon 2.6.0 console binary (SHA-256 verified)
 powershell -NoProfile -ExecutionPolicy Bypass -File .\tools\fetch-third-party.ps1
 
-# Run restore, Release build (0 warnings), banned-API proof, analyzer wiring proof, 2,548 tests & CLI smoke gate
+# Run restore, Release build (0 warnings), banned-API proof, analyzer wiring proof, 2,660 tests & CLI smoke gate
 powershell -NoProfile -ExecutionPolicy Bypass -File .\build.ps1
 ```
 
@@ -275,7 +275,7 @@ Every stage requires a pre-implementation test plan, `0` build warnings, an inde
 | :--- | :--- | :--- | :--- |
 | **Stage 0** | **Bootstrap & Safety Cage:** Pinned `.NET 10` toolchain, `BannedApiAnalyzers` (`106` rules), lexer lints (`CSharpScanner`), capability matrix prototype, data-only catalogs, ADRs `0001–0007`. | **Done — Verified** | `562` initial tests · [`docs/reviews/stage-0.md`](docs/reviews/stage-0.md) · [`stage-0-pass2-reverify.md`](docs/reviews/stage-0-pass2-reverify.md) |
 | **Stage 1a** | **Headless Core:** Lock-free `RingBuffer`, `StutterDetector`, `PresentMonCsvParser`, supervised `PresentMonRunner` with handle SHA-256 verification, `OrphanSessionCleaner`, CPU/GPU(LUID)/Display/PDH probes, D3D11 `jankscope-harness`, CLI `incident` report, A-B-A-B overhead benchmark. | **Done — Verified** | `2,054` tests · [`docs/test-plans/stage-1a.md`](docs/test-plans/stage-1a.md) · [`docs/reviews/stage-1a.md`](docs/reviews/stage-1a.md) · [`stage-1a-reverify.md`](docs/reviews/stage-1a-reverify.md) |
-| **Stage 1b** | **Interactive Slice:** `RegisterHotKey` global marker, PCM `AudioCue`, `CaptureClockMap`, `CandidateAnchorFinder`, `IncidentRecorder`, two-layer `Redactor` + `ExportGuard`, WPF `jankscope-app` (`MainWindow`, `TimelineView`, `ExportWindow`), live E2E harness + PresentMon integration test. | **Done — Verified** *(at Owner Live-Game Validation Gate)* | **`2,548` tests (`2,544` passing, `4` skipped on the headless CI runner)** · [`docs/adr/0008-stage-1b-interactive-slice.md`](docs/adr/0008-stage-1b-interactive-slice.md) · [`docs/reviews/stage-1b.md`](docs/reviews/stage-1b.md) · [`docs/VALIDATION_1.md`](docs/VALIDATION_1.md) |
+| **Stage 1b** | **Interactive Slice:** `RegisterHotKey` global marker, PCM `AudioCue`, `CaptureClockMap`, `CandidateAnchorFinder`, `IncidentRecorder`, two-layer `Redactor` + `ExportGuard`, WPF `jankscope-app` (`MainWindow`, `TimelineView`, `ExportWindow`), live E2E harness + PresentMon integration test. | **Done — Verified** *(at Owner Live-Game Validation Gate)* | **`2,660` tests (`2,656` passing, `4` skipped on the headless CI runner)** · [`docs/adr/0008-stage-1b-interactive-slice.md`](docs/adr/0008-stage-1b-interactive-slice.md) · [`docs/reviews/stage-1b.md`](docs/reviews/stage-1b.md) · [`docs/VALIDATION_1.md`](docs/VALIDATION_1.md) |
 | **Stage 2** | **Input & Network Correlation:** Raw Input (`WM_INPUT`) device vs. system stall differentiation, display/GPU present correlation, opt-in network route/jitter characterization with honest ICMP limits. | Planned (Next) | [`MASTER_PROMPT_v4.md` §17](MASTER_PROMPT_v4.md) |
 | **Stage 3** | **Expanded Diagnosis:** Opt-in elevated ETW DPC/ISR & CPU scheduling correlation (strictly gated by `AntiCheatSafety.Decide`), expanded catalog coverage. | Planned | [`MASTER_PROMPT_v4.md` §17](MASTER_PROMPT_v4.md) |
 | **Stage 4** | **Controlled, Reversible Optimization:** Evidence-gated setting recommendations with mandatory before/after A/B verification and automatic transactional rollback. | Planned | [`MASTER_PROMPT_v4.md` §17](MASTER_PROMPT_v4.md) |
