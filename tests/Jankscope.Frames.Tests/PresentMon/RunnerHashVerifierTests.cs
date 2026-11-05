@@ -259,6 +259,11 @@ public class RunnerHashVerifierTests
     [InlineData("{\"file\":\"..\\\\evil.exe\",\"sizeBytes\":12,\"sha256\":\"%H\"}")]
     [InlineData("{\"file\":\"C:\\\\Windows\\\\System32\\\\cmd.exe\",\"sizeBytes\":12,\"sha256\":\"%H\"}")]
     [InlineData("{\"file\":\"\\\\\\\\server\\\\share\\\\a.exe\",\"sizeBytes\":12,\"sha256\":\"%H\"}")]
+    [InlineData("{\"file\":\"../evil.exe\",\"sizeBytes\":12,\"sha256\":\"%H\"}")]
+    [InlineData("{\"file\":\"sub/../../evil.exe\",\"sizeBytes\":12,\"sha256\":\"%H\"}")]
+    [InlineData("{\"file\":\"sub\\\\..\\\\..\\\\evil.exe\",\"sizeBytes\":12,\"sha256\":\"%H\"}")]
+    [InlineData("{\"file\":\"/etc/evil.exe\",\"sizeBytes\":12,\"sha256\":\"%H\"}")]
+    [InlineData("{\"file\":\"\\\\evil.exe\",\"sizeBytes\":12,\"sha256\":\"%H\"}")]
     [InlineData("{\"file\":\"\",\"sizeBytes\":12,\"sha256\":\"%H\"}")]
     public void A_malformed_or_escaping_lock_file_is_rejected_with_a_reason(string json)
     {
@@ -266,6 +271,22 @@ public class RunnerHashVerifierTests
         var lockPath = dir.File("test.lock.json");
         File.WriteAllText(lockPath, json.Replace("%H", new string('a', 64)));
         Assert.Throws<InvalidDataException>(() => PresentMonLockFile.Read(lockPath));
+    }
+
+    [Theory]
+    [InlineData("2.0/x.exe")]
+    [InlineData("2.0\\\\x.exe")]
+    [InlineData("a/../x.exe")]
+    [InlineData("./x.exe")]
+    public void A_relative_file_that_stays_inside_the_lock_files_directory_is_accepted_with_either_separator(string file)
+    {
+        using var dir = new TempDir();
+        var lockPath = dir.File("test.lock.json");
+        File.WriteAllText(lockPath, "{\"file\":\"" + file + "\",\"sizeBytes\":7,\"sha256\":\"" + new string('b', 64) + "\"}");
+
+        var pin = PresentMonLockFile.Read(lockPath);
+
+        Assert.Equal(7, pin.SizeBytes);
     }
 
     [Fact]

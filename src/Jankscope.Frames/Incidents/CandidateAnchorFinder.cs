@@ -189,7 +189,11 @@ public static class CandidateAnchorFinder
                 "If it felt bad, the cause may be a steady slowdown rather than a spike, or something this version does not measure.");
         }
 
-        if (mark.UncertaintyMs >= 20)
+        if (!mark.UncertaintyIsMeaningful)
+        {
+            notes.Add($"Only {mark.Observations.ToString(CultureInfo.InvariantCulture)} frame(s) had been seen when the key was pressed, too few to estimate how much their delivery delay varies, so the search window was not widened for it.");
+        }
+        else if (mark.UncertaintyMs >= 20)
         {
             notes.Add($"The mark time is uncertain by about {Ms(mark.UncertaintyMs)} ms because frames reach this program with varying delay.");
         }

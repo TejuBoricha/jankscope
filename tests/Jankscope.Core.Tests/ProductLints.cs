@@ -92,6 +92,11 @@ internal static class ProductLints
         // Registry writes (HC-8): posture is reported, never changed, until Stage 4
         new("registry writes", R(@"\.\s*(?:SetValue|CreateSubKey|DeleteValue|DeleteSubKey|DeleteSubKeyTree)\b|\bwritable\s*:\s*true\b|\bOpenSubKey\s*\([^()]*,\s*(?:true|RegistryKeyPermissionCheck|RegistryRights)"),
             "changing the registry is Stage 4 behind an approval flow; reads use OpenSubKey(string), which is read-only"),
+        // Keystrokes (HC-4: no keylogging). The native names are in NativeNamePatterns; these are the managed ways to watch the keyboard, which the native list
+        // cannot see (review of Stage 1b, finding 5). The hotkey is registered with RegisterHotKey and no key is read. Two reviewed exceptions exist in RepoLintTests.
+        new("managed keyboard reading", R(@"\b(?:Keyboard\s*\.\s*(?:IsKeyDown|IsKeyUp|IsKeyToggled|GetKeyStates|PrimaryDevice|Modifiers|FocusedElement)|KeyboardDevice|KeyEventArgs|TextCompositionEventArgs|" +
+                @"InputManager|ComponentDispatcher|(?:Preview)?(?:KeyDown|KeyUp|TextInput)|On(?:Preview)?(?:KeyDown|KeyUp|TextInput)|IMessageFilter|AddMessageFilter|AddHook|KeyInterop|KeyGesture|KeyBinding|InputBinding)\b"),
+            "reading keys outside the one reviewed navigation handler would be keylogging (HC-4); a global hotkey is registered with RegisterHotKey and reads no key"),
     ];
 
     public static IReadOnlyList<string> NativeNameHits(ScannedSource source) =>

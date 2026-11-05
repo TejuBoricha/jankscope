@@ -269,6 +269,16 @@ public partial class MainWindow : Window
             parts.Add($"{status.IgnoredFrames} frame(s) ignored (not swap-chain presents)");
         }
 
+        if (status.OutOfOrderFrames > 0)
+        {
+            parts.Add($"{status.OutOfOrderFrames} frame(s) left out (stamped earlier than the frame before)");
+        }
+
+        if (status.BackwardJumps > 0)
+        {
+            parts.Add($"the capture clock jumped back {status.BackwardJumps} time(s) (treated as a restart)");
+        }
+
         LiveSummary.Text = string.Join("  |  ", parts);
         LiveTimeline.Show(new TimelineData(memory, null, newest - LiveWindowMs, newest, newest, null, null, null, null, [], detected.Events.Select(e => e.TimestampMs).ToList()));
     }
@@ -456,7 +466,7 @@ public partial class MainWindow : Window
         var parts = new List<string>();
         if (mark.CaptureTime is { } time)
         {
-            parts.Add($"Key-press time is uncertain by about {time.UncertaintyMs.ToString("0", CultureInfo.InvariantCulture)} ms.");
+            parts.Add(KeyPressTimeText.Describe(time));
             parts.Add($"Before the mark: {mark.Window.AvailablePreRollSeconds.ToString("0", CultureInfo.InvariantCulture)} s recorded of the {mark.Window.RequestedPreRollSeconds.ToString("0", CultureInfo.InvariantCulture)} s asked for" + (mark.Window.PreRollShort ? " (not enough history yet; it is never padded)." : "."));
         }
         else
@@ -532,7 +542,7 @@ public partial class MainWindow : Window
             end,
             time.Ms,
             time.Ms,
-            time.UncertaintyMs,
+            time.UncertaintyIsMeaningful ? time.UncertaintyMs : null,
             windowEnd,
             mark.Selection?.TimestampMs,
             candidates,

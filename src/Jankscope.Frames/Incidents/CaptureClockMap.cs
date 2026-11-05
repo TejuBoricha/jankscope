@@ -4,10 +4,21 @@ namespace Jankscope.Frames.Incidents;
 /// A moment on the capture timeline (the clock the frame log's <c>TimeInMs</c> counts on) with the uncertainty of how it was obtained.
 /// </summary>
 /// <param name="Ms">Milliseconds on the capture clock.</param>
-/// <param name="UncertaintyMs">How far the estimate may be off because frames reach this program with varying delay (spec section 6.2: the timeline never claims finer ordering).</param>
+/// <param name="UncertaintyMs">
+/// The spread of the frame-delivery delay only (95th percentile minus the smallest). It does NOT include the capture tool's own minimum delay, which cannot be measured
+/// from here and makes <paramref name="Ms"/> earlier than the real moment, and it says nothing about the person's reaction time. Read it only when
+/// <see cref="UncertaintyIsMeaningful"/> is true: with fewer observations it is not a measurement (spec section 6.2: the timeline never claims finer ordering).
+/// </param>
 /// <param name="Observations">How many recent frames the estimate rests on.</param>
 /// <param name="Epoch">Increases each time the capture clock restarted; times of different epochs are not comparable.</param>
-public readonly record struct CaptureTime(double Ms, double UncertaintyMs, int Observations, int Epoch);
+public readonly record struct CaptureTime(double Ms, double UncertaintyMs, int Observations, int Epoch)
+{
+    /// <summary>
+    /// True when enough frames were seen for <see cref="UncertaintyMs"/> to say anything about the jitter. The 95th percentile of a handful of frames is just
+    /// the slowest of them, and one frame gives 0, which would read as "exact" (review of Stage 1b, finding 3). Unknown is shown as unknown, never as zero.
+    /// </summary>
+    public bool UncertaintyIsMeaningful => Observations >= CaptureClockMap.MinObservationsForJitter;
+}
 
 /// <summary>
 /// Maps this program's monotonic clock (QPC ticks) onto the capture clock, so that "the key was pressed now" can be placed among the frames.
@@ -24,6 +35,9 @@ public sealed class CaptureClockMap
 {
     /// <summary>A capture timestamp this much smaller than the newest one means the capture clock restarted (a new run of the capture tool).</summary>
     private const double RestartThresholdMs = 5.0;
+
+    /// <summary>How many frames the estimate needs before its jitter figure is shown: 20, so the 95th percentile is not simply the largest of a few values.</summary>
+    public const int MinObservationsForJitter = 20;
 
     private readonly long _frequency;
     private readonly double[] _delays;

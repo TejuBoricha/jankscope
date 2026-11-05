@@ -27,6 +27,26 @@ public class CandidateAnchorFinderTests
     private static CaptureTime Mark(double ms, double uncertaintyMs = 0) => new(ms, uncertaintyMs, 100, 0);
 
     [Fact]
+    public void Too_few_observations_are_stated_in_the_search_notes_instead_of_passing_for_an_exact_time()
+    {
+        var frames = Stream(30, (1000, 80));
+
+        var result = CandidateAnchorFinder.Find(frames, new CaptureTime(frames[1000].TimestampMs + 1200, 0, 1, 0));
+
+        Assert.Contains(result.Notes, n => n.Contains("Only 1 frame(s)") && n.Contains("too few"));
+    }
+
+    [Fact]
+    public void Enough_observations_do_not_add_the_too_few_note()
+    {
+        var frames = Stream(30, (1000, 80));
+
+        var result = CandidateAnchorFinder.Find(frames, Mark(frames[1000].TimestampMs + 1200));
+
+        Assert.DoesNotContain(result.Notes, n => n.Contains("too few"));
+    }
+
+    [Fact]
     public void A_spike_a_little_before_the_mark_is_offered_first_with_its_distance_and_size()
     {
         var frames = Stream(30, (1000, 80)); // a long frame near t = 17 s
