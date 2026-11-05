@@ -269,6 +269,16 @@ public partial class MainWindow : Window
             parts.Add($"{status.IgnoredFrames} frame(s) ignored (not swap-chain presents)");
         }
 
+        if (status.OutOfOrderFrames > 0)
+        {
+            parts.Add($"{status.OutOfOrderFrames} frame(s) left out (stamped earlier than the frame before)");
+        }
+
+        if (status.BackwardJumps > 0)
+        {
+            parts.Add($"the capture clock jumped back {status.BackwardJumps} time(s) (treated as a restart)");
+        }
+
         LiveSummary.Text = string.Join("  |  ", parts);
         LiveTimeline.Show(new TimelineData(memory, null, newest - LiveWindowMs, newest, newest, null, null, null, null, [], detected.Events.Select(e => e.TimestampMs).ToList()));
     }

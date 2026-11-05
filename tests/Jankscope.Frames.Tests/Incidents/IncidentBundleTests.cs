@@ -84,6 +84,30 @@ public class IncidentBundleTests
     }
 
     [Fact]
+    public void Frames_left_out_for_being_out_of_order_and_jumps_of_the_capture_clock_are_stated_in_the_export()
+    {
+        var (rig, mark) = MarkedStream();
+        var bundle = IncidentBundleBuilder.Build(
+            mark, rig.Recorder.CollectWindow(mark), Matrix(Row("a", "b")), outOfOrderFrames: 12, backwardJumps: 2);
+
+        Assert.Equal(12, bundle.DataQuality.OutOfOrderFrames);
+        Assert.Equal(2, bundle.DataQuality.BackwardJumps);
+        Assert.Contains(bundle.DataQuality.Notes, n => n.Contains("12 frame(s) were left out of the series"));
+        Assert.Contains(bundle.DataQuality.Notes, n => n.Contains("jumped back 2 time(s)"));
+    }
+
+    [Fact]
+    public void A_clean_capture_states_no_out_of_order_frames_and_no_clock_jumps()
+    {
+        var (rig, mark) = MarkedStream();
+        var bundle = IncidentBundleBuilder.Build(mark, rig.Recorder.CollectWindow(mark), Matrix(Row("a", "b")));
+
+        Assert.Equal(0, bundle.DataQuality.OutOfOrderFrames);
+        Assert.Equal(0, bundle.DataQuality.BackwardJumps);
+        Assert.DoesNotContain(bundle.DataQuality.Notes, n => n.Contains("left out of the series") || n.Contains("jumped back"));
+    }
+
+    [Fact]
     public void An_input_stall_mark_says_input_timing_is_not_collected_yet()
     {
         var (rig, mark) = MarkedStream(kind: MarkKind.InputStall);
