@@ -108,6 +108,32 @@ public class IncidentBundleTests
     }
 
     [Fact]
+    public void With_enough_frames_the_export_gives_the_jitter_and_always_says_it_is_the_jitter_only()
+    {
+        var (rig, mark) = MarkedStream();
+        Assert.True(mark.CaptureTime!.Value.UncertaintyIsMeaningful);
+
+        var bundle = IncidentBundleBuilder.Build(mark, rig.Recorder.CollectWindow(mark), Matrix(Row("a", "b")));
+
+        Assert.NotNull(bundle.Mark.CaptureUncertaintyMs);
+        Assert.Contains(bundle.DataQuality.Notes, n => n.Contains("jitter only") && n.Contains("minimum delay") && n.Contains("reaction time"));
+    }
+
+    [Fact]
+    public void With_too_few_frames_the_export_gives_no_uncertainty_number_and_says_unknown_not_zero()
+    {
+        // Review of Stage 1b, finding 3: "uncertainty 0.0" after one observation read as an exact time.
+        var (rig, mark) = MarkedStream();
+        var window = rig.Recorder.CollectWindow(mark);
+        var few = mark with { CaptureTime = new CaptureTime(mark.CaptureTime!.Value.Ms, 0.0, 1, 0) };
+
+        var bundle = IncidentBundleBuilder.Build(few, window, Matrix(Row("a", "b")));
+
+        Assert.Null(bundle.Mark.CaptureUncertaintyMs);
+        Assert.Contains(bundle.DataQuality.Notes, n => n.Contains("only 1 frame(s)") && n.Contains("unknown, not zero") && n.Contains("minimum delay"));
+    }
+
+    [Fact]
     public void An_input_stall_mark_says_input_timing_is_not_collected_yet()
     {
         var (rig, mark) = MarkedStream(kind: MarkKind.InputStall);

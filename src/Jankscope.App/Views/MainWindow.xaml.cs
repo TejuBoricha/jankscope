@@ -466,7 +466,7 @@ public partial class MainWindow : Window
         var parts = new List<string>();
         if (mark.CaptureTime is { } time)
         {
-            parts.Add($"Key-press time is uncertain by about {time.UncertaintyMs.ToString("0", CultureInfo.InvariantCulture)} ms.");
+            parts.Add(KeyPressTimeText.Describe(time));
             parts.Add($"Before the mark: {mark.Window.AvailablePreRollSeconds.ToString("0", CultureInfo.InvariantCulture)} s recorded of the {mark.Window.RequestedPreRollSeconds.ToString("0", CultureInfo.InvariantCulture)} s asked for" + (mark.Window.PreRollShort ? " (not enough history yet; it is never padded)." : "."));
         }
         else
@@ -542,7 +542,7 @@ public partial class MainWindow : Window
             end,
             time.Ms,
             time.Ms,
-            time.UncertaintyMs,
+            time.UncertaintyIsMeaningful ? time.UncertaintyMs : null,
             windowEnd,
             mark.Selection?.TimestampMs,
             candidates,

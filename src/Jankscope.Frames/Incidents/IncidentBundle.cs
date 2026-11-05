@@ -135,9 +135,11 @@ public static class IncidentBundleBuilder
             notes.Add($"{rejected.ToString(CultureInfo.InvariantCulture)} frame(s) with an unusable frame time were left out of the statistics and the series.");
         }
 
-        if (mark.CaptureTime is { } time && time.UncertaintyMs >= 20)
+        if (mark.CaptureTime is { } time)
         {
-            notes.Add($"The mark time on the capture clock is uncertain by about {Number(time.UncertaintyMs)} ms (frame delivery jitter); the event itself is earlier by the delivery delay and the person's reaction time.");
+            notes.Add(time.UncertaintyIsMeaningful
+                ? $"The mark time on the capture clock has a frame-delivery jitter of about {Number(time.UncertaintyMs)} ms. That is the jitter only: the capture tool's own minimum delay cannot be measured here and is not included, and the event itself happened before the key press by the person's reaction time."
+                : $"The mark time on the capture clock rests on only {time.Observations.ToString(CultureInfo.InvariantCulture)} frame(s), too few to estimate its jitter, so no uncertainty is given (it is unknown, not zero). The capture tool's own minimum delay cannot be measured here and is not included, and the event itself happened before the key press by the person's reaction time.");
         }
 
         notes.Add("The stutter thresholds are the uncalibrated defaults; grades derived from them are capped until a baseline exists.");
@@ -175,7 +177,7 @@ public static class IncidentBundleBuilder
             mark.Kind == MarkKind.Stutter ? "The person pressed the stutter key after feeling a stutter." : "The person pressed the input-stall key after input froze.",
             mark.PressedUtc,
             mark.CaptureTime is { } t ? Math.Round(t.Ms, 3) : null,
-            mark.CaptureTime is { } u ? Math.Round(u.UncertaintyMs, 3) : null,
+            mark.CaptureTime is { UncertaintyIsMeaningful: true } u ? Math.Round(u.UncertaintyMs, 3) : null,
             mark.TargetProcess,
             mark.Note);
 
