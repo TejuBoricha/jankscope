@@ -45,7 +45,7 @@ flowchart LR
 
 #### Stage 1a: Headless Diagnostic Core (Complete)
 - **Scope:** 14 system capability probes (41 capability rows), Intel PresentMon 2.6.0 runner integration, ring buffer frame storage, stutter detection algorithm, synthetic D3D11 harness, CLI diagnostic report.
-- **Verification:** Independent code review closed, benchmark overhead verified (0.033 ms observer delta).
+- **Verification:** Independent code review closed, benchmark overhead verified (median `Present()` error delta +0.009 ms against a 0.200 ms budget; `docs/benchmarks/overhead-v1.md`).
 
 #### Stage 1b: Desktop GUI & Incident Investigator (Complete)
 - **Scope:** Unelevated WPF desktop interface, live 30 s pacing timeline, global stutter/stall hotkey capture (`RegisterHotKey`), candidate anchor detection, redaction engine and byte-exact export preview.
@@ -60,7 +60,7 @@ flowchart LR
 ### Tier 2: Version 1.0 General Availability
 
 #### Stage 3: Expanded Diagnostics & Elevated Helper
-- **Scope:** Out-of-process architecture (ADR 0008), authenticated named-pipe IPC, DPC/ISR driver latency monitors, storage queue latency / WHEA hardware error trackers, resident anti-cheat coexistence verification.
+- **Scope:** Out-of-process architecture (ADR 0002), authenticated named-pipe IPC, DPC/ISR driver latency monitors, storage queue latency / WHEA hardware error trackers, resident anti-cheat coexistence verification.
 
 #### Stage 4: Controlled Optimization & Rollback
 - **Scope:** Evidence-based optimization recommendations, strict precondition evaluation (HC-11), atomic journal with automated rollback on reboot, benchmark A/B verification protocol.
