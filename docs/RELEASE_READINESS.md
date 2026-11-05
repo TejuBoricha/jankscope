@@ -9,7 +9,7 @@ This document serves as the formal checklist and decision ledger for releasing J
 | Gate | Requirement | Current Status | Evidence / Notes |
 |---|---|---|---|
 | **Build Warnings** | 0 warnings, warnings treated as errors | **PASS** | Enforced by `Directory.Build.props` (`TreatWarningsAsErrors=true`). |
-| **Test Suite** | 100% pass across all unit and integration tests | **PASS** | CI run `41867073761` on `main`: 2,544 passed, 0 failed, 4 skipped (the real-PresentMon tests skip on the headless runner). Reference PC per `CONTEXT.md`: 2,547 passed, 1 skipped (symlink privileges). |
+| **Test Suite** | 100% pass across all unit and integration tests | **PASS** | CI on `main` at `228366d` (run 30): 2,656 passed, 0 failed, 4 skipped (the real-PresentMon tests skip on the headless runner), 2,660 tests in all. No local run on the reference PC since these changes. |
 | **Banned APIs** | 106 rules proven to fire in test suite | **PASS** | Verified by `tools/dev/verify-banned-symbols.ps1`. |
 | **Analyzer Wiring** | Analyzer verified active on all product projects | **PASS** | Verified by `tools/dev/verify-analyzer-wiring.ps1`. |
 | **Code Hygiene** | ASCII-only C# code, valid UTF-8, no mojibake | **PASS** | Enforced by `RepoLintTests`. |
