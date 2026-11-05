@@ -58,6 +58,16 @@ public class HotkeyRegistrarTests
 {
     private const nint Window = 0x1234;
 
+    [Theory]
+    [InlineData("Ctrl+Alt+F9", 0x4000u | 0x2u | 0x1u)]
+    [InlineData("Ctrl+F1", 0x4000u | 0x2u)]
+    [InlineData("Alt+Shift+K", 0x4000u | 0x1u | 0x4u)]
+    public void Every_chord_is_registered_with_the_no_repeat_flag_so_holding_it_is_one_press(string chord, uint expected)
+    {
+        // MOD_NOREPEAT is 0x4000 (winuser.h). Written as a literal here: a test built from the production constant could not notice it being dropped or changed.
+        Assert.Equal(expected, WindowsHotkeyApi.NativeModifiers(HotkeyChord.Parse(chord)));
+    }
+
     [Fact]
     public void Both_chords_are_registered_with_the_window_and_stable_ids()
     {

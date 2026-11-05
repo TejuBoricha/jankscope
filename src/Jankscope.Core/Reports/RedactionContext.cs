@@ -77,22 +77,29 @@ public sealed class RedactionContext
     }
 
     /// <summary>The user name, the profile folder name (it can differ from the user name), the domain when it is not just the host, and the host name.</summary>
-    public static RedactionContext ForThisMachine()
+    public static RedactionContext ForThisMachine() =>
+        ForMachine(Environment.UserName, Environment.MachineName, Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), Environment.UserDomainName);
+
+    /// <summary>
+    /// <see cref="ForThisMachine"/> with the four values given, so that its rules (the profile folder name counts as a user name; the domain counts as a host
+    /// name unless it only repeats the host) can be tested with values that differ. Blank values are ignored.
+    /// </summary>
+    public static RedactionContext ForMachine(string? userName, string? machineName, string? profilePath, string? domainName)
     {
         var context = Empty
-            .With(RedactionCategory.UserName, Environment.UserName)
-            .With(RedactionCategory.HostName, Environment.MachineName);
+            .With(RedactionCategory.UserName, userName)
+            .With(RedactionCategory.HostName, machineName);
 
-        var profile = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
-        if (!string.IsNullOrWhiteSpace(profile))
+        if (!string.IsNullOrWhiteSpace(profilePath))
         {
-            context = context.With(RedactionCategory.UserName, Path.GetFileName(profile.TrimEnd('\\', '/')));
+            // Both separators, whatever the machine: Path.GetFileName only splits on a backslash on Windows.
+            var trimmed = profilePath.TrimEnd('\\', '/');
+            context = context.With(RedactionCategory.UserName, trimmed[(trimmed.LastIndexOfAny(['\\', '/']) + 1)..]);
         }
 
-        var domain = Environment.UserDomainName;
-        if (!string.IsNullOrWhiteSpace(domain) && !string.Equals(domain, Environment.MachineName, StringComparison.OrdinalIgnoreCase))
+        if (!string.IsNullOrWhiteSpace(domainName) && !string.Equals(domainName, machineName, StringComparison.OrdinalIgnoreCase))
         {
-            context = context.With(RedactionCategory.HostName, domain);
+            context = context.With(RedactionCategory.HostName, domainName);
         }
 
         return context;
