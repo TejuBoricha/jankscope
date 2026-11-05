@@ -9,11 +9,11 @@ This document serves as the formal checklist and decision ledger for releasing J
 | Gate | Requirement | Current Status | Evidence / Notes |
 |---|---|---|---|
 | **Build Warnings** | 0 warnings, warnings treated as errors | **PASS** | Enforced by `Directory.Build.props` (`TreatWarningsAsErrors=true`). |
-| **Test Suite** | 100% pass across all unit and integration tests | **PASS** | 2,507 passed, 0 failed, 1 skipped (requires symlink privileges). |
+| **Test Suite** | 100% pass across all unit and integration tests | **PASS** | CI run `41867073761` on `main`: 2,544 passed, 0 failed, 4 skipped (the real-PresentMon tests skip on the headless runner). Reference PC per `CONTEXT.md`: 2,547 passed, 1 skipped (symlink privileges). |
 | **Banned APIs** | 106 rules proven to fire in test suite | **PASS** | Verified by `tools/dev/verify-banned-symbols.ps1`. |
 | **Analyzer Wiring** | Analyzer verified active on all product projects | **PASS** | Verified by `tools/dev/verify-analyzer-wiring.ps1`. |
 | **Code Hygiene** | ASCII-only C# code, valid UTF-8, no mojibake | **PASS** | Enforced by `RepoLintTests`. |
-| **Overhead Bound** | Observer overhead delta below 0.1 ms | **PASS** | Measured at 0.033 ms median delta across 10 runs (`docs/benchmarks/overhead-v1.md`). |
+| **Overhead Bound** | Observer overhead within the spec section 14 budgets (median `Present()` error < 0.200 ms, p99 < 0.500 ms, median frame time < 0.100 ms) | **PASS** | Measured deltas +0.009 ms, -0.012 ms and +0.002 ms across 10 interleaved runs (`docs/benchmarks/overhead-v1.md`). |
 | **Supply Chain** | SBOM generated, zero unvetted dependencies | **PASS** | CI workflow generates CycloneDX SBOM; licenses verified in `docs/THIRD_PARTY.md`. |
 
 ---
