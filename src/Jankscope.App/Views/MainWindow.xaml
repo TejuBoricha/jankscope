@@ -444,9 +444,9 @@
                         <!-- Row 3: 3-Column Causal Decision, Evidence-Graded Hypotheses & Smoothness Matrix -->
                         <Grid Grid.Row="3">
                             <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="1.2*"/>
-                                <ColumnDefinition Width="1.2*"/>
                                 <ColumnDefinition Width="1.1*"/>
+                                <ColumnDefinition Width="1.5*"/>
+                                <ColumnDefinition Width="1.0*"/>
                             </Grid.ColumnDefinitions>
 
                             <!-- Col 0: Candidate Spike Anchors & Contextual Note -->
