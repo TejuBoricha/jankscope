@@ -201,7 +201,7 @@ public static class DerivedCapabilities
             ? CapabilityEntry.Available("mode.optimize", "Optimize mode eligibility", CapabilityTier.A, "derived",
                 "eligible (each action still needs its own eligibility, evidence and approval; Stage 4)", DataProvenance.Inferred)
             : CapabilityEntry.Unavailable("mode.optimize", "Optimize mode eligibility", CapabilityTier.A, Availability.NotAvailable, "derived",
-                $"Recommend-only: {string.Join("; ", blockers)}. Managed or unknown configurations default to Recommend-only (HC-11, spec §3.5)."));
+                $"Recommend-only: {string.Join("; ", blockers)}. Managed or unknown configurations default to Recommend-only."));
 
         return result;
     }

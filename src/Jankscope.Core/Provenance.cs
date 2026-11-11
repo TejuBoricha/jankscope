@@ -40,7 +40,7 @@ public static class ProvenanceRules
         if (!provenance.MayBeExportedAsMeasurement())
         {
             throw new InvalidOperationException(
-                $"Data with provenance '{provenance}' cannot be exported as a measurement (HC-9).");
+                $"Data with provenance '{provenance}' cannot be exported as a measurement.");
         }
     }
 }

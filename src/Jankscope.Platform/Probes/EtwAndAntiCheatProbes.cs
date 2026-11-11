@@ -310,7 +310,7 @@ public sealed class AntiCheatProbe(
     private static CapabilityEntry StateRow(AntiCheatSafetyState state, List<string> gaps)
     {
         const string Id = "anticheat.state";
-        const string Title = "Anti-cheat safety state (HC-1)";
+        const string Title = "Anti-cheat safety state";
         const string Source = "AntiCheatSafety.Classify";
 
         // Unknown only arises when nothing restrictive is already known: a protected title or game session holds whatever else is unknown.
@@ -318,7 +318,7 @@ public sealed class AntiCheatProbe(
         {
             return CapabilityEntry.Unavailable(Id, Title, CapabilityTier.A, Availability.Unknown, Source,
                 $"cannot rule out a game session or protected title ({string.Join("; ", gaps)}). " +
-                "Elevated and kernel collectors are treated as suppressed until this is known (HC-1).");
+                "Elevated and kernel collectors are treated as suppressed until this is known.");
         }
 
         return CapabilityEntry.Available(Id, Title, CapabilityTier.A, Source,

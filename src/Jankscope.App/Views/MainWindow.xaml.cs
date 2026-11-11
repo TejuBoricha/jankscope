@@ -100,7 +100,7 @@ public partial class MainWindow : Window
         ThemeLight.IsChecked = settings.Theme == "Light";
         ThemeDark.IsChecked = settings.Theme == "Dark";
         ProgramBox.Text = settings.LastProgram ?? string.Empty;
-        VersionLine.Text = "Version " + (typeof(MainWindow).Assembly.GetName().Version?.ToString(3) ?? "0.1.0") + " (Studio Forensic Edition). MIT Open Source.";
+        VersionLine.Text = "Version " + (typeof(MainWindow).Assembly.GetName().Version?.ToString(3) ?? "0.1.0") + ". MIT open source.";
 
         _tick.Tick += (_, _) => OnTick();
         _noticeTimer.Tick += (_, _) =>
@@ -411,7 +411,7 @@ public partial class MainWindow : Window
             ProvenanceBadge.Background = (Brush)FindResource("SimulatedSurfaceBrush");
             ProvenanceBadge.BorderBrush = (Brush)FindResource("SimulatedBorderBrush");
             ProvenanceBadgeText.Foreground = (Brush)FindResource("SimulatedTextBrush");
-            ProvenanceBadgeText.Text = "PROVENANCE: SIMULATED DEMO (HC-9)";
+            ProvenanceBadgeText.Text = "PROVENANCE: SIMULATED DEMO";
         }
         else
         {
@@ -480,7 +480,7 @@ public partial class MainWindow : Window
         var outcome = await _host.MarkAsync(MarkKind.Stutter);
         if (outcome.Kind == MarkOutcomeKind.Recorded)
         {
-            ShowNotice("Simulated 120 FPS session active and sample stutter marked! Switch to '2. Forensic Investigator' to inspect the root-cause workbench.", problem: false);
+            ShowNotice("Simulated 120 FPS session active and sample stutter marked! Open Replay to inspect the root cause.", problem: false);
         }
     }
 
@@ -783,7 +783,7 @@ public partial class MainWindow : Window
                     Name: "No frame-pacing stutter exceeded threshold in this window",
                     Summary: "All evaluated frames stayed within 2.5x of the rolling median or under +4.0 ms excess.",
                     SupportingEvidence: "Supporting Evidence: Frame times remained flat across the captured window.",
-                    FalsifierText: "What would falsify: Check the Input & Polling Lab if the freeze felt like a mouse/camera turn stall."));
+                    FalsifierText: "What would falsify: Check the Input lab if the stall felt like a mouse or camera turn."));
             }
 
             HypothesesList.ItemsSource = cards;
@@ -942,7 +942,7 @@ public partial class MainWindow : Window
             var id when id.StartsWith("cpu.", StringComparison.Ordinal) =>
                 "Detects heterogeneous core topology (performance vs. efficiency cores) and SMT layout that affect thread scheduling.",
             var id when id.StartsWith("anticheat.", StringComparison.Ordinal) =>
-                "Passive service/driver presence check (HC-1). Jankscope never hooks or reads game processes regardless of anti-cheat state.",
+                "Passive service/driver presence check. Jankscope never hooks or reads game processes regardless of anti-cheat state.",
             var id when id.StartsWith("security.", StringComparison.Ordinal) =>
                 "Virtualization-based security (HVCI/VBS) and hypervisor posture can add measurable context-switch overhead in CPU-bound games.",
             var id when id.StartsWith("pdh.", StringComparison.Ordinal) =>

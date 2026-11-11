@@ -1,7 +1,7 @@
 <Window x:Class="Jankscope.App.Views.MainWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        Title="Jankscope Studio - Frame Pacing &amp; Stutter Forensics" Width="1440" Height="900" MinWidth="1020" MinHeight="700"
+        Title="Jankscope - Frame pacing and input stalls" Width="1440" Height="900" MinWidth="1020" MinHeight="700"
         WindowStartupLocation="CenterScreen"
         Background="{DynamicResource WindowBackgroundBrush}" Foreground="{DynamicResource ForegroundBrush}"
         FontFamily="Segoe UI" FontSize="12.5">
@@ -18,10 +18,7 @@
                 <StackPanel DockPanel.Dock="Top" Margin="8,0,8,14">
                     <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
                         <Border Width="8" Height="16" CornerRadius="2" Background="{DynamicResource CyanAccentBrush}" Margin="0,0,8,0"/>
-                        <TextBlock Text="JANK//SCOPE" FontFamily="Consolas" FontSize="16" FontWeight="Bold" VerticalAlignment="Center"/>
-                        <Border Style="{StaticResource BadgeBorder}" Background="{DynamicResource AccentSoftBrush}" BorderBrush="{DynamicResource AccentBrush}" Margin="8,0,0,0" Padding="5,1">
-                            <TextBlock Text="PRO" FontFamily="Consolas" FontSize="9.5" FontWeight="Bold" Foreground="{DynamicResource CyanAccentBrush}"/>
-                        </Border>
+                        <TextBlock Text="Jankscope" FontFamily="Consolas" FontSize="16" FontWeight="Bold" VerticalAlignment="Center"/>
                     </StackPanel>
                     <TextBlock Style="{StaticResource Muted}" FontFamily="Consolas" FontSize="10" Margin="0,4,0,0" Text="PRECISION FRAME &amp; INPUT FORENSICS"/>
                 </StackPanel>
@@ -37,27 +34,27 @@
                         <TextBlock x:Name="NavHotkeyInput" Style="{StaticResource MonoValue}" FontSize="11.5" Margin="0,0,0,2"/>
                         <TextBlock x:Name="NavHotkeyProblem" Foreground="{DynamicResource WarningBrush}" TextWrapping="Wrap" FontSize="11" Visibility="Collapsed"/>
                         <Border Height="1" Background="{DynamicResource BorderLineBrush}" Margin="0,6"/>
-                        <TextBlock Style="{StaticResource Muted}" FontFamily="Consolas" FontSize="9.5" Text="HC-1..13 // ZERO HOOKS // OFFLINE"/>
+                        <TextBlock Style="{StaticResource Muted}" FontFamily="Consolas" FontSize="9.5" Text="No hooks. Offline."/>
                     </StackPanel>
                 </Border>
 
                 <!-- Studio Workspace Matrix Rail -->
                 <StackPanel>
-                    <TextBlock Style="{StaticResource Overline}" Margin="10,0,0,5" Text="TELEMETRY DECKS"/>
+                    <TextBlock Style="{StaticResource Overline}" Margin="10,0,0,5" Text="WATCH AND REPLAY"/>
                     <RadioButton x:Name="NavCapture" Style="{StaticResource NavButton}" GroupName="Nav" IsChecked="True" Checked="OnNavChanged"
-                                 Content="01 // Live Capture Scope" AutomationProperties.Name="Live Capture and Scope"/>
+                                 Content="Watch" AutomationProperties.Name="Watch: live frame timing"/>
                     <RadioButton x:Name="NavInvestigator" Style="{StaticResource NavButton}" GroupName="Nav" Checked="OnNavChanged"
-                                 Content="02 // Forensic Workbench" AutomationProperties.Name="Stutter investigator"/>
-                    <RadioButton x:Name="NavRadar" Style="{StaticResource NavButton}" GroupName="Nav" Checked="OnNavChanged"
-                                 Content="03 // Capability Radar" AutomationProperties.Name="System Capability Radar"/>
-                    <RadioButton x:Name="NavLab" Style="{StaticResource NavButton}" GroupName="Nav" Checked="OnNavChanged"
-                                 Content="04 // Input Polling Lab" AutomationProperties.Name="Input and Polling Lab"/>
+                                 Content="Replay" AutomationProperties.Name="Replay: marked moments"/>
 
-                    <TextBlock Style="{StaticResource Overline}" Margin="10,16,0,5" Text="SYSTEM &amp; TRUST"/>
+                    <TextBlock Style="{StaticResource Overline}" Margin="10,16,0,5" Text="TOOLS &amp; TRUST"/>
+                    <RadioButton x:Name="NavRadar" Style="{StaticResource NavButton}" GroupName="Nav" Checked="OnNavChanged"
+                                 Content="Capability check" AutomationProperties.Name="Capability check"/>
+                    <RadioButton x:Name="NavLab" Style="{StaticResource NavButton}" GroupName="Nav" Checked="OnNavChanged"
+                                 Content="Input lab" AutomationProperties.Name="Input lab"/>
                     <RadioButton x:Name="NavSettings" Style="{StaticResource NavButton}" GroupName="Nav" Checked="OnNavChanged"
-                                 Content="05 // Studio Configuration" AutomationProperties.Name="Settings"/>
+                                 Content="Settings" AutomationProperties.Name="Settings"/>
                     <RadioButton x:Name="NavAbout" Style="{StaticResource NavButton}" GroupName="Nav" Checked="OnNavChanged"
-                                 Content="06 // Spec &amp; Privacy Proof" AutomationProperties.Name="About and privacy"/>
+                                 Content="Trust" AutomationProperties.Name="Trust: what Jankscope does and does not do"/>
                 </StackPanel>
             </DockPanel>
         </Border>
@@ -564,7 +561,7 @@
                         <Button DockPanel.Dock="Right" Content="Export Redacted Compatibility Report..." Style="{StaticResource PrimaryButton}"
                                 Click="OnExportCompatibilityClicked" VerticalAlignment="Center" Margin="16,0,0,0"/>
                         <StackPanel>
-                            <TextBlock Style="{StaticResource Heading}" Text="System Readiness &amp; Capability Radar"/>
+                            <TextBlock Style="{StaticResource Heading}" Text="Capability check"/>
                             <TextBlock Style="{StaticResource Muted}" FontSize="12"
                                        Text="Probes 41 read-only hardware, display, OS security, anti-cheat coexistence, and ETW telemetry rows at startup. Every row explains what was detected, its provenance, and its impact on frame pacing."/>
                         </StackPanel>
@@ -597,7 +594,7 @@
                         <StackPanel>
                             <TextBlock Style="{StaticResource Overline}" Text="ANTI-CHEAT POSTURE"/>
                             <TextBlock x:Name="RadarAntiCheatStatus" Style="{StaticResource KpiValue}" FontSize="19" Text="Checking..." Margin="0,3,0,1"/>
-                            <TextBlock Style="{StaticResource Muted}" FontFamily="Consolas" FontSize="10.5" Text="HC-1 passive coexistence"/>
+                            <TextBlock Style="{StaticResource Muted}" FontFamily="Consolas" FontSize="10.5" Text="Passive check: reads names only, never hooks"/>
                         </StackPanel>
                     </Border>
                 </UniformGrid>
@@ -674,9 +671,9 @@
                             <Button Content="Reset Lab Buffer" Click="OnLabResetClicked" Margin="0"/>
                         </StackPanel>
                         <StackPanel>
-                            <TextBlock Style="{StaticResource Heading}" Text="Input Continuity &amp; Mouse Polling Lab"/>
+                            <TextBlock Style="{StaticResource Heading}" Text="Input lab"/>
                             <TextBlock Style="{StaticResource Muted}" FontSize="12"
-                                       Text="Distinguishes GPU/CPU frame hitches from wireless 2.4 GHz polling drops, USB hub contention, and message-pump stalls. Orbit your cursor inside the vector reticle below to measure pointer delivery intervals in real time (100% HC-4 compliant)."/>
+                                       Text="Distinguishes GPU/CPU frame hitches from wireless 2.4 GHz polling drops, USB hub contention, and message-pump stalls. Orbit your cursor inside the vector reticle below to measure pointer delivery intervals in real time. It uses no hooks and reads no keys."/>
                         </StackPanel>
                     </DockPanel>
                 </Border>
@@ -761,14 +758,14 @@
                 <StackPanel>
                     <Border Style="{StaticResource HeroCard}" Margin="0,0,0,12">
                         <StackPanel>
-                            <TextBlock Style="{StaticResource Heading}" Text="Studio Configuration &amp; Capture Ring"/>
+                            <TextBlock Style="{StaticResource Heading}" Text="Settings and capture buffer"/>
                             <TextBlock Style="{StaticResource Muted}" Text="Configure global mark hotkeys, rolling pre-roll/post-roll memory window lengths, audible confirmation tones, and visual theme."/>
                         </StackPanel>
                     </Border>
 
                     <Border Style="{StaticResource Card}" Margin="0,0,0,12">
                         <StackPanel>
-                            <TextBlock Style="{StaticResource CardTitle}" Text="01 // GLOBAL MARK HOTKEYS (HC-4 REGISTERHOTKEY)"/>
+                            <TextBlock Style="{StaticResource CardTitle}" Text="GLOBAL MARK HOTKEYS"/>
                             <TextBlock Style="{StaticResource Muted}" FontSize="11.5" Margin="0,3,0,10"
                                        Text="Each hotkey requires at least one modifier (Ctrl, Alt, or Shift) plus a key (for example Ctrl+Alt+F9). Windows notifies Jankscope only when that exact chord is pressed."/>
                             <Grid>
@@ -781,11 +778,11 @@
                                     <RowDefinition Height="Auto"/>
                                     <RowDefinition Height="Auto"/>
                                 </Grid.RowDefinitions>
-                                <TextBlock Grid.Row="0" Grid.Column="0" Text="Mark Stutter Chord" VerticalAlignment="Center" Margin="0,0,0,8"/>
+                                <TextBlock Grid.Row="0" Grid.Column="0" Text="Mark stutter" VerticalAlignment="Center" Margin="0,0,0,8"/>
                                 <TextBox x:Name="StutterChordBox" Grid.Row="0" Grid.Column="1" Margin="0,0,12,8" AutomationProperties.Name="Mark stutter hotkey"/>
                                 <TextBlock x:Name="StutterChordStatus" Grid.Row="0" Grid.Column="2" VerticalAlignment="Center" Margin="0,0,0,8" TextWrapping="Wrap"/>
 
-                                <TextBlock Grid.Row="1" Grid.Column="0" Text="Mark Input Freeze Chord" VerticalAlignment="Center"/>
+                                <TextBlock Grid.Row="1" Grid.Column="0" Text="Mark input stall" VerticalAlignment="Center"/>
                                 <TextBox x:Name="InputChordBox" Grid.Row="1" Grid.Column="1" Margin="0,0,12,0" AutomationProperties.Name="Mark input stall hotkey"/>
                                 <TextBlock x:Name="InputChordStatus" Grid.Row="1" Grid.Column="2" VerticalAlignment="Center" TextWrapping="Wrap"/>
                             </Grid>
@@ -815,7 +812,7 @@
                             <CheckBox x:Name="SoundCheck" Margin="0,12,0,8" Content="Play an audible confirmation tone when a mark hotkey is pressed (zero in-game visual overlay)"/>
                             <WrapPanel>
                                 <Button Content="Test Stutter Tone (Rising)" Click="OnTestStutterToneClicked"/>
-                                <Button Content="Test Input-Freeze Tone (Falling)" Click="OnTestInputToneClicked"/>
+                                <Button Content="Test input-stall tone (falling)" Click="OnTestInputToneClicked"/>
                                 <Button Content="Test Not-Capturing Tone (Low)" Click="OnTestWarnToneClicked" Margin="0"/>
                             </WrapPanel>
                         </StackPanel>
@@ -849,7 +846,7 @@
                         <DockPanel>
                             <Button DockPanel.Dock="Right" Content="Show Welcome &amp; Privacy Notice" Click="OnShowWelcomeClicked" VerticalAlignment="Center" Margin="16,0,0,0"/>
                             <StackPanel>
-                                <TextBlock Style="{StaticResource Heading}" Text="Architecture Specification &amp; Privacy Guarantees"/>
+                                <TextBlock Style="{StaticResource Heading}" Text="Trust: what Jankscope does and does not do"/>
                                 <TextBlock x:Name="VersionLine" Style="{StaticResource Muted}" FontFamily="Consolas"/>
                             </StackPanel>
                         </DockPanel>
@@ -866,7 +863,7 @@
                         </Border>
                         <Border Style="{StaticResource Card}">
                             <StackPanel>
-                                <TextBlock Style="{StaticResource Overline}" Foreground="{DynamicResource CyanAccentBrush}" Text="COMPILE-TIME HARD CONSTRAINTS (HC-1 .. HC-13)"/>
+                                <TextBlock Style="{StaticResource Overline}" Foreground="{DynamicResource CyanAccentBrush}" Text="HARD CONSTRAINTS, CHECKED AT COMPILE TIME"/>
                                 <TextBlock Style="{StaticResource CardTitle}" Margin="0,4,0,6" Text="Static Banned-Symbol Safety Proofs"/>
                                 <TextBlock Style="{StaticResource Muted}" FontSize="11.5"
                                            Text="1. Zero DLL injection, API hooks, or foreign process memory reads.&#x0a;2. Zero kernel drivers or undocumented syscalls.&#x0a;3. Zero in-game overlays or D3D/Vulkan swap-chain hooks.&#x0a;4. Zero outbound network connections (System.Net.* is banned at compile time)."/>
@@ -881,7 +878,7 @@
                             <TextBlock x:Name="ProblemsBox" Foreground="{DynamicResource WarningBrush}" TextWrapping="Wrap" Margin="0,0,0,10" Visibility="Collapsed"/>
                             <WrapPanel>
                                 <Button x:Name="ExportCompatibilityButton" Content="Export Redacted Compatibility Report..." Style="{StaticResource PrimaryButton}" Click="OnExportCompatibilityClicked"/>
-                                <Button Content="Open System Capability Radar" Click="OnJumpToRadarClicked" Margin="0"/>
+                                <Button Content="Open capability check" Click="OnJumpToRadarClicked" Margin="0"/>
                             </WrapPanel>
                         </StackPanel>
                     </Border>
