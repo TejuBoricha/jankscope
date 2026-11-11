@@ -34,6 +34,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 - **Shipped files are never taken from the root of the drive (independent Stage 1b review, finding 15):** the search for the catalogs and for the capture tool's lock file stopped only at the drive root, where a standard user can usually create folders. It now stops below it.
 - **Settings file no longer contains computed hotkey values (finding 14).**
 - **The live refresh stops while the window is hidden; Quit always ends the program; candidate list items have a readable accessibility name (independent Stage 1b review, findings 8, 11 and 12).** Tests now pin that only the hotkey message is acted on and that a new capture starts with an empty clock.
+- **The key-press time is taken when the press is first handled, not after the hop to a worker thread (finding 10).**
 - **Limitations stated as they are (findings 9 and 16):** a crash leaves the capture tool running until the next start (L23); the real-binary tests are still timing-sensitive (L27); the 200 MB memory budget of the spec is not shown to be met (L30).
 
 ---

@@ -308,7 +308,7 @@ public sealed class CaptureController : IAsyncDisposable
     /// Makes a mark for a key press (or a tray click) now. Null when it is the same press as one a moment ago. A mark is recorded even before the
     /// capture clock is known, with an unknown time; <see cref="IsCapturing"/> says whether anything is running at all.
     /// </summary>
-    public IncidentMark? Mark(MarkKind kind) => Recorder.Mark(kind);
+    public IncidentMark? Mark(MarkKind kind, long? pressedTicks = null) => Recorder.Mark(kind, pressedTicks);
 
     /// <summary>
     /// Builds the redacted export of a mark and its preview. Runs the whole pipeline (bundle, redaction, guard) and writes nothing. Throws

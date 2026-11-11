@@ -75,6 +75,37 @@ public class MutationSurvivorTests
         Assert.Equal(4, session.FramesReceived);
     }
 
+    // ---- finding 10: the key-press time is when the press was seen, not when the mark was finally made ----
+
+    [Fact]
+    public void A_mark_made_late_keeps_the_time_the_press_was_seen()
+    {
+        var rig = new RecorderRig();
+        rig.Feed(40);
+        var seen = rig.Recorder.Timestamp();
+        rig.Time.Advance(TimeSpan.FromMilliseconds(80)); // the hop to the worker thread on a busy machine
+
+        var mark = rig.Recorder.Mark(MarkKind.Stutter, seen)!;
+
+        Assert.Equal(seen, mark.PressedTicks);
+        var late = rig.Clock.Estimate(rig.Time.GetTimestamp())!.Value.Ms;
+        Assert.Equal(late - 80.0, mark.CaptureTime!.Value.Ms, 3);
+    }
+
+    [Theory]
+    [InlineData(0L)]
+    [InlineData(-5L)]
+    [InlineData(long.MaxValue)] // "in the future" cannot be a press that was seen
+    public void A_press_time_that_cannot_be_right_is_replaced_by_now(long pressedTicks)
+    {
+        var rig = new RecorderRig();
+        rig.Feed(40);
+
+        var mark = rig.Recorder.Mark(MarkKind.Stutter, pressedTicks)!;
+
+        Assert.Equal(rig.Time.GetTimestamp(), mark.PressedTicks);
+    }
+
     // ---- Q6: the pre-roll covers the clock uncertainty ----
 
     [Fact]

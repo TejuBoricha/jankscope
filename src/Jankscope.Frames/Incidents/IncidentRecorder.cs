@@ -154,10 +154,19 @@ public sealed class IncidentRecorder
 
     public IncidentRecorderOptions Options => _options;
 
-    /// <summary>Makes a mark for a press happening now. Null when it is the same press as one a moment ago.</summary>
-    public IncidentMark? Mark(MarkKind kind)
+    /// <summary>The recorder's clock now, for a caller that learns of a key press before it can call <see cref="Mark"/> (see its <c>pressedTicks</c>).</summary>
+    public long Timestamp() => _time.GetTimestamp();
+
+    /// <summary>Makes a mark for a press. Null when it is the same press as one a moment ago.</summary>
+    /// <param name="pressedTicks">
+    /// When the press was first seen, from <see cref="Timestamp"/>. The mark is made on a worker thread, and that hop can take long on a busy machine (the
+    /// very moment a stutter is marked); without this the delay was silently added to the key-press time (review of Stage 1b, finding 10). Null, or a
+    /// value that is not in the past, means now.
+    /// </param>
+    public IncidentMark? Mark(MarkKind kind, long? pressedTicks = null)
     {
-        var ticks = _time.GetTimestamp();
+        var now = _time.GetTimestamp();
+        var ticks = pressedTicks is { } seen && seen > 0 && seen <= now ? seen : now;
         var utc = _time.GetUtcNow();
         int number;
         lock (_gate)
