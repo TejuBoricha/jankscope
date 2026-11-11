@@ -161,7 +161,7 @@
                         <StackPanel>
                             <DockPanel>
                                 <Border Width="3" Height="11" CornerRadius="1.5" Background="{DynamicResource CyanAccentBrush}" Margin="0,0,6,0"/>
-                                <TextBlock Style="{StaticResource Overline}" Text="CH1 // FRAME RATE (5S)"/>
+                                <TextBlock Style="{StaticResource Overline}" Text="FRAME RATE (5 S)"/>
                             </DockPanel>
                             <TextBlock x:Name="KpiAvgFps" Style="{StaticResource KpiValue}" Text="-- FPS" Margin="0,3,0,1"/>
                             <TextBlock x:Name="KpiAvgFpsSub" Style="{StaticResource Muted}" FontFamily="Consolas" FontSize="10.5" Text="Median: -- ms"/>
@@ -171,7 +171,7 @@
                         <StackPanel>
                             <DockPanel>
                                 <Border Width="3" Height="11" CornerRadius="1.5" Background="{DynamicResource AccentBrush}" Margin="0,0,6,0"/>
-                                <TextBlock Style="{StaticResource Overline}" Text="CH2 // 99TH TAIL (30S)"/>
+                                <TextBlock Style="{StaticResource Overline}" Text="P99 FRAME (30 S)"/>
                             </DockPanel>
                             <TextBlock x:Name="KpiP99Ms" Style="{StaticResource KpiValue}" Text="-- ms" Margin="0,3,0,1"/>
                             <TextBlock x:Name="KpiP99Sub" Style="{StaticResource Muted}" FontFamily="Consolas" FontSize="10.5" Text="1% low: -- FPS"/>
@@ -181,7 +181,7 @@
                         <StackPanel>
                             <DockPanel>
                                 <Border Width="3" Height="11" CornerRadius="1.5" Background="{DynamicResource OkBrush}" Margin="0,0,6,0"/>
-                                <TextBlock Style="{StaticResource Overline}" Text="CH3 // PACING INDEX"/>
+                                <TextBlock Style="{StaticResource Overline}" Text="PACING INDEX"/>
                             </DockPanel>
                             <TextBlock x:Name="KpiConsistency" Style="{StaticResource KpiValue}" Text="-- / 100" Margin="0,3,0,1"/>
                             <TextBlock x:Name="KpiConsistencySub" Style="{StaticResource Muted}" FontFamily="Consolas" FontSize="10.5" Text="Awaiting stream"/>
@@ -191,7 +191,7 @@
                         <StackPanel>
                             <DockPanel>
                                 <Border Width="3" Height="11" CornerRadius="1.5" Background="{DynamicResource WarningBrush}" Margin="0,0,6,0"/>
-                                <TextBlock Style="{StaticResource Overline}" Text="CH4 // STUTTER EVENTS"/>
+                                <TextBlock Style="{StaticResource Overline}" Text="STUTTER EVENTS"/>
                             </DockPanel>
                             <TextBlock x:Name="KpiStutterCount" Style="{StaticResource KpiValue}" Text="0" Margin="0,3,0,1"/>
                             <TextBlock x:Name="KpiStutterSub" Style="{StaticResource Muted}" FontFamily="Consolas" FontSize="10.5" Text=">2.5x P50 &amp; +4 ms"/>
@@ -201,7 +201,7 @@
                         <StackPanel>
                             <DockPanel>
                                 <Border Width="3" Height="11" CornerRadius="1.5" Background="{DynamicResource PurpleAccentBrush}" Margin="0,0,6,0"/>
-                                <TextBlock Style="{StaticResource Overline}" Text="CH5 // RING INTEGRITY"/>
+                                <TextBlock Style="{StaticResource Overline}" Text="BUFFER INTEGRITY"/>
                             </DockPanel>
                             <TextBlock x:Name="KpiIntegrity" Style="{StaticResource KpiValue}" Text="0 frames" Margin="0,3,0,1"/>
                             <TextBlock x:Name="KpiIntegritySub" Style="{StaticResource Muted}" FontFamily="Consolas" FontSize="10.5" Text="0 dropped | Ready"/>
@@ -222,7 +222,7 @@
                                        Text="BUDGET HAIRLINES: 8.3 ms (120 Hz) // 16.7 ms (60 Hz) // 33.3 ms (30 Hz) // HOVER FOR CURSOR LOUPE"/>
                             <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
                                 <Border Width="3" Height="12" CornerRadius="1.5" Background="{DynamicResource CyanAccentBrush}" Margin="0,0,7,0"/>
-                                <TextBlock Style="{StaticResource CardTitle}" Text="01 // DIGITAL PHOSPHOR FRAME-TIME OSCILLOSCOPE (30S ROLLING WINDOW)"/>
+                                <TextBlock Style="{StaticResource CardTitle}" Text="FRAME TIME, LAST 30 S"/>
                             </StackPanel>
                         </DockPanel>
                         <ContentControl x:Name="LiveTimelineHost" Grid.Row="1" Focusable="False"/>
@@ -249,7 +249,7 @@
                                            Text="AUTO-LOCKS ON PEAK SPIKE IN WINDOW"/>
                                 <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
                                     <Border Width="3" Height="12" CornerRadius="1.5" Background="{DynamicResource WarningBrush}" Margin="0,0,7,0"/>
-                                    <TextBlock Style="{StaticResource CardTitle}" Text="02 // SPIKE MICRO-ANATOMY &amp; POINCARE PHASE-SPACE RADAR"/>
+                                    <TextBlock Style="{StaticResource CardTitle}" Text="SPIKE ANATOMY AND JITTER"/>
                                 </StackPanel>
                             </DockPanel>
                             <ContentControl x:Name="LiveAnatomyHost" Grid.Row="1" Focusable="False"/>
@@ -268,7 +268,7 @@
                                            Text="240+ HZ TO SUB-30 HZ TIERS"/>
                                 <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
                                     <Border Width="3" Height="12" CornerRadius="1.5" Background="{DynamicResource OkBrush}" Margin="0,0,7,0"/>
-                                    <TextBlock Style="{StaticResource CardTitle}" Text="03 // PACING CONSISTENCY GAUGE &amp; TIER HISTOGRAM"/>
+                                    <TextBlock Style="{StaticResource CardTitle}" Text="PACING CONSISTENCY"/>
                                 </StackPanel>
                             </DockPanel>
                             <ContentControl x:Name="LiveDistributionHost" Grid.Row="1" Focusable="False"/>
@@ -375,7 +375,7 @@
                             </Border>
                             <Border Style="{StaticResource KpiCard}" Margin="0,0,8,0" Padding="10,6">
                                 <StackPanel>
-                                    <TextBlock Style="{StaticResource Overline}" Text="99.9TH TAIL PEAK"/>
+                                    <TextBlock Style="{StaticResource Overline}" Text="WORST 0.1%"/>
                                     <TextBlock x:Name="InvP999Ms" Style="{StaticResource KpiValue}" FontSize="18" Foreground="{DynamicResource WarningBrush}" Text="-- ms" Margin="0,2,0,0"/>
                                     <TextBlock Style="{StaticResource Muted}" FontFamily="Consolas" FontSize="10" Text="0.1% worst excursion"/>
                                 </StackPanel>
@@ -412,7 +412,7 @@
                                         </StackPanel>
                                         <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
                                             <Border Width="3" Height="12" CornerRadius="1.5" Background="{DynamicResource CyanAccentBrush}" Margin="0,0,7,0"/>
-                                            <TextBlock Style="{StaticResource CardTitle}" Text="01 // INCIDENT TIMELINE &amp; ANCHOR SCRUBBER"/>
+                                            <TextBlock Style="{StaticResource CardTitle}" Text="INCIDENT TIMELINE"/>
                                         </StackPanel>
                                     </DockPanel>
                                     <ContentControl x:Name="InvestigatorTimelineHost" Grid.Row="1" Focusable="False"/>
@@ -433,7 +433,7 @@
                                                    Text="CENTERED ON ANCHOR"/>
                                         <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
                                             <Border Width="3" Height="12" CornerRadius="1.5" Background="{DynamicResource WarningBrush}" Margin="0,0,7,0"/>
-                                            <TextBlock Style="{StaticResource CardTitle}" Text="02 // ANCHOR SPIKE 31-FRAME ANATOMY"/>
+                                            <TextBlock Style="{StaticResource CardTitle}" Text="SPIKE ANATOMY"/>
                                         </StackPanel>
                                     </DockPanel>
                                     <ContentControl x:Name="InvestigatorAnatomyHost" Grid.Row="1" Focusable="False"/>
@@ -461,7 +461,7 @@
                                     <StackPanel Grid.Row="0" Margin="0,0,0,5">
                                         <StackPanel Orientation="Horizontal">
                                             <Border Width="3" Height="12" CornerRadius="1.5" Background="{DynamicResource OkBrush}" Margin="0,0,7,0"/>
-                                            <TextBlock Style="{StaticResource CardTitle}" Text="03 // CANDIDATE SPIKE ANCHORS"/>
+                                            <TextBlock Style="{StaticResource CardTitle}" Text="CANDIDATES"/>
                                         </StackPanel>
                                         <TextBlock Style="{StaticResource Muted}" FontSize="10.5" Margin="0,2,0,0"
                                                    Text="Pick the spike that caused your reaction (150-400 ms before key press):"/>
@@ -477,7 +477,7 @@
                                     </ListBox>
 
                                     <WrapPanel Grid.Row="2" Margin="0,6,0,6">
-                                        <Button x:Name="UseKeyPressButton" Content="Use Key-Press Instant" Padding="8,4" FontSize="11" Click="OnUseKeyPressClicked"/>
+                                        <Button x:Name="UseKeyPressButton" Content="Use key press" Padding="8,4" FontSize="11" Click="OnUseKeyPressClicked"/>
                                         <Button x:Name="ClearChoiceButton" Content="Clear Choice" Padding="8,4" FontSize="11" Click="OnClearChoiceClicked" Margin="0"/>
                                     </WrapPanel>
 
@@ -503,7 +503,7 @@
                                         </Border>
                                         <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
                                             <Border Width="3" Height="12" CornerRadius="1.5" Background="{DynamicResource AccentBrush}" Margin="0,0,7,0"/>
-                                            <TextBlock Style="{StaticResource CardTitle}" Text="04 // ROOT-CAUSE HYPOTHESIS ENGINE"/>
+                                            <TextBlock Style="{StaticResource CardTitle}" Text="POSSIBLE CAUSES"/>
                                         </StackPanel>
                                     </DockPanel>
 
@@ -536,7 +536,7 @@
                                     </Grid.RowDefinitions>
                                     <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="0,0,0,5">
                                         <Border Width="3" Height="12" CornerRadius="1.5" Background="{DynamicResource PurpleAccentBrush}" Margin="0,0,7,0"/>
-                                        <TextBlock Style="{StaticResource CardTitle}" Text="05 // WINDOW PACING TIERS"/>
+                                        <TextBlock Style="{StaticResource CardTitle}" Text="PACING TIERS"/>
                                     </StackPanel>
                                     <ContentControl x:Name="InvestigatorDistributionHost" Grid.Row="1" Focusable="False"/>
                                 </Grid>
