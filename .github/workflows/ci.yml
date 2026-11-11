@@ -73,7 +73,7 @@ jobs:
         shell: pwsh
         env:
           JANKSCOPE_SNAPSHOT_DIR: ${{ github.workspace }}/app-snapshots
-        run: dotnet test tests/Jankscope.App.Tests -c Release --filter "FullyQualifiedName~WpfTests"
+        run: dotnet test tests/Jankscope.App.Tests -c Release --filter "FullyQualifiedName~TimelineViewTests|FullyQualifiedName~MainWindowSmokeTests"
 
       - name: Keep the rendered app windows
         if: always()
