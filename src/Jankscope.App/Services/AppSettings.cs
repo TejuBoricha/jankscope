@@ -1,5 +1,6 @@
 using System.Text;
 using System.Text.Json;
+using System.Text.Json.Serialization;
 using Jankscope.Core;
 using Jankscope.Core.Hotkeys;
 using Jankscope.Frames.Incidents;
@@ -29,6 +30,8 @@ public sealed record AppSettings
 
     public string? LastProgram { get; init; }
 
+    /// <summary>Worked out from the two chords above, so it is not written to the settings file (it was, as noise that was ignored on load).</summary>
+    [JsonIgnore]
     public HotkeyBindings Bindings =>
         HotkeyBindings.TryCreate(MarkStutterChord, MarkInputStallChord, out var bindings, out _) ? bindings : HotkeyBindings.Default;
 

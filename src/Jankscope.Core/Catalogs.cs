@@ -268,12 +268,12 @@ public sealed record CatalogSet(
         return new CatalogSet(anticheat, titles) { VmMarkers = vmMarkers };
     }
 
-    /// <summary>Finds the catalogs folder next to the executable, or by walking up to the repository root.</summary>
+    /// <summary>Finds the catalogs folder next to the executable, or by walking up to the repository root. Never directly under the root of the drive (<see cref="InstallTree"/>).</summary>
     public static string? FindDefaultDirectory(string startDirectory)
     {
-        for (var dir = new DirectoryInfo(startDirectory); dir is not null; dir = dir.Parent)
+        foreach (var dir in InstallTree.SearchDirectories(startDirectory))
         {
-            var candidate = Path.Combine(dir.FullName, "catalogs");
+            var candidate = Path.Combine(dir, "catalogs");
             if (File.Exists(Path.Combine(candidate, "anticheat.json")))
             {
                 return candidate;
