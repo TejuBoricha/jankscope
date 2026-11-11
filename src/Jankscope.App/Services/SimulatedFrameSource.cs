@@ -41,7 +41,7 @@ public sealed class SimulatedFrameSource : IFrameSource
         Problems: [],
         ProblemCount: 0,
         DroppedFrames: 0,
-        Notes: ["SIMULATED workload (HC-9): tagged as DataProvenance.Simulated so it is never confused with a real game measurement."],
+        Notes: ["SIMULATED workload: tagged as DataProvenance.Simulated so it is never confused with a real game measurement."],
         SessionName: "Jankscope-Simulated-Lab",
         Stalls: 0,
         UncleanedSession: null);

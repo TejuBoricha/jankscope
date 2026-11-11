@@ -196,10 +196,10 @@ public static class IncidentBundleBuilder
     public static string? ProvenanceNotice(DataProvenance provenance) => provenance switch
     {
         DataProvenance.Measured or DataProvenance.Inferred => null,
-        DataProvenance.Simulated => "SIMULATED data produced by the synthetic test harness. It is not a measurement of a real game and must not be presented as one (HC-9).",
-        DataProvenance.Fixture => "FIXTURE data (a recorded or hand-written test file). It is not a measurement of this session and must not be presented as one (HC-9).",
-        DataProvenance.Assumed => "ASSUMED data: the frames were built by hand without a source. It is not a measurement and must not be presented as one (HC-9).",
-        _ => "The provenance of this data is not known, so it must not be presented as a measurement (HC-9).",
+        DataProvenance.Simulated => "SIMULATED data produced by the synthetic test harness. It is not a measurement of a real game and must not be presented as one.",
+        DataProvenance.Fixture => "FIXTURE data (a recorded or hand-written test file). It is not a measurement of this session and must not be presented as one.",
+        DataProvenance.Assumed => "ASSUMED data: the frames were built by hand without a source. It is not a measurement and must not be presented as one.",
+        _ => "The provenance of this data is not known, so it must not be presented as a measurement.",
     };
 
     private static string Number(double value) => value.ToString("0.#", CultureInfo.InvariantCulture);
