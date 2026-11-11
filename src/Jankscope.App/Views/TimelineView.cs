@@ -350,7 +350,10 @@ public sealed class TimelineView : FrameworkElement
                 var formatted = new FormattedText(hudText, CultureInfo.InvariantCulture, FlowDirection.LeftToRight, new Typeface("Consolas"), 11, Themed("ForegroundBrush", Brushes.White), dpi);
                 var boxWidth = formatted.Width + 16;
                 var boxHeight = formatted.Height + 8;
-                var boxX = Math.Clamp(x + 10, plot.Left + 4, Math.Max(plot.Left + 4, plot.Right - boxWidth - 4));
+                var preferredRight = x + 10;
+                var boxX = preferredRight + boxWidth <= plot.Right - 4
+                    ? preferredRight
+                    : Math.Max(plot.Left + 4, x - boxWidth - 10);
                 var boxY = plot.Top + 22;
                 var hudRect = new Rect(boxX, boxY, boxWidth, boxHeight);
                 dc.DrawRoundedRectangle(Themed("PanelRaisedBrush", Brushes.DarkSlateGray), new Pen(Themed("AccentBrush", Brushes.DeepSkyBlue), 1), hudRect, 4, 4);
@@ -368,7 +371,6 @@ public sealed class TimelineView : FrameworkElement
     {
         base.OnMouseMove(e);
         _cursorMs = ToTimeMs(e.GetPosition(this).X);
-        ToolTip = DescribeCursor();
         InvalidateVisual();
     }
 
@@ -427,7 +429,6 @@ public sealed class TimelineView : FrameworkElement
         }
 
         e.Handled = true;
-        ToolTip = DescribeCursor();
         InvalidateVisual();
     }
 
