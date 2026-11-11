@@ -289,6 +289,59 @@ public sealed class CaptureController : IAsyncDisposable
         return new StartResult(true, null);
     }
 
+    /// <summary>Starts a built-in simulated stutter session (<see cref="DataProvenance.Simulated"/>, HC-9) so the user can explore the live oscilloscope and Investigator immediately.</summary>
+    public StartResult StartSimulation(string programName = "simulated-workbench.exe")
+    {
+        CaptureSession? previous;
+        lock (_gate)
+        {
+            if (_session is not null)
+            {
+                var status = Status();
+                if (status.IsActive || status.State == CaptureState.Stopping || !_session.Completion.IsCompleted)
+                {
+                    return new StartResult(false, $"Already capturing {_program}. Stop that first.");
+                }
+            }
+
+            _lastError = null;
+            previous = _session;
+        }
+
+        Clock.Reset();
+        var session = new CaptureSession(new SimulatedFrameSource(programName), History, Clock, _time);
+        session.Start();
+
+        lock (_gate)
+        {
+            _session = session;
+            _program = programName;
+        }
+
+        if (previous is not null)
+        {
+            _ = previous.DisposeAsync().AsTask();
+        }
+
+        return new StartResult(true, null);
+    }
+
+    /// <summary>Builds a live <see cref="IncidentBundle"/> diagnosis for <paramref name="mark"/> so the Investigator workspace can display KPI metrics and evidence-graded hypotheses directly.</summary>
+    public IncidentBundle? TryBuildBundle(IncidentMark mark)
+    {
+        ArgumentNullException.ThrowIfNull(mark);
+        try
+        {
+            var window = Recorder.CollectWindow(mark);
+            var dropped = Session?.Health.DroppedFrames ?? 0;
+            return IncidentBundleBuilder.Build(mark, window, _matrix(), dropped, redactSensitiveRows: false);
+        }
+        catch (InvalidOperationException)
+        {
+            return null;
+        }
+    }
+
     /// <summary>Ends the capture gracefully; safe to call when nothing is running.</summary>
     public async Task StopAsync()
     {

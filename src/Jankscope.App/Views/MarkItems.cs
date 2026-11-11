@@ -106,3 +106,24 @@ public sealed record CandidateItem(int Rank, string Text)
         return new CandidateItem(candidate.Rank, $"{candidate.Rank.ToString(CultureInfo.InvariantCulture)}.  {candidate.Description}  ({when})");
     }
 }
+
+/// <summary>One evidence-graded root-cause hypothesis card shown in the Forensic Investigator.</summary>
+public sealed record HypothesisCardItem(
+    string GradeBadge,
+    string Name,
+    string Summary,
+    string SupportingEvidence,
+    string FalsifierText);
+
+/// <summary>One capability probe entry shown in the System Readiness &amp; Capability Radar.</summary>
+public sealed record CapabilityRadarItem(
+    string Id,
+    string Domain,
+    string Title,
+    string StatusBadge,
+    string ValueOrReason,
+    string SourceInfo,
+    string PlainEnglishImpact,
+    bool IsReady,
+    bool NeedsAttention);
+

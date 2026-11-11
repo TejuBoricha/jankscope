@@ -278,7 +278,7 @@ public class MainWindowSmokeTests
             Assert.Equal("Stutter: Ctrl+Alt+F9", ((TextBlock)window.FindName("NavHotkeyStutter")).Text);
             Assert.False(((Button)window.FindName("MarkStutterButton")).IsEnabled); // nothing is being captured
             Snapshots.Save(window, "window-capture-idle");
-            foreach (var (nav, snap) in new[] { ("NavInvestigator", "window-investigator-empty"), ("NavSettings", "window-settings"), ("NavAbout", "window-about"), ("NavCapture", "window-capture") })
+            foreach (var (nav, snap) in new[] { ("NavInvestigator", "window-investigator-empty"), ("NavRadar", "window-radar"), ("NavLab", "window-lab"), ("NavSettings", "window-settings"), ("NavAbout", "window-about"), ("NavCapture", "window-capture") })
             {
                 ((RadioButton)window.FindName(nav)).IsChecked = true;
                 window.UpdateLayout();
@@ -388,5 +388,61 @@ public class MainWindowSmokeTests
             Assert.Contains("Another program already uses", ((TextBlock)bad.FindName("HotkeyState")).Text);
             bad.Close();
         });
+    }
+
+    [DesktopFact]
+    public async Task Built_in_stutter_simulator_populates_live_kpis_distribution_and_forensic_hypotheses()
+    {
+        var (host, _, shell) = await Make();
+        await using var owner = host;
+
+        MainWindow? window = null;
+        await WpfHost.RunAsync(() =>
+        {
+            window = new MainWindow(host, shell);
+            window.Show();
+            window.UpdateLayout();
+        });
+
+        Assert.True(host.Controller.StartSimulation("simulated-workbench.exe").Started);
+        await TestData.WaitUntil(() => (host.Controller.Session?.FramesReceived ?? 0) >= 600);
+
+        await WpfHost.RunAsync(() =>
+        {
+            ((RadioButton)window!.FindName("NavInvestigator")).IsChecked = true;
+            window.UpdateLayout();
+        });
+
+        var outcome = await host.MarkAsync(MarkKind.Stutter);
+        Assert.Equal(MarkOutcomeKind.Recorded, outcome.Kind);
+        await Flush();
+
+        await TestData.WaitUntil(() => WpfHost.RunAsync(() => window!.InvestigatorTimeline.Buckets.Any(b => !b.IsEmpty)).Result);
+
+        await WpfHost.RunAsync(() =>
+        {
+            var hypotheses = (ListBox)window!.FindName("HypothesesList");
+            Assert.NotEmpty(hypotheses.Items);
+            Assert.True(window.InvestigatorDistribution.TotalFrames > 100);
+            Snapshots.Save(window, "window-investigator-simulated");
+
+            // Verify Live Capture KPIs & Distribution with simulated data
+            ((RadioButton)window.FindName("NavCapture")).IsChecked = true;
+            window.UpdateLayout();
+            Snapshots.Save(window, "window-capture-simulated");
+
+            // Verify Input & Polling Lab simulated trace
+            ((RadioButton)window.FindName("NavLab")).IsChecked = true;
+            window.InputPollingLab.LoadSimulatedTrace();
+            window.UpdateLayout();
+            Assert.True(window.InputPollingLab.SampleCount >= 100);
+            Assert.True(window.InputPollingLab.StallEvents >= 1);
+            Snapshots.Save(window, "window-lab-simulated");
+
+            window.AllowClose();
+            window.Close();
+        });
+
+        await host.Controller.StopAsync();
     }
 }

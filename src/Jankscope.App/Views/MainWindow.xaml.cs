@@ -9,6 +9,7 @@ using Jankscope.App.Services;
 using Jankscope.Core;
 using Jankscope.Core.Hotkeys;
 using Jankscope.Frames;
+using Jankscope.Frames.Capture;
 using Jankscope.Frames.Detection;
 using Jankscope.Frames.Incidents;
 using Jankscope.Frames.Ring;
@@ -23,25 +24,39 @@ public partial class MainWindow : Window
     private readonly AppHost _host;
     private readonly IShell _shell;
     private readonly DispatcherTimer _tick = new(DispatcherPriority.Background) { Interval = TimeSpan.FromMilliseconds(250) };
-    private readonly DispatcherTimer _noticeTimer = new() { Interval = TimeSpan.FromSeconds(9) };
+    private readonly DispatcherTimer _noticeTimer = new() { Interval = TimeSpan.FromSeconds(8) };
     private readonly ObservableCollection<MarkItem> _marks = [];
     private readonly FrameSample[] _liveBuffer = new FrameSample[32_768];
     private readonly FrameSample[] _newest = new FrameSample[1];
+    private IReadOnlyList<PresentingProgram> _lastScanPrograms = [];
+    private List<CapabilityRadarItem> _allRadarItems = [];
     private bool _updating;
     private bool _aboutFilled;
+    private bool _radarFilled;
     private bool _quitting;
+    private bool _scanning;
     private int _markCounter;
     private string? _shownMarkId;
+    private string? _windowForMark;
     private CollectedWindow? _window;
     private DateTime _windowAt = DateTime.MinValue;
     private bool _collecting;
     private (double Start, double End)? _view;
 
-    /// <summary>The live (last 30 s) timeline on the capture page. Created in code, not in XAML (see the note in MainWindow.xaml).</summary>
-    public TimelineView LiveTimeline { get; } = new() { Height = 210 };
+    /// <summary>The live (last 30 s) timeline on the capture page. Created in code, not in XAML (RS0030).</summary>
+    public TimelineView LiveTimeline { get; } = new() { Height = 230 };
+
+    /// <summary>The live frame-time distribution and pacing consistency view on the capture page.</summary>
+    public FrameDistributionView LiveDistribution { get; } = new() { Height = 152 };
 
     /// <summary>The timeline of the selected mark on the investigator page.</summary>
-    public TimelineView InvestigatorTimeline { get; } = new() { Height = 260 };
+    public TimelineView InvestigatorTimeline { get; } = new() { Height = 250 };
+
+    /// <summary>The frame-time distribution view for the selected mark on the investigator page.</summary>
+    public FrameDistributionView InvestigatorDistribution { get; } = new() { Height = 142 };
+
+    /// <summary>The interactive mouse polling and motion-continuity analyzer on the Input Lab page.</summary>
+    public InputPollingView InputPollingLab { get; } = new() { Height = 270 };
 
     public MainWindow(AppHost host, IShell shell)
     {
@@ -50,40 +65,45 @@ public partial class MainWindow : Window
         InitializeComponent();
         Icon = IconFactory.WindowIcon();
         MarksList.ItemsSource = _marks;
+
         System.Windows.Automation.AutomationProperties.SetName(LiveTimeline, "Live frame times for the last 30 seconds");
         System.Windows.Automation.AutomationProperties.SetName(InvestigatorTimeline, "Frame times around the mark. Arrow keys move a cursor; Enter chooses that time as the event.");
+        System.Windows.Automation.AutomationProperties.SetName(LiveDistribution, "Live frame time latency distribution");
+        System.Windows.Automation.AutomationProperties.SetName(InvestigatorDistribution, "Incident frame time latency distribution");
+        System.Windows.Automation.AutomationProperties.SetName(InputPollingLab, "Interactive mouse motion continuity test pad");
+
         LiveTimelineHost.Content = LiveTimeline;
+        LiveDistributionHost.Content = LiveDistribution;
         InvestigatorTimelineHost.Content = InvestigatorTimeline;
-        ProgramsList.AddHandler(System.Windows.Controls.Primitives.ButtonBase.ClickEvent, new RoutedEventHandler(OnTrackProgramClicked));
+        InvestigatorDistributionHost.Content = InvestigatorDistribution;
+        InputPollingHost.Content = InputPollingLab;
+
+        InputPollingLab.MetricsUpdated += (_, _) => RefreshInputLabKpis();
 
         var settings = host.Settings;
         StutterChordBox.Text = settings.MarkStutterChord;
-        StallChordBox.Text = settings.MarkInputStallChord;
+        InputChordBox.Text = settings.MarkInputStallChord;
         PreRollBox.Text = settings.PreRollSeconds.ToString("0", CultureInfo.InvariantCulture);
         PostRollBox.Text = settings.PostRollSeconds.ToString("0", CultureInfo.InvariantCulture);
-        PreRollBox.LostFocus += OnRollBoxLostFocus;
-        PostRollBox.LostFocus += OnRollBoxLostFocus;
         SoundCheck.IsChecked = settings.SoundEnabled;
         ThemeSystem.IsChecked = settings.Theme == "System";
         ThemeLight.IsChecked = settings.Theme == "Light";
         ThemeDark.IsChecked = settings.Theme == "Dark";
         ProgramBox.Text = settings.LastProgram ?? string.Empty;
-        AboutVersion.Text = "Version " + (typeof(MainWindow).Assembly.GetName().Version?.ToString(3) ?? "0.1.0") + " (Stage 1b preview). Free and open source.";
-        AboutPrivacy.Text =
-            "Nothing leaves this PC: there is no telemetry, no update check and no upload. A report is written only where you choose, after you have seen exactly what it contains. " +
-            "Jankscope reads the timing of frames being presented by the one program you pick. It does not read what you type (the mark hotkeys are registered with Windows, which " +
-            "tells Jankscope only when exactly that chord is pressed), mouse positions, screen contents, documents, browser data or passwords. In this version it changes no setting of Windows or of any program.";
-        AboutAntiCheat.Text =
-            "Jankscope uses only documented, user-mode Windows interfaces. It does not open or modify the game, does not inject code, does not install drivers and does not draw anything over the game. " +
-            "No anti-cheat provider has approved it, and none publishes a list of what is safe, so whether a particular game accepts a capture tool is for you to confirm. If you are unsure, do not use it with that game.";
+        VersionLine.Text = "Version " + (typeof(MainWindow).Assembly.GetName().Version?.ToString(3) ?? "0.1.0") + " (Studio Forensic Edition). MIT Open Source.";
 
         _tick.Tick += (_, _) => OnTick();
         _noticeTimer.Tick += (_, _) =>
         {
             _noticeTimer.Stop();
-            NoticeBar.Visibility = Visibility.Collapsed;
+            MarkFeedback.Text = string.Empty;
         };
         _host.MarkChanged += OnHostMarkChanged;
+
+        RefreshHotkeyTexts();
+        RefreshStatus();
+        RefreshLive();
+
         Loaded += (_, _) =>
         {
             RefreshHotkeyTexts();
@@ -122,19 +142,26 @@ public partial class MainWindow : Window
 
     public void ShowNotice(string text, bool problem)
     {
-        NoticeText.Text = text;
-        NoticeText.Foreground = (Brush)FindResource(problem ? "WarningBrush" : "ForegroundBrush");
-        NoticeBar.Visibility = Visibility.Visible;
+        MarkFeedback.Text = text;
+        MarkFeedback.Foreground = (Brush)FindResource(problem ? "WarningBrush" : "CyanAccentBrush");
         _noticeTimer.Stop();
         _noticeTimer.Start();
     }
 
     public void ShowPage(int page)
     {
-        (page switch { 1 => NavInvestigator, 2 => NavSettings, 3 => NavAbout, _ => NavCapture }).IsChecked = true;
+        (page switch
+        {
+            1 => NavInvestigator,
+            2 => NavSettings,
+            3 => NavAbout,
+            4 => NavRadar,
+            5 => NavLab,
+            _ => NavCapture,
+        }).IsChecked = true;
     }
 
-    // ---- window ----
+    // ---- window & navigation ----
 
     private void OnClosing(object? sender, CancelEventArgs e)
     {
@@ -143,26 +170,39 @@ public partial class MainWindow : Window
             return;
         }
 
-        // Closing the window hides it: capture continues, the tray icon stays, and Quit in the tray menu ends everything.
         e.Cancel = true;
         Hide();
         _shell.ChangeWindowVisibility(false);
     }
 
-    private void OnNavChecked(object sender, RoutedEventArgs e)
+    private void OnNavChanged(object sender, RoutedEventArgs e)
     {
-        if (PageCapture is null || PageInvestigator is null || PageSettings is null || PageAbout is null)
+        if (PageCapture is null || PageInvestigator is null || PageRadar is null || PageLab is null || PageSettings is null || PageAbout is null)
         {
-            return; // fired while the window is still being built
+            return;
         }
 
         PageCapture.Visibility = NavCapture.IsChecked == true ? Visibility.Visible : Visibility.Collapsed;
         PageInvestigator.Visibility = NavInvestigator.IsChecked == true ? Visibility.Visible : Visibility.Collapsed;
+        PageRadar.Visibility = NavRadar.IsChecked == true ? Visibility.Visible : Visibility.Collapsed;
+        PageLab.Visibility = NavLab.IsChecked == true ? Visibility.Visible : Visibility.Collapsed;
         PageSettings.Visibility = NavSettings.IsChecked == true ? Visibility.Visible : Visibility.Collapsed;
         PageAbout.Visibility = NavAbout.IsChecked == true ? Visibility.Visible : Visibility.Collapsed;
+
+        if (NavCapture.IsChecked == true)
+        {
+            RefreshStatus();
+            RefreshLive();
+        }
+
         if (NavAbout.IsChecked == true)
         {
             FillAbout();
+        }
+
+        if (NavRadar.IsChecked == true)
+        {
+            FillRadar();
         }
 
         if (NavInvestigator.IsChecked == true)
@@ -171,7 +211,9 @@ public partial class MainWindow : Window
         }
     }
 
-    // ---- status and live view ----
+    private void OnJumpToRadarClicked(object sender, RoutedEventArgs e) => NavRadar.IsChecked = true;
+
+    // ---- periodic telemetry tick ----
 
     private void OnTick()
     {
@@ -187,6 +229,11 @@ public partial class MainWindow : Window
             RefreshInvestigatorView(forceCollect: false);
         }
 
+        if (PageRadar.Visibility == Visibility.Visible && !_radarFilled)
+        {
+            FillRadar();
+        }
+
         if (PageAbout.Visibility == Visibility.Visible && !_aboutFilled)
         {
             FillAbout();
@@ -197,9 +244,30 @@ public partial class MainWindow : Window
     {
         var statuses = _shell.HotkeyStatuses;
         NavHotkeyStutter.Text = HotkeyLine("Stutter", HotkeyAction.MarkStutter, statuses);
-        NavHotkeyStall.Text = HotkeyLine("Input stall", HotkeyAction.MarkInputStall, statuses);
+        NavHotkeyInput.Text = HotkeyLine("Input stall", HotkeyAction.MarkInputStall, statuses);
+
+        var problems = statuses.Where(s => !s.Active && !string.IsNullOrWhiteSpace(s.Reason)).Select(s => s.Reason!).ToList();
+        if (problems.Count > 0)
+        {
+            NavHotkeyProblem.Text = string.Join(" ", problems);
+            NavHotkeyProblem.Visibility = Visibility.Visible;
+        }
+        else
+        {
+            NavHotkeyProblem.Text = string.Empty;
+            NavHotkeyProblem.Visibility = Visibility.Collapsed;
+        }
+
+        var stutterStatus = statuses.FirstOrDefault(s => s.Action == HotkeyAction.MarkStutter);
+        StutterChordStatus.Text = stutterStatus is null ? string.Empty : stutterStatus.Active ? "Active & listening" : (stutterStatus.Reason ?? "Not registered");
+        StutterChordStatus.Foreground = (Brush)FindResource(stutterStatus is { Active: true } ? "OkBrush" : "WarningBrush");
+
+        var inputStatus = statuses.FirstOrDefault(s => s.Action == HotkeyAction.MarkInputStall);
+        InputChordStatus.Text = inputStatus is null ? string.Empty : inputStatus.Active ? "Active & listening" : (inputStatus.Reason ?? "Not registered");
+        InputChordStatus.Foreground = (Brush)FindResource(inputStatus is { Active: true } ? "OkBrush" : "WarningBrush");
+
         MarkStutterButton.Content = AppHost.MenuText(HotkeyAction.MarkStutter, statuses);
-        MarkStallButton.Content = AppHost.MenuText(HotkeyAction.MarkInputStall, statuses);
+        MarkInputButton.Content = AppHost.MenuText(HotkeyAction.MarkInputStall, statuses);
     }
 
     private static string HotkeyLine(string label, HotkeyAction action, IReadOnlyList<HotkeyStatus> statuses)
@@ -211,17 +279,20 @@ public partial class MainWindow : Window
     private void RefreshStatus()
     {
         var status = _host.Controller.Status();
-        StatusHeadline.Text = status.Headline;
+        CaptureHeadline.Text = status.Headline;
         var detail = status.Detail;
         if (status.Problems.Count > 0 && status.State is CaptureState.Failed or CaptureState.Restarting)
         {
             detail = (detail is null ? string.Empty : detail + " ") + "Last problem: " + status.Problems[^1];
         }
 
-        StatusDetail.Text = detail ?? string.Empty;
-        StatusDetail.Visibility = string.IsNullOrEmpty(detail) ? Visibility.Collapsed : Visibility.Visible;
-        NavCaptureState.Text = status.Headline;
-        NavCaptureState.Foreground = (Brush)FindResource(status.State switch
+        if ( detail is null && status.State == CaptureState.Idle)
+        {
+            detail = "Select an active 3D application below, or click 'Try Instant Stutter Demo (Simulated)' in the top right to explore a live diagnostic trace immediately.";
+        }
+
+        CaptureDetail.Text = detail ?? string.Empty;
+        CaptureStateDot.Background = (Brush)FindResource(status.State switch
         {
             CaptureState.Capturing => "OkBrush",
             CaptureState.Failed => "DangerBrush",
@@ -231,11 +302,12 @@ public partial class MainWindow : Window
 
         StopButton.IsEnabled = status.IsActive;
         MarkStutterButton.IsEnabled = status.IsActive;
-        MarkStallButton.IsEnabled = status.IsActive;
-        ScanButton.IsEnabled = !status.IsActive && _scanning == false;
-    }
+        MarkInputButton.IsEnabled = status.IsActive;
+        ScanButton.IsEnabled = !status.IsActive && !_scanning;
 
-    private bool _scanning;
+        KpiIntegrity.Text = $"{status.FramesReceived.ToString("N0", CultureInfo.InvariantCulture)} frames";
+        KpiIntegritySub.Text = $"{status.DroppedFrames.ToString(CultureInfo.InvariantCulture)} dropped | {status.IgnoredFrames.ToString(CultureInfo.InvariantCulture)} ignored";
+    }
 
     private void RefreshLive()
     {
@@ -243,23 +315,37 @@ public partial class MainWindow : Window
         var status = _host.Controller.Status();
         if (count == 0)
         {
-            LiveSummary.Text = status.IsActive ? "No frames yet." : "Not capturing. Choose a program above and press Watch.";
+            LiveNumbers.Text = status.IsActive
+                ? "Waiting for swap-chain presents from the target application..."
+                : "Oscilloscope idle. Start watching a program or launch the Instant Stutter Demo to see real-time frame pacing.";
+            KpiAvgFps.Text = "-- FPS";
+            KpiAvgFpsSub.Text = "Mean interval: -- ms";
+            KpiP99Ms.Text = "-- ms";
+            KpiP99Sub.Text = "1% low equivalent: -- FPS";
+            KpiConsistency.Text = "-- / 100";
+            KpiConsistencySub.Text = "Waiting for frames";
+            KpiStutterCount.Text = "0";
+            KpiStutterSub.Text = "No stutters in window";
+            ProvenanceBadge.Visibility = Visibility.Collapsed;
             LiveTimeline.Show(new TimelineData(default, null, 0, LiveWindowMs, null, null, null, null, null, [], []));
+            LiveDistribution.Show([]);
             return;
         }
 
         var all = new ReadOnlySpan<FrameSample>(_liveBuffer, 0, count);
         var newest = all[^1].TimestampMs;
+        var provenance = all[^1].Provenance;
         var window = FrameRingExtensions.SelectWindow(all, newest, LiveWindowMs);
         var memory = new ReadOnlyMemory<FrameSample>(_liveBuffer, count - window.Length, window.Length);
         var detected = StutterDetector.Analyze(window);
         var last5 = FrameRingExtensions.SelectWindow(window, newest, 5_000);
-        var times = new List<double>(last5.Length);
+
+        var times5 = new List<double>(last5.Length);
         foreach (var frame in last5)
         {
             if (double.IsFinite(frame.FrameTimeMs) && frame.FrameTimeMs > 0)
             {
-                times.Add(frame.FrameTimeMs);
+                times5.Add(frame.FrameTimeMs);
             }
         }
 
@@ -272,63 +358,152 @@ public partial class MainWindow : Window
             }
         }
 
-        var fps = FrameStats.AverageFps([.. times]);
+        var span30 = System.Runtime.InteropServices.CollectionsMarshal.AsSpan(all30);
+        LiveDistribution.Show(span30);
+
+        var fps = FrameStats.AverageFps([.. times5]);
+        var p50 = FrameStats.PercentileFrameTimeMs([.. all30], 50.0);
         var p99 = FrameStats.PercentileFrameTimeMs([.. all30], 99.0);
+
+        if (double.IsFinite(fps) && fps > 0)
+        {
+            KpiAvgFps.Text = $"{fps.ToString("0", CultureInfo.InvariantCulture)} FPS";
+            KpiAvgFpsSub.Text = $"Median frame: {(double.IsFinite(p50) ? p50.ToString("0.0", CultureInfo.InvariantCulture) : "--")} ms";
+        }
+        else
+        {
+            KpiAvgFps.Text = "-- FPS";
+            KpiAvgFpsSub.Text = "Frame rate unavailable";
+        }
+
+        if (double.IsFinite(p99) && p99 > 0)
+        {
+            var lowFps = 1000.0 / p99;
+            KpiP99Ms.Text = $"{p99.ToString("0.0", CultureInfo.InvariantCulture)} ms";
+            KpiP99Sub.Text = $"1% low equiv: {lowFps.ToString("0", CultureInfo.InvariantCulture)} FPS";
+        }
+        else
+        {
+            KpiP99Ms.Text = "-- ms";
+            KpiP99Sub.Text = "99th percentile unavailable";
+        }
+
+        KpiConsistency.Text = $"{LiveDistribution.ConsistencyScore.ToString("0", CultureInfo.InvariantCulture)} / 100";
+        KpiConsistencySub.Text = LiveDistribution.Verdict;
+        KpiStutterCount.Text = detected.Events.Count.ToString(CultureInfo.InvariantCulture);
+        KpiStutterSub.Text = $"{detected.IsolatedSpikeCount.ToString(CultureInfo.InvariantCulture)} isolated | {detected.Clusters.Count.ToString(CultureInfo.InvariantCulture)} cluster(s)";
+
+        ProvenanceBadge.Visibility = Visibility.Visible;
+        if (provenance == DataProvenance.Simulated)
+        {
+            ProvenanceBadge.Background = (Brush)FindResource("SimulatedSurfaceBrush");
+            ProvenanceBadge.BorderBrush = (Brush)FindResource("SimulatedBorderBrush");
+            ProvenanceBadgeText.Foreground = (Brush)FindResource("SimulatedTextBrush");
+            ProvenanceBadgeText.Text = "PROVENANCE: SIMULATED DEMO (HC-9)";
+        }
+        else
+        {
+            ProvenanceBadge.Background = (Brush)FindResource("OkSurfaceBrush");
+            ProvenanceBadge.BorderBrush = (Brush)FindResource("OkBrush");
+            ProvenanceBadgeText.Foreground = (Brush)FindResource("OkBrush");
+            ProvenanceBadgeText.Text = $"PROVENANCE: {provenance.ToString().ToUpperInvariant()}";
+        }
+
         var parts = new List<string>
         {
             double.IsNaN(fps) ? "frame rate not available" : $"{fps.ToString("0", CultureInfo.InvariantCulture)} frames/s (average, last 5 s)",
             double.IsNaN(p99) ? "99th percentile not available" : $"{p99.ToString("0.0", CultureInfo.InvariantCulture)} ms 99th percentile frame time (last 30 s)",
-            $"{detected.Events.Count} stutter(s) in the last 30 s, {detected.IsolatedSpikeCount} of them isolated spikes ({detected.CalibrationLabel} threshold)",
+            $"{detected.Events.Count.ToString(CultureInfo.InvariantCulture)} stutter(s) in the last 30 s, {detected.IsolatedSpikeCount.ToString(CultureInfo.InvariantCulture)} of them isolated spikes ({detected.CalibrationLabel} threshold)",
         };
         if (status.DroppedFrames > 0)
         {
-            parts.Add($"{status.DroppedFrames} frame(s) dropped by the capture queue");
+            parts.Add($"{status.DroppedFrames.ToString(CultureInfo.InvariantCulture)} frame(s) dropped by the capture queue");
         }
 
         if (status.IgnoredFrames > 0)
         {
-            parts.Add($"{status.IgnoredFrames} frame(s) ignored (not swap-chain presents)");
+            parts.Add($"{status.IgnoredFrames.ToString(CultureInfo.InvariantCulture)} frame(s) ignored (not swap-chain presents)");
         }
 
         if (status.OutOfOrderFrames > 0)
         {
-            parts.Add($"{status.OutOfOrderFrames} frame(s) left out (stamped earlier than the frame before)");
+            parts.Add($"{status.OutOfOrderFrames.ToString(CultureInfo.InvariantCulture)} frame(s) left out (stamped earlier than the frame before)");
         }
 
         if (status.BackwardJumps > 0)
         {
-            parts.Add($"the capture clock jumped back {status.BackwardJumps} time(s) (treated as a restart)");
+            parts.Add($"the capture clock jumped back {status.BackwardJumps.ToString(CultureInfo.InvariantCulture)} time(s) (treated as a restart)");
         }
 
-        LiveSummary.Text = string.Join("  |  ", parts);
+        LiveNumbers.Text = string.Join("  |  ", parts);
         LiveTimeline.Show(new TimelineData(memory, null, newest - LiveWindowMs, newest, newest, null, null, null, null, [], detected.Events.Select(e => e.TimestampMs).ToList()));
     }
 
-    // ---- capture page ----
+    // ---- capture & interactive simulator ----
+
+    private async void OnSimulateDemoClicked(object sender, RoutedEventArgs e)
+    {
+        if (_host.Controller.IsCapturing)
+        {
+            await _host.Controller.StopAsync();
+        }
+
+        var start = _host.Controller.StartSimulation("simulated-workbench.exe");
+        if (!start.Started)
+        {
+            ShowNotice(start.Message ?? "Could not start the simulation.", problem: true);
+            return;
+        }
+
+        ProgramBox.Text = "simulated-workbench.exe";
+        RefreshStatus();
+
+        // Wait briefly for the prefill frames to land in the ring buffer, then record a sample stutter mark automatically
+        for (var attempt = 0; attempt < 40 && (_host.Controller.Session?.FramesReceived ?? 0) < 600; attempt++)
+        {
+            await Task.Delay(15);
+        }
+
+        RefreshLive();
+        var outcome = await _host.MarkAsync(MarkKind.Stutter);
+        if (outcome.Kind == MarkOutcomeKind.Recorded)
+        {
+            ShowNotice("Simulated 120 FPS session active and sample stutter marked! Switch to '2. Forensic Investigator' to inspect the root-cause workbench.", problem: false);
+        }
+    }
 
     private async void OnScanClicked(object sender, RoutedEventArgs e)
     {
         if (!_host.CanCapture)
         {
-            ShowNotice("The frame-capture tool is not available (see About and privacy).", problem: true);
+            ShowNotice("The frame-capture tool is not available (see About, Privacy & Export).", problem: true);
             return;
         }
 
         _scanning = true;
         ScanButton.IsEnabled = false;
-        ScanStatus.Text = "  Looking for 5 seconds. Make sure the program is running and showing frames...";
-        ProgramsList.ItemsSource = null;
+        ScanStatus.Visibility = Visibility.Visible;
+        ScanStatus.Text = "Scanning for 4 seconds... Keep your 3D application visible and rendering frames.";
+        ScanResultsList.Visibility = Visibility.Collapsed;
+        ScanResultsList.ItemsSource = null;
         try
         {
-            var programs = await _host.Controller.ScanAsync(5);
-            ProgramsList.ItemsSource = programs;
-            ScanStatus.Text = programs.Count == 0
-                ? "  No program drew frames. Start your game (a windowed or borderless mode is easiest) and try again, or type its file name."
-                : "  Pick the one you want to watch.";
+            var programs = await _host.Controller.ScanAsync(4);
+            _lastScanPrograms = programs;
+            if (programs.Count == 0)
+            {
+                ScanStatus.Text = "No active 3D swap-chain detected. Launch a game in windowed/borderless mode, or type its executable name directly.";
+            }
+            else
+            {
+                ScanStatus.Text = "Click a program below to start capturing immediately:";
+                ScanResultsList.ItemsSource = programs.Select(p => $"{p.Application}   ({p.FramesPerSecond.ToString("0", CultureInfo.InvariantCulture)} FPS | {p.Frames.ToString(CultureInfo.InvariantCulture)} frames)").ToList();
+                ScanResultsList.Visibility = Visibility.Visible;
+            }
         }
         catch (InvalidOperationException ex)
         {
-            ScanStatus.Text = string.Empty;
+            ScanStatus.Visibility = Visibility.Collapsed;
             ShowNotice(ex.Message, problem: true);
         }
         finally
@@ -338,15 +513,16 @@ public partial class MainWindow : Window
         }
     }
 
-    private void OnTrackProgramClicked(object sender, RoutedEventArgs e)
+    private void OnScanResultPicked(object sender, SelectionChangedEventArgs e)
     {
-        if (e.OriginalSource is Button { Tag: string name })
+        var idx = ScanResultsList.SelectedIndex;
+        if (idx >= 0 && idx < _lastScanPrograms.Count)
         {
-            StartCapture(name);
+            StartCapture(_lastScanPrograms[idx].Application);
         }
     }
 
-    private void OnWatchTypedClicked(object sender, RoutedEventArgs e) => StartCapture(ProgramBox.Text);
+    private void OnStartClicked(object sender, RoutedEventArgs e) => StartCapture(ProgramBox.Text);
 
     private void StartCapture(string name)
     {
@@ -358,8 +534,8 @@ public partial class MainWindow : Window
         }
 
         ProgramBox.Text = name.Trim();
-        ProgramsList.ItemsSource = null;
-        ScanStatus.Text = string.Empty;
+        ScanResultsList.Visibility = Visibility.Collapsed;
+        ScanStatus.Visibility = Visibility.Collapsed;
         _host.Update(s => s with { LastProgram = name.Trim() }, out var problem);
         if (problem is not null)
         {
@@ -378,9 +554,9 @@ public partial class MainWindow : Window
 
     private void OnMarkStutterClicked(object sender, RoutedEventArgs e) => _shell.RequestMark(MarkKind.Stutter);
 
-    private void OnMarkStallClicked(object sender, RoutedEventArgs e) => _shell.RequestMark(MarkKind.InputStall);
+    private void OnMarkInputClicked(object sender, RoutedEventArgs e) => _shell.RequestMark(MarkKind.InputStall);
 
-    // ---- marks and the investigator ----
+    // ---- forensic stutter investigator ----
 
     private void OnHostMarkChanged(IncidentMark mark) => Dispatcher.BeginInvoke(() => UpsertMark(mark));
 
@@ -401,7 +577,7 @@ public partial class MainWindow : Window
 
         var item = new MarkItem(mark, ++_markCounter);
         _marks.Insert(0, item);
-        NoMarksText.Visibility = Visibility.Collapsed;
+        NoMarkHint.Visibility = Visibility.Collapsed;
         _updating = true;
         MarksList.SelectedItem = item;
         _updating = false;
@@ -445,10 +621,9 @@ public partial class MainWindow : Window
     {
         var changedMark = _shownMarkId != mark.Id;
         _shownMarkId = mark.Id;
-        InvestigatorDetail.Visibility = Visibility.Visible;
+        MarkDetailPanel.Visibility = Visibility.Visible;
         var item = _marks.First(m => m.Id == mark.Id);
-        MarkTitle.Text = item.Title;
-        MarkQuality.Text = DescribeQuality(mark);
+        MarkSummaryLine.Text = $"{item.Title}  -  {DescribeQuality(mark)}";
 
         _updating = true;
         CandidatesList.ItemsSource = mark.Search.Candidates.Select(CandidateItem.From).ToList();
@@ -457,19 +632,15 @@ public partial class MainWindow : Window
             : null;
         _updating = false;
 
-        CandidatesIntro.Text = mark.Search.Candidates.Count == 0
-            ? string.Join(" ", mark.Search.Notes)
-            : "These moments in the 10 seconds before the key press stand out. The key press is later than the event, so none is chosen for you: pick one, click the timeline, or choose the key-press moment.";
         SelectionStatus.Text = IncidentBundleBuilder.SelectionStatus(mark.Selection);
         SelectionStatus.Foreground = (Brush)FindResource(mark.Selection is null ? "WarningBrush" : "OkBrush");
 
-        if (changedMark || NoteBox.Text != (mark.Note ?? string.Empty) && !NoteBox.IsKeyboardFocused)
+        if (changedMark || (NoteBox.Text != (mark.Note ?? string.Empty) && !NoteBox.IsKeyboardFocused))
         {
             NoteBox.Text = mark.Note ?? string.Empty;
         }
 
         ExportButton.IsEnabled = mark.CaptureTime is not null;
-        ExportHint.Text = mark.CaptureTime is null ? "  This mark has no frames to export." : string.Empty;
         InvestigatorTimeline.IsInteractive = mark.CaptureTime is not null;
         InvestigatorTimeline.TimeChosen -= OnTimelineChosen;
         InvestigatorTimeline.TimeChosen += OnTimelineChosen;
@@ -485,6 +656,11 @@ public partial class MainWindow : Window
     private static string DescribeQuality(IncidentMark mark)
     {
         var parts = new List<string>();
+        if (mark.TargetProcess is { } program)
+        {
+            parts.Add($"Target: {program}");
+        }
+
         if (mark.CaptureTime is { } time)
         {
             parts.Add(KeyPressTimeText.Describe(time));
@@ -492,15 +668,10 @@ public partial class MainWindow : Window
         }
         else
         {
-            parts.Add("No frames had arrived when the key was pressed, so this mark has no place on the timeline.");
+            parts.Add("No frames had arrived when the key was pressed");
         }
 
-        if (mark.TargetProcess is { } program)
-        {
-            parts.Add("Program: " + program + ".");
-        }
-
-        return string.Join(" ", parts);
+        return string.Join(" | ", parts);
     }
 
     private void RefreshInvestigatorView(bool forceCollect)
@@ -537,8 +708,6 @@ public partial class MainWindow : Window
         DrawInvestigator();
     }
 
-    private string? _windowForMark;
-
     private void DrawInvestigator()
     {
         if (CurrentMark is not { } mark || mark.CaptureTime is not { } time || mark.Window.StartMs is not { } windowStart || mark.Window.EndMs is not { } windowEnd)
@@ -568,6 +737,43 @@ public partial class MainWindow : Window
             mark.Selection?.TimestampMs,
             candidates,
             []));
+
+        // Populate Forensic KPI Cards, Frame Distribution, and Evidence-Graded Hypotheses
+        var samples = series.ToSamples();
+        var frameTimes = samples.Where(s => double.IsFinite(s.FrameTimeMs) && s.FrameTimeMs > 0).Select(s => s.FrameTimeMs).ToArray();
+        InvestigatorDistribution.Show(frameTimes);
+
+        var bundle = _host.Controller.TryBuildBundle(mark);
+        if (bundle is not null)
+        {
+            var m = bundle.Report.Metrics;
+            InvAvgFps.Text = m.AverageFps is { } fps ? $"{fps.ToString("0.0", CultureInfo.InvariantCulture)} FPS" : "--";
+            InvSampleCount.Text = $"{m.TotalSamples.ToString("N0", CultureInfo.InvariantCulture)} frames ({m.DurationSeconds.ToString("0.0", CultureInfo.InvariantCulture)} s)";
+            InvMedianMs.Text = m.MedianFrameTimeMs is { } p50 ? $"{p50.ToString("0.0", CultureInfo.InvariantCulture)} ms" : "-- ms";
+            InvP99Ms.Text = m.P99FrameTimeMs is { } p99 ? $"{p99.ToString("0.0", CultureInfo.InvariantCulture)} ms" : "-- ms";
+            InvP999Ms.Text = m.P999FrameTimeMs is { } p999 ? $"{p999.ToString("0.0", CultureInfo.InvariantCulture)} ms" : "-- ms";
+            InvStutters.Text = m.StutterEventsCount.ToString(CultureInfo.InvariantCulture);
+            InvClusters.Text = $"{m.StutterClustersCount.ToString(CultureInfo.InvariantCulture)} cluster(s)";
+
+            var cards = bundle.Report.Hypotheses.Select(h => new HypothesisCardItem(
+                GradeBadge: $"GRADE {h.Grade}",
+                Name: h.Name,
+                Summary: h.Summary,
+                SupportingEvidence: "Supporting Evidence: " + h.SupportingEvidence,
+                FalsifierText: "What would falsify: " + h.WhatWouldFalsify)).ToList();
+
+            if (cards.Count == 0)
+            {
+                cards.Add(new HypothesisCardItem(
+                    GradeBadge: "NO SPIKE",
+                    Name: "No frame-pacing stutter exceeded threshold in this window",
+                    Summary: "All evaluated frames stayed within 2.5x of the rolling median or under +4.0 ms excess.",
+                    SupportingEvidence: "Supporting Evidence: Frame times remained flat across the captured window.",
+                    FalsifierText: "What would falsify: Check the Input & Polling Lab if the freeze felt like a mouse/camera turn stall."));
+            }
+
+            HypothesesList.ItemsSource = cards;
+        }
     }
 
     private void OnTimelineChosen(object? sender, double ms)
@@ -587,7 +793,7 @@ public partial class MainWindow : Window
         }
     }
 
-    private void OnCandidateSelected(object sender, SelectionChangedEventArgs e)
+    private void OnCandidatePicked(object sender, SelectionChangedEventArgs e)
     {
         if (_updating || CurrentMark is not { } mark || CandidatesList.SelectedItem is not CandidateItem candidate)
         {
@@ -612,7 +818,7 @@ public partial class MainWindow : Window
         }
     }
 
-    private void OnClearSelectionClicked(object sender, RoutedEventArgs e)
+    private void OnClearChoiceClicked(object sender, RoutedEventArgs e)
     {
         if (CurrentMark is { } mark)
         {
@@ -628,30 +834,27 @@ public partial class MainWindow : Window
         }
     }
 
-    private void OnViewWholeClicked(object sender, RoutedEventArgs e)
+    private void OnZoomChanged(object sender, RoutedEventArgs e)
     {
-        _view = null;
-        DrawInvestigator();
-    }
-
-    private void OnViewLast30Clicked(object sender, RoutedEventArgs e)
-    {
-        if (CurrentMark is { CaptureTime: { } time })
-        {
-            _view = (time.Ms - 30_000, time.Ms + 5_000);
-            DrawInvestigator();
-        }
-    }
-
-    private void OnViewAroundEventClicked(object sender, RoutedEventArgs e)
-    {
-        if (CurrentMark is not { CaptureTime: { } time } mark)
+        if (!IsLoaded || CurrentMark is not { CaptureTime: { } time } mark)
         {
             return;
         }
 
-        var center = mark.Selection?.TimestampMs ?? mark.Search.Candidates.FirstOrDefault()?.TimestampMs ?? time.Ms;
-        _view = (center - 5_000, center + 5_000);
+        if (ZoomAll.IsChecked == true)
+        {
+            _view = null;
+        }
+        else if (Zoom30.IsChecked == true)
+        {
+            _view = (time.Ms - 30_000, time.Ms + 5_000);
+        }
+        else if (Zoom10.IsChecked == true)
+        {
+            var center = mark.Selection?.TimestampMs ?? mark.Search.Candidates.FirstOrDefault()?.TimestampMs ?? time.Ms;
+            _view = (center - 5_000, center + 5_000);
+        }
+
         DrawInvestigator();
     }
 
@@ -670,43 +873,153 @@ public partial class MainWindow : Window
         new ExportWindow(_host, mark) { Owner = this }.ShowDialog();
     }
 
-    // ---- settings ----
+    // ---- workspace 3: system capability radar ----
 
-    private void OnApplyHotkeysClicked(object sender, RoutedEventArgs e)
+    private void FillRadar()
     {
-        if (!HotkeyBindings.TryCreate(StutterChordBox.Text, StallChordBox.Text, out var bindings, out var error))
+        if (!_host.MatrixTask.IsCompletedSuccessfully)
         {
-            HotkeyMessages.Text = error;
-            HotkeyMessages.Foreground = (Brush)FindResource("DangerBrush");
+            RadarAntiCheatStatus.Text = "Probing...";
             return;
         }
 
-        var statuses = _shell.ApplyHotkeys(bindings);
-        _host.Update(s => s with { MarkStutterChord = bindings.MarkStutter.ToString(), MarkInputStallChord = bindings.MarkInputStall.ToString() }, out var problem);
-        StutterChordBox.Text = bindings.MarkStutter.ToString();
-        StallChordBox.Text = bindings.MarkInputStall.ToString();
-        var lines = statuses.Select(s => s.Active
-            ? $"{(s.Action == HotkeyAction.MarkStutter ? "Stutter" : "Input stall")}: {s.Chord} is registered."
-            : $"{(s.Action == HotkeyAction.MarkStutter ? "Stutter" : "Input stall")}: {s.Reason}").ToList();
-        if (problem is not null)
+        _radarFilled = true;
+        var entries = _host.MatrixTask.Result.Entries;
+        _allRadarItems = entries.Select(BuildRadarItem).ToList();
+
+        var ready = _allRadarItems.Count(i => i.IsReady);
+        var attention = _allRadarItems.Count - ready;
+
+        RadarTotalCount.Text = _allRadarItems.Count.ToString(CultureInfo.InvariantCulture);
+        RadarReadyCount.Text = ready.ToString(CultureInfo.InvariantCulture);
+        RadarAttentionCount.Text = attention.ToString(CultureInfo.InvariantCulture);
+
+        var acEntry = entries.FirstOrDefault(r => r.Id == "anticheat.state") ?? entries.FirstOrDefault(r => r.Id.StartsWith("anticheat.", StringComparison.Ordinal));
+        RadarAntiCheatStatus.Text = acEntry is { Availability: Availability.Available, Value: { Length: > 0 } v }
+            ? (v.Length <= 18 ? v : "Detected (Safe)")
+            : "Passive / Clear";
+
+        ApplyRadarFilter();
+    }
+
+    private static CapabilityRadarItem BuildRadarItem(CapabilityEntry entry)
+    {
+        var domain = entry.Id switch
         {
-            lines.Add(problem);
+            var id when id.StartsWith("etw.", StringComparison.Ordinal) => "FRAME CAPTURE",
+            var id when id.StartsWith("gpu.", StringComparison.Ordinal) => "GPU TOPOLOGY",
+            var id when id.StartsWith("display.", StringComparison.Ordinal) => "DISPLAY & VRR",
+            var id when id.StartsWith("cpu.", StringComparison.Ordinal) || id.StartsWith("hardware.", StringComparison.Ordinal) => "CPU & MEMORY",
+            var id when id.StartsWith("anticheat.", StringComparison.Ordinal) => "ANTI-CHEAT",
+            var id when id.StartsWith("security.", StringComparison.Ordinal) => "OS SECURITY",
+            var id when id.StartsWith("pdh.", StringComparison.Ordinal) => "LIVE COUNTERS",
+            var id when id.StartsWith("power.", StringComparison.Ordinal) => "POWER & THERMALS",
+            _ => "PLATFORM",
+        };
+
+        var impact = entry.Id switch
+        {
+            var id when id.StartsWith("etw.", StringComparison.Ordinal) =>
+                "Controls whether PresentMon can subscribe to user-mode DXGI/DWM frame presentation events without elevation.",
+            var id when id.StartsWith("gpu.", StringComparison.Ordinal) =>
+                "Identifies discrete and integrated graphics adapters by LUID so multi-adapter laptops and desktops are attributed accurately.",
+            var id when id.StartsWith("display.", StringComparison.Ordinal) =>
+                "Reports monitor refresh rates and variable refresh support so frame times can be compared against your display's VSync cadence.",
+            var id when id.StartsWith("cpu.", StringComparison.Ordinal) =>
+                "Detects heterogeneous core topology (performance vs. efficiency cores) and SMT layout that affect thread scheduling.",
+            var id when id.StartsWith("anticheat.", StringComparison.Ordinal) =>
+                "Passive service/driver presence check (HC-1). Jankscope never hooks or reads game processes regardless of anti-cheat state.",
+            var id when id.StartsWith("security.", StringComparison.Ordinal) =>
+                "Virtualization-based security (HVCI/VBS) and hypervisor posture can add measurable context-switch overhead in CPU-bound games.",
+            var id when id.StartsWith("pdh.", StringComparison.Ordinal) =>
+                "Read-only Windows Performance Counters used to correlate CPU/GPU/disk saturation with frame-time spikes.",
+            _ => "Read-only environmental context included in diagnostic bundles to make incidents reproducible.",
+        };
+
+        var isReady = entry.Availability == Availability.Available;
+        var valText = isReady
+            ? (string.IsNullOrWhiteSpace(entry.Value) ? "Available" : entry.Value!)
+            : $"{entry.Availability}: {entry.Reason ?? "Not available on this system"}";
+
+        var statusBadge = isReady ? "READY [TIER " + entry.Tier + "]" : entry.Availability.ToString().ToUpperInvariant();
+        return new CapabilityRadarItem(
+            Id: entry.Id,
+            Domain: domain,
+            Title: entry.Title,
+            StatusBadge: statusBadge,
+            ValueOrReason: valText,
+            SourceInfo: $"Source: {entry.Source} | Provenance: {entry.Provenance}",
+            PlainEnglishImpact: impact,
+            IsReady: isReady,
+            NeedsAttention: !isReady);
+    }
+
+    private void OnRadarFilterChanged(object sender, RoutedEventArgs e)
+    {
+        if (IsLoaded)
+        {
+            ApplyRadarFilter();
+        }
+    }
+
+    private void ApplyRadarFilter()
+    {
+        if (RadarList is null)
+        {
+            return;
         }
 
-        HotkeyMessages.Text = string.Join(Environment.NewLine, lines);
-        HotkeyMessages.Foreground = (Brush)FindResource(statuses.All(s => s.Active) ? "OkBrush" : "WarningBrush");
-        RefreshHotkeyTexts();
+        if (RadarFilterReady.IsChecked == true)
+        {
+            RadarList.ItemsSource = _allRadarItems.Where(i => i.IsReady).ToList();
+        }
+        else if (RadarFilterAttention.IsChecked == true)
+        {
+            RadarList.ItemsSource = _allRadarItems.Where(i => i.NeedsAttention).ToList();
+        }
+        else
+        {
+            RadarList.ItemsSource = _allRadarItems;
+        }
     }
 
-    private void OnRestoreHotkeysClicked(object sender, RoutedEventArgs e)
+    // ---- workspace 4: input & mouse polling lab ----
+
+    private void RefreshInputLabKpis()
     {
-        StutterChordBox.Text = HotkeyBindings.Default.MarkStutter.ToString();
-        StallChordBox.Text = HotkeyBindings.Default.MarkInputStall.ToString();
-        OnApplyHotkeysClicked(sender, e);
+        var (hz, median, _, jitter, verdict) = InputPollingLab.Summary();
+        if (InputPollingLab.SampleCount < 4)
+        {
+            LabHzValue.Text = "-- Hz";
+            LabMedianDt.Text = "-- ms";
+            LabJitterMs.Text = "-- ms";
+            LabStallCount.Text = "0";
+            LabVerdictText.Text = verdict;
+            return;
+        }
+
+        LabHzValue.Text = $"{hz.ToString("0", CultureInfo.InvariantCulture)} Hz";
+        LabMedianDt.Text = $"{median.ToString("0.0", CultureInfo.InvariantCulture)} ms";
+        LabJitterMs.Text = $"{jitter.ToString("0.0", CultureInfo.InvariantCulture)} ms";
+        LabStallCount.Text = InputPollingLab.StallEvents.ToString(CultureInfo.InvariantCulture);
+        LabVerdictText.Text = verdict;
     }
 
-    private void OnRollBoxLostFocus(object sender, RoutedEventArgs e)
+    private void OnLabSimulateClicked(object sender, RoutedEventArgs e) => InputPollingLab.LoadSimulatedTrace();
+
+    private void OnLabResetClicked(object sender, RoutedEventArgs e) => InputPollingLab.Reset();
+
+    // ---- workspace 5: settings & audio cues ----
+
+    private void OnSaveSettingsClicked(object sender, RoutedEventArgs e)
     {
+        if (!HotkeyBindings.TryCreate(StutterChordBox.Text, InputChordBox.Text, out var bindings, out var error))
+        {
+            SettingsResult.Text = error;
+            SettingsResult.Foreground = (Brush)FindResource("DangerBrush");
+            return;
+        }
+
         if (!double.TryParse(PreRollBox.Text, NumberStyles.Float, CultureInfo.InvariantCulture, out var pre))
         {
             pre = _host.Settings.PreRollSeconds;
@@ -717,72 +1030,97 @@ public partial class MainWindow : Window
             post = _host.Settings.PostRollSeconds;
         }
 
-        var saved = _host.Update(s => s with { PreRollSeconds = pre, PostRollSeconds = post }, out var problem);
+        var theme = ThemeDark.IsChecked == true ? "Dark" : ThemeLight.IsChecked == true ? "Light" : "System";
+        var sound = SoundCheck.IsChecked == true;
+
+        var statuses = _shell.ApplyHotkeys(bindings);
+        var saved = _host.Update(
+            s => s with
+            {
+                MarkStutterChord = bindings.MarkStutter.ToString(),
+                MarkInputStallChord = bindings.MarkInputStall.ToString(),
+                PreRollSeconds = pre,
+                PostRollSeconds = post,
+                SoundEnabled = sound,
+                Theme = theme,
+            },
+            out var problem);
+
+        StutterChordBox.Text = saved.MarkStutterChord;
+        InputChordBox.Text = saved.MarkInputStallChord;
         PreRollBox.Text = saved.PreRollSeconds.ToString("0", CultureInfo.InvariantCulture);
         PostRollBox.Text = saved.PostRollSeconds.ToString("0", CultureInfo.InvariantCulture);
+
+        _shell.ApplyTheme(saved.Theme);
+        RefreshHotkeyTexts();
+        DrawInvestigator();
+
         if (problem is not null)
         {
-            ShowNotice(problem, problem: true);
+            SettingsResult.Text = problem;
+            SettingsResult.Foreground = (Brush)FindResource("WarningBrush");
         }
-    }
-
-    private void OnThemeChanged(object sender, RoutedEventArgs e)
-    {
-        if (ThemeSystem is null || ThemeLight is null || ThemeDark is null || !IsLoaded)
+        else if (statuses.Any(s => !s.Active))
         {
-            return;
+            SettingsResult.Text = "Saved, but one or more hotkeys could not be registered with Windows.";
+            SettingsResult.Foreground = (Brush)FindResource("WarningBrush");
         }
-
-        var theme = ThemeDark.IsChecked == true ? "Dark" : ThemeLight.IsChecked == true ? "Light" : "System";
-        _host.Update(s => s with { Theme = theme }, out _);
-        _shell.ApplyTheme(theme);
-        DrawInvestigator();
-    }
-
-    private void OnSoundChanged(object sender, RoutedEventArgs e)
-    {
-        if (!IsLoaded)
+        else
         {
-            return;
+            SettingsResult.Text = "Settings applied and saved.";
+            SettingsResult.Foreground = (Brush)FindResource("OkBrush");
         }
-
-        _host.Update(s => s with { SoundEnabled = SoundCheck.IsChecked == true }, out _);
     }
+
+    private void OnResetSettingsClicked(object sender, RoutedEventArgs e)
+    {
+        var defaults = new AppSettings();
+        StutterChordBox.Text = defaults.MarkStutterChord;
+        InputChordBox.Text = defaults.MarkInputStallChord;
+        PreRollBox.Text = defaults.PreRollSeconds.ToString("0", CultureInfo.InvariantCulture);
+        PostRollBox.Text = defaults.PostRollSeconds.ToString("0", CultureInfo.InvariantCulture);
+        SoundCheck.IsChecked = defaults.SoundEnabled;
+        ThemeSystem.IsChecked = true;
+        OnSaveSettingsClicked(sender, e);
+    }
+
+    private void OnTestStutterToneClicked(object sender, RoutedEventArgs e) => _host.PreviewTone(MarkKind.Stutter);
+
+    private void OnTestInputToneClicked(object sender, RoutedEventArgs e) => _host.PreviewTone(MarkKind.InputStall);
+
+    private void OnTestWarnToneClicked(object sender, RoutedEventArgs e) => _host.PreviewTone(null);
 
     private void OnShowWelcomeClicked(object sender, RoutedEventArgs e) => _shell.ShowWelcome();
 
-    // ---- about ----
+    // ---- workspace 6: about, privacy & compatibility export ----
 
     private void FillAbout()
     {
         if (!_host.MatrixTask.IsCompletedSuccessfully)
         {
-            AboutEnvironment.Text = "Checking this PC (read-only)...";
+            CapabilitySummary.Text = "Checking this PC (read-only)...";
             return;
         }
 
         _aboutFilled = true;
         var rows = _host.MatrixTask.Result.Entries
-            .Where(r => r.Id.StartsWith("anticheat.", StringComparison.Ordinal) || r.Id == "game.session" || r.Id.StartsWith("etw.", StringComparison.Ordinal))
+            .Where(r => r.Id.StartsWith("anticheat.", StringComparison.Ordinal) || r.Id == "game.session" || r.Id.StartsWith("etw.", StringComparison.Ordinal) || r.Id == "os.build")
             .Select(r => $"{r.Title}: {(r.Availability == Availability.Available ? r.Value : r.Availability + " - " + r.Reason)}");
-        var lines = rows.Concat(_host.Problems).ToList();
-        AboutEnvironment.Text = lines.Count == 0 ? "Nothing to report." : string.Join(Environment.NewLine, lines);
+        CapabilitySummary.Text = string.Join(Environment.NewLine, rows);
 
-        // Sponsor and store links appear only on Support & About, never during an active game session (HC-13, Criterion 22/23)
-        var isGameSession = _host.Controller.IsCapturing;
-        var hasSponsor = !string.IsNullOrWhiteSpace(Branding.SponsorUrl);
-        var hasStore = !string.IsNullOrWhiteSpace(Branding.StoreUrl);
-
-        if (!isGameSession && (hasSponsor || hasStore))
+        if (_host.Problems.Count > 0)
         {
-            SponsorPanel.Visibility = Visibility.Visible;
-            SponsorButton.Visibility = hasSponsor ? Visibility.Visible : Visibility.Collapsed;
-            StoreButton.Visibility = hasStore ? Visibility.Visible : Visibility.Collapsed;
+            ProblemsBox.Text = string.Join(Environment.NewLine, _host.Problems);
+            ProblemsBox.Visibility = Visibility.Visible;
         }
         else
         {
-            SponsorPanel.Visibility = Visibility.Collapsed;
+            ProblemsBox.Visibility = Visibility.Collapsed;
         }
+
+        var isGameSession = _host.Controller.IsCapturing;
+        OpenSponsorButton.Visibility = !isGameSession && !string.IsNullOrWhiteSpace(Branding.SponsorUrl) ? Visibility.Visible : Visibility.Collapsed;
+        OpenStoreButton.Visibility = !isGameSession && !string.IsNullOrWhiteSpace(Branding.StoreUrl) ? Visibility.Visible : Visibility.Collapsed;
     }
 
     private void OnExportCompatibilityClicked(object sender, RoutedEventArgs e)
@@ -800,9 +1138,9 @@ public partial class MainWindow : Window
         }.ShowDialog();
     }
 
-    private void OnSponsorClicked(object sender, RoutedEventArgs e) =>
+    private void OnOpenSponsorClicked(object sender, RoutedEventArgs e) =>
         ExternalUrlOpener.TryOpen(Branding.SponsorUrl);
 
-    private void OnStoreClicked(object sender, RoutedEventArgs e) =>
+    private void OnOpenStoreClicked(object sender, RoutedEventArgs e) =>
         ExternalUrlOpener.TryOpen(Branding.StoreUrl);
 }
