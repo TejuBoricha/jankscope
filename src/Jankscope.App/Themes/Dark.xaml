@@ -1,58 +1,61 @@
 <ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
-    <!-- Obsidian Carbon Chassis & Machined Instrument Surfaces -->
-    <SolidColorBrush x:Key="WindowBackgroundBrush" Color="#06090F"/>
-    <SolidColorBrush x:Key="SidebarBrush" Color="#090D16"/>
-    <SolidColorBrush x:Key="PanelBrush" Color="#0D131F"/>
-    <SolidColorBrush x:Key="PanelRaisedBrush" Color="#141D2E"/>
-    <SolidColorBrush x:Key="PanelInsetBrush" Color="#05080D"/>
-    <SolidColorBrush x:Key="CardHeaderBrush" Color="#101827"/>
+    <!-- Signal bench: warm graphite instrument surfaces, one phosphor signal colour for live data,
+         amber for marks, indigo for simulated data. Keys are stable; only values change per theme. -->
+
+    <!-- Surfaces: warm graphite, layered from the window back to raised cards -->
+    <SolidColorBrush x:Key="WindowBackgroundBrush" Color="#0A0B09"/>
+    <SolidColorBrush x:Key="SidebarBrush" Color="#0F110D"/>
+    <SolidColorBrush x:Key="PanelBrush" Color="#13160F"/>
+    <SolidColorBrush x:Key="PanelRaisedBrush" Color="#1A1E14"/>
+    <SolidColorBrush x:Key="PanelInsetBrush" Color="#080A06"/>
+    <SolidColorBrush x:Key="CardHeaderBrush" Color="#161A11"/>
 
     <LinearGradientBrush x:Key="HeroBannerBrush" StartPoint="0,0" EndPoint="1,1">
-        <GradientStop Color="#0D1B2E" Offset="0.0"/>
-        <GradientStop Color="#0B1320" Offset="0.55"/>
-        <GradientStop Color="#12182B" Offset="1.0"/>
+        <GradientStop Color="#1C2415" Offset="0.0"/>
+        <GradientStop Color="#12160E" Offset="0.6"/>
+        <GradientStop Color="#0E110B" Offset="1.0"/>
     </LinearGradientBrush>
 
     <LinearGradientBrush x:Key="KpiCardBrush" StartPoint="0,0" EndPoint="0,1">
-        <GradientStop Color="#121B2B" Offset="0.0"/>
-        <GradientStop Color="#0B101A" Offset="1.0"/>
+        <GradientStop Color="#171C12" Offset="0.0"/>
+        <GradientStop Color="#0F120B" Offset="1.0"/>
     </LinearGradientBrush>
 
-    <!-- High-Contrast Precision Typography & Hairline Borders -->
-    <SolidColorBrush x:Key="ForegroundBrush" Color="#F2F6FC"/>
-    <SolidColorBrush x:Key="MutedBrush" Color="#8A99B0"/>
-    <SolidColorBrush x:Key="SubtleTextBrush" Color="#596880"/>
-    <SolidColorBrush x:Key="BorderLineBrush" Color="#1D293D"/>
-    <SolidColorBrush x:Key="BorderHighlightBrush" Color="#2F4466"/>
+    <!-- Text and borders -->
+    <SolidColorBrush x:Key="ForegroundBrush" Color="#F1F3E8"/>
+    <SolidColorBrush x:Key="MutedBrush" Color="#9AA08A"/>
+    <SolidColorBrush x:Key="SubtleTextBrush" Color="#63685A"/>
+    <SolidColorBrush x:Key="BorderLineBrush" Color="#262B1D"/>
+    <SolidColorBrush x:Key="BorderHighlightBrush" Color="#3B4430"/>
 
-    <!-- Phosphor Cyan & Electric Telemetry Accents -->
-    <SolidColorBrush x:Key="AccentBrush" Color="#00D2FF"/>
-    <SolidColorBrush x:Key="AccentSoftBrush" Color="#0C2B3D"/>
-    <SolidColorBrush x:Key="AccentTextBrush" Color="#030912"/>
-    <SolidColorBrush x:Key="CyanAccentBrush" Color="#00E5FF"/>
-    <SolidColorBrush x:Key="PurpleAccentBrush" Color="#B388FF"/>
-    <SolidColorBrush x:Key="HoverBrush" Color="#182438"/>
-    <SolidColorBrush x:Key="SelectedBrush" Color="#102C47"/>
+    <!-- Accent: phosphor lime is the one live/primary colour. Purple keys hold the amber mark colour. -->
+    <SolidColorBrush x:Key="AccentBrush" Color="#C8FF3B"/>
+    <SolidColorBrush x:Key="AccentSoftBrush" Color="#22300F"/>
+    <SolidColorBrush x:Key="AccentTextBrush" Color="#0A0B06"/>
+    <SolidColorBrush x:Key="CyanAccentBrush" Color="#E4FF8A"/>
+    <SolidColorBrush x:Key="PurpleAccentBrush" Color="#FFB547"/>
+    <SolidColorBrush x:Key="HoverBrush" Color="#222818"/>
+    <SolidColorBrush x:Key="SelectedBrush" Color="#2D3620"/>
 
-    <!-- Semantic Status & Evidence Grades -->
-    <SolidColorBrush x:Key="OkBrush" Color="#00E676"/>
-    <SolidColorBrush x:Key="OkSurfaceBrush" Color="#09291E"/>
-    <SolidColorBrush x:Key="WarningBrush" Color="#FFB300"/>
-    <SolidColorBrush x:Key="WarningSurfaceBrush" Color="#2E2108"/>
-    <SolidColorBrush x:Key="DangerBrush" Color="#FF4D6A"/>
-    <SolidColorBrush x:Key="DangerSurfaceBrush" Color="#331019"/>
-    <SolidColorBrush x:Key="SimulatedSurfaceBrush" Color="#1F1435"/>
-    <SolidColorBrush x:Key="SimulatedBorderBrush" Color="#8B5CF6"/>
-    <SolidColorBrush x:Key="SimulatedTextBrush" Color="#DDD6FE"/>
+    <!-- Status and evidence -->
+    <SolidColorBrush x:Key="OkBrush" Color="#9BE35A"/>
+    <SolidColorBrush x:Key="OkSurfaceBrush" Color="#1B2A12"/>
+    <SolidColorBrush x:Key="WarningBrush" Color="#FFB547"/>
+    <SolidColorBrush x:Key="WarningSurfaceBrush" Color="#2E2110"/>
+    <SolidColorBrush x:Key="DangerBrush" Color="#FF6B5E"/>
+    <SolidColorBrush x:Key="DangerSurfaceBrush" Color="#331714"/>
+    <SolidColorBrush x:Key="SimulatedSurfaceBrush" Color="#1B1A33"/>
+    <SolidColorBrush x:Key="SimulatedBorderBrush" Color="#7C7CFF"/>
+    <SolidColorBrush x:Key="SimulatedTextBrush" Color="#DCDCFF"/>
 
-    <!-- Digital Phosphor Oscilloscope & Telemetry Scope Palette -->
-    <SolidColorBrush x:Key="ChartBackgroundBrush" Color="#04070C"/>
-    <SolidColorBrush x:Key="ChartTextBrush" Color="#8E9FB8"/>
-    <SolidColorBrush x:Key="ChartGridBrush" Color="#162030"/>
-    <SolidColorBrush x:Key="ChartLineBrush" Color="#18DCFF"/>
-    <SolidColorBrush x:Key="ChartMarkBrush" Color="#FFB300"/>
-    <SolidColorBrush x:Key="ChartAnchorBrush" Color="#00E676"/>
-    <SolidColorBrush x:Key="ChartGapBrush" Color="#253042" Opacity="0.55"/>
-    <SolidColorBrush x:Key="ChartWarnBrush" Color="#FF4D6A"/>
+    <!-- Charts: the live trace is lime, marks amber, anchors cyan -->
+    <SolidColorBrush x:Key="ChartBackgroundBrush" Color="#070806"/>
+    <SolidColorBrush x:Key="ChartTextBrush" Color="#8E947F"/>
+    <SolidColorBrush x:Key="ChartGridBrush" Color="#1E2319"/>
+    <SolidColorBrush x:Key="ChartLineBrush" Color="#C8FF3B"/>
+    <SolidColorBrush x:Key="ChartMarkBrush" Color="#FFB547"/>
+    <SolidColorBrush x:Key="ChartAnchorBrush" Color="#7CE0FF"/>
+    <SolidColorBrush x:Key="ChartGapBrush" Color="#2A3024" Opacity="0.55"/>
+    <SolidColorBrush x:Key="ChartWarnBrush" Color="#FF6B5E"/>
 </ResourceDictionary>
