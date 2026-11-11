@@ -24,6 +24,14 @@ public static class PresentMonArguments
 
     public const int MaxProcessNames = 32;
     public const int MaxProcessNameLength = 255;
+
+    /// <summary>
+    /// What a process name must not contain: the characters Windows refuses in a file name (quote, angle brackets, bar, wildcards, drive or stream colon) and
+    /// both path separators. Control characters are refused separately by category. Stated here instead of read from
+    /// <see cref="Path.GetInvalidFileNameChars"/>, which answers for the machine the code runs on: on Linux it allows every one of these except the slash,
+    /// so the same check would silently pass <c>ga*me.exe</c>, <c>C:game.exe</c> and <c>..\game.exe</c> there (found by running the tests off Windows).
+    /// </summary>
+    private static readonly char[] InvalidNameCharacters = ['"', '<', '>', '|', '*', '?', ':', '\\', '/'];
     public const int MaxSessionNameLength = 128;
     public const int MaxTimedSeconds = 86_400;
 
@@ -114,7 +122,7 @@ public static class PresentMonArguments
             throw new ArgumentException("A process name must not start or end with a blank.", nameof(name));
         }
 
-        var invalid = Path.GetInvalidFileNameChars();
+        var invalid = InvalidNameCharacters;
         for (var i = 0; i < name.Length;)
         {
             if (!Rune.TryGetRuneAt(name, i, out var rune))

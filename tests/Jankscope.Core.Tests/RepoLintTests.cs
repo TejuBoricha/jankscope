@@ -64,6 +64,12 @@ public class RepoLintTests
             "Opens user-clicked external HTTPS sponsor or store URL in the default browser per HC-13; never fetches, strictly HTTPS-only."),
         ("src/Jankscope.App/Services/ExternalUrlOpener.cs", "ProcessStartInfo",
             "UseShellExecute=true for default OS protocol handler to open HTTPS browser URLs on user click only (HC-13)."),
+
+        // Keyboard (HC-4, review of Stage 1b finding 5). Both are pinned further by tests below.
+        ("src/Jankscope.App/Views/TimelineView.cs", "managed keyboard reading",
+            "Moves the cursor of the timeline control with Left, Right, Home, End, Enter and Space, and Shift for a larger step, only while that control has the keyboard focus. Nothing is stored or sent; The_timeline_reads_only_its_six_navigation_keys pins the exact keys."),
+        ("src/Jankscope.App/Services/HotkeyHost.cs", "managed keyboard reading",
+            "A message hook on its own hidden window that handles WM_HOTKEY only, the message RegisterHotKey delivers; it never sees a key."),
     ];
 
     /// <summary>Files allowed to switch the banned-API rule off, each with the number of regions (a written reason is required on the pragma line).</summary>
@@ -127,6 +133,32 @@ public class RepoLintTests
         var stale = Enumerable.Range(0, Allowed.Length).Where(i => !used.Contains(i)).Select(i => $"{Allowed[i].FileSuffix} / {Allowed[i].Rule}").ToList();
         Assert.True(stale.Count == 0, "Allowlist entries that no code needs any more (remove them): " + string.Join("; ", stale));
         Assert.All(Allowed, a => Assert.False(string.IsNullOrWhiteSpace(a.Reason), $"{a.FileSuffix}: an allowlist entry needs a reason"));
+    }
+
+    [Fact]
+    public void The_timeline_reads_only_its_six_navigation_keys()
+    {
+        // HC-4 (review of Stage 1b, finding 5): the timeline control is the one place that reads keys. The allowlist above would let it read any key,
+        // so the exact set is pinned here: adding a key (a letter, a digit) means changing this test, which is a review.
+        var file = Repo.AllFiles("*.cs").Single(f => Repo.Rel(f).EndsWith("src/Jankscope.App/Views/TimelineView.cs", StringComparison.Ordinal));
+        var code = CSharpScanner.Scan(File.ReadAllText(file)).Code;
+
+        var keys = Regex.Matches(code, @"\bKey\s*\.\s*(\w+)\b").Select(m => m.Groups[1].Value).Distinct().OrderBy(k => k, StringComparer.Ordinal).ToArray();
+
+        Assert.Equal(["End", "Enter", "Home", "Left", "Right", "Space"], keys);
+    }
+
+    [Fact]
+    public void Xaml_files_wire_no_keyboard_events_or_input_bindings()
+    {
+        // HC-4: key events can also be wired in markup, which the C# lint cannot see. The handler would need a key-event argument in C#, which is also refused.
+        var pattern = new Regex(@"\b(?:Preview)?(?:KeyDown|KeyUp|TextInput)\s*=|<\s*(?:\w+\s*\.\s*)?(?:KeyBinding|InputBinding|MouseBinding)\b|\bInputBindings\b|\bKeyGesture\b|\bTextCompositionManager\b", RegexOptions.CultureInvariant);
+        var files = Repo.AllFiles("*.xaml").ToList();
+
+        var hits = files.Where(f => pattern.IsMatch(File.ReadAllText(f))).Select(Repo.Rel).ToList();
+
+        Assert.True(files.Count >= 5, $"only {files.Count} XAML files scanned; the test would pass vacuously");
+        Assert.True(hits.Count == 0, "XAML wires keyboard input (HC-4): " + string.Join("; ", hits));
     }
 
     [Fact]

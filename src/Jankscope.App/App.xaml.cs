@@ -163,25 +163,38 @@ public partial class App : Application, IShell
         }
 
         _quitting = true;
-        _trayTimer?.Stop();
-        _hotkeys?.Dispose();
+
+        // Whatever goes wrong while stopping, the program must still end: a failure here used to leave it running with no tray icon and no way to
+        // quit again (review of Stage 1b, finding 11). The error is logged and the shutdown goes on.
         try
         {
+            _trayTimer?.Stop();
+            _hotkeys?.Dispose();
             if (_host is not null)
             {
                 await _host.DisposeAsync();
             }
         }
-        catch (Exception e) when (e is IOException or InvalidOperationException or TimeoutException)
+        catch (Exception e)
         {
             LogError(e);
         }
+        finally
+        {
+            try
+            {
+                _tray?.Dispose();
+                _main?.AllowClose();
+                _main?.Close();
+                _showEvent?.Set(); // lets the listener thread see that we are quitting
+            }
+            catch (Exception e)
+            {
+                LogError(e);
+            }
 
-        _tray?.Dispose();
-        _main?.AllowClose();
-        _main?.Close();
-        _showEvent?.Set(); // lets the listener thread see that we are quitting
-        Shutdown();
+            Shutdown();
+        }
     }
 
     private void StopCaptureNow()
@@ -203,14 +216,21 @@ public partial class App : Application, IShell
 
     private void WaitForShowRequests()
     {
-        while (_showEvent is { } handle && handle.WaitOne())
+        try
         {
-            if (_quitting)
+            while (_showEvent is { } handle && handle.WaitOne())
             {
-                return;
-            }
+                if (_quitting)
+                {
+                    return;
+                }
 
-            Dispatcher.BeginInvoke(ShowMain);
+                Dispatcher.BeginInvoke(ShowMain);
+            }
+        }
+        catch (ObjectDisposedException)
+        {
+            // the program is exiting and released the event while this thread waited on it: nothing left to do
         }
     }
 

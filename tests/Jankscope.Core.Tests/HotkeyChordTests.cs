@@ -37,6 +37,15 @@ public class HotkeyChordTests
     [InlineData("Ctrl+Alt+Esc")]
     [InlineData("Ctrl+Alt+F25")]
     [InlineData("Ctrl+Alt+F0")]
+    [InlineData("Ctrl+F25")]           // Ctrl alone, so only the F1-F24 range can refuse these (the AltGr rule would mask Ctrl+Alt+F25)
+    [InlineData("Ctrl+F0")]
+    [InlineData("Ctrl+F100")]
+    [InlineData("Ctrl+@")]             // the characters just outside A-Z and 0-9 (and one more of each kind), refused by the key rule itself
+    [InlineData("Ctrl+[")]
+    [InlineData("Ctrl+/")]
+    [InlineData("Ctrl+:")]
+    [InlineData("Ctrl+;")]
+    [InlineData("Ctrl+Space")]
     [InlineData("Win+F9")]             // reserved by Windows
     [InlineData("Ctrl+Win+F9")]
     [InlineData("Alt+F4")]             // closes the foreground window

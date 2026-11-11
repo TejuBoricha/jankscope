@@ -45,9 +45,19 @@ public sealed class HotkeyHost : IDisposable
         _window.Dispose();
     }
 
+    /// <summary>
+    /// The one decision this window makes: only WM_HOTKEY, and only for an id that is registered right now, becomes an action. Every other message
+    /// (including any key message) is not looked at (HC-4).
+    /// </summary>
+    internal static bool TryRoute(HotkeyRegistrar registrar, int message, int id, out HotkeyAction action)
+    {
+        action = default;
+        return message == WmHotkey && registrar.TryHandle(id, out action);
+    }
+
     private IntPtr OnMessage(IntPtr window, int message, IntPtr wParam, IntPtr lParam, ref bool handled)
     {
-        if (message == WmHotkey && _registrar.TryHandle(wParam.ToInt32(), out var action))
+        if (TryRoute(_registrar, message, wParam.ToInt32(), out var action))
         {
             handled = true;
             Pressed?.Invoke(action);

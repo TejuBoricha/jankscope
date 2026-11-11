@@ -43,10 +43,17 @@ public sealed class WindowsHotkeyApi : IHotkeyApi
     private const int ErrorInvalidWindowHandle = 1400;
     private const int ErrorHotkeyAlreadyRegistered = 1409;
 
+    /// <summary>The modifier flags handed to <c>RegisterHotKey</c>: the chord's own modifiers plus <c>MOD_NOREPEAT</c>, so that holding the chord down is one press.</summary>
+    internal static uint NativeModifiers(HotkeyChord chord)
+    {
+        ArgumentNullException.ThrowIfNull(chord);
+        return (uint)chord.Modifiers | ModNoRepeat;
+    }
+
     public HotkeyRegistrationResult Register(nint window, int id, HotkeyChord chord)
     {
         ArgumentNullException.ThrowIfNull(chord);
-        if (NativeHotkeys.RegisterHotKey(window, id, (uint)chord.Modifiers | ModNoRepeat, (uint)chord.VirtualKey))
+        if (NativeHotkeys.RegisterHotKey(window, id, NativeModifiers(chord), (uint)chord.VirtualKey))
         {
             return HotkeyRegistrationResult.Success;
         }

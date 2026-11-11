@@ -22,6 +22,17 @@ public abstract class ObservableObject : INotifyPropertyChanged
     }
 }
 
+/// <summary>
+/// What the investigator says about how well the time of a key press is known (review of Stage 1b, finding 3). The figure is the jitter of frame delivery
+/// only; the capture tool's own minimum delay cannot be measured here, and with very few frames there is no figure at all (unknown, not zero).
+/// </summary>
+internal static class KeyPressTimeText
+{
+    public static string Describe(CaptureTime time) => time.UncertaintyIsMeaningful
+        ? $"Key-press time: frame-delivery jitter of about {time.UncertaintyMs.ToString("0", CultureInfo.InvariantCulture)} ms. That is the jitter only; the capture tool's own minimum delay is not measured and is not included."
+        : $"Key-press time: only {time.Observations.ToString(CultureInfo.InvariantCulture)} frame(s) had been seen, too few to say how exact it is. The capture tool's own minimum delay is not measured either.";
+}
+
 /// <summary>One mark in the list on the investigator page.</summary>
 public sealed class MarkItem : ObservableObject
 {
@@ -84,6 +95,9 @@ public sealed class MarkItem : ObservableObject
 /// <summary>One candidate anchor in the list.</summary>
 public sealed record CandidateItem(int Rank, string Text)
 {
+    /// <summary>What a screen reader announces for the list item. Without this it read the record itself ("CandidateItem { Rank = 1, Text = ... }").</summary>
+    public override string ToString() => Text;
+
     public static CandidateItem From(CandidateAnchor candidate)
     {
         var when = candidate.SecondsBeforeMark >= 0

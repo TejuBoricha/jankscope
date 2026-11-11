@@ -184,6 +184,24 @@ public class AppHostTests
     }
 
     [Fact]
+    public async Task Starting_a_new_capture_starts_a_fresh_clock_so_the_old_capture_cannot_place_a_new_key_press()
+    {
+        // Mutation survivor L2 of the independent Stage 1b review: nothing failed when the reset at the start of a capture was removed.
+        var (host, factory, _) = Create();
+        await using var owner = host;
+        Assert.True(host.Controller.Start("game.exe").Started);
+        await FeedAndWait(host, factory, TestData.Stream(5).Frames);
+        Assert.True(host.Controller.Clock.Observations > 0);
+        Assert.NotNull(host.Controller.Clock.Estimate(TimeProvider.System.GetTimestamp()));
+
+        await host.Controller.StopAsync();
+        Assert.True(host.Controller.Start("other.exe").Started);
+
+        Assert.Equal(0, host.Controller.Clock.Observations);
+        Assert.Null(host.Controller.Clock.Estimate(TimeProvider.System.GetTimestamp())); // unknown again, never the old capture's time
+    }
+
+    [Fact]
     public async Task The_same_press_twice_in_a_row_is_one_mark()
     {
         var (host, factory, _) = Create();
@@ -324,6 +342,45 @@ public class AppHostTests
 
         Assert.Contains(host.Problems, p => p.Contains("settings file could not be read"));
         Assert.Equal(new AppSettings(), host.Settings);
+    }
+
+    [Fact]
+    public async Task Out_of_order_frames_and_clock_jumps_are_counted_in_the_status_apart_from_ignored_frames()
+    {
+        var (host, factory, _) = Create();
+        await using var owner = host;
+        host.Controller.Start("game.exe");
+        var (frames, endMs) = TestData.Stream(5);
+        await FeedAndWait(host, factory, frames);
+
+        factory.Capture.Push(new FrameSample(1000, endMs - 8.0, TestData.Frame, PresentMode: "Composed: Flip", Application: "game.exe", Provenance: DataProvenance.Fixture));
+        factory.Capture.Push(new FrameSample(1001, endMs - 4000.0, TestData.Frame, PresentMode: "Composed: Flip", Application: "game.exe", Provenance: DataProvenance.Fixture));
+        // Wait for everything asserted below, not only the two counters: the pump counts a jump before it counts the frame as received, so waiting
+        // for the jump alone can read the received count one short (this failed once on CI for exactly that reason).
+        var expectedReceived = frames.Length + 1;
+        await TestData.WaitUntil(() => host.Controller.Status() is { OutOfOrderFrames: 1, BackwardJumps: 1 } status && status.FramesReceived == expectedReceived);
+
+        var status = host.Controller.Status();
+        Assert.Equal(0, status.IgnoredFrames);
+        Assert.Equal(expectedReceived, status.FramesReceived);
+    }
+
+    [Fact]
+    public async Task Frames_left_out_for_being_out_of_order_are_stated_in_the_export()
+    {
+        var (host, factory, _) = Create();
+        await using var owner = host;
+        host.Controller.Start("game.exe");
+        var (frames, endMs) = TestData.Stream(22, (1200, 90));
+        await FeedAndWait(host, factory, frames);
+        factory.Capture.Push(new FrameSample(2000, endMs - 8.0, TestData.Frame, PresentMode: "Composed: Flip", Application: "game.exe", Provenance: DataProvenance.Fixture));
+        await TestData.WaitUntil(() => host.Controller.Status().OutOfOrderFrames == 1);
+
+        var outcome = await host.MarkAsync(MarkKind.Stutter);
+        var preview = await Task.Run(() => host.Controller.PrepareExport(outcome.Mark!, redact: true, RedactionContext.Empty));
+
+        Assert.Contains("\"outOfOrderFrames\"", preview.Text);
+        Assert.Contains("1 frame(s) were left out of the series", preview.Text);
     }
 
     [Fact]

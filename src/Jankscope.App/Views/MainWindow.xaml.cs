@@ -108,14 +108,35 @@ public partial class MainWindow : Window
         {
             RefreshHotkeyTexts();
             RefreshStatus();
-            _tick.Start();
+            if (IsVisible)
+            {
+                _tick.Start(); // Loaded can arrive after the window was already hidden to the tray
+            }
+
             foreach (var problem in _host.Problems)
             {
                 ShowNotice(problem, problem: true);
             }
         };
         Closing += OnClosing;
+
+        // The live refresh only draws this window. Hidden to the tray during play it would still run four times a second and allocate for nothing
+        // (review of Stage 1b, finding 8), so it runs only while the window can be seen.
+        IsVisibleChanged += (_, _) =>
+        {
+            if (IsVisible)
+            {
+                _tick.Start();
+            }
+            else
+            {
+                _tick.Stop();
+            }
+        };
     }
+
+    /// <summary>True while the live refresh timer runs: only while the window is visible.</summary>
+    internal bool LiveRefreshRunning => _tick.IsEnabled;
 
     public void AllowClose() => _quitting = true;
 
@@ -404,6 +425,16 @@ public partial class MainWindow : Window
             parts.Add($"{status.IgnoredFrames.ToString(CultureInfo.InvariantCulture)} frame(s) ignored (not swap-chain presents)");
         }
 
+        if (status.OutOfOrderFrames > 0)
+        {
+            parts.Add($"{status.OutOfOrderFrames.ToString(CultureInfo.InvariantCulture)} frame(s) left out (stamped earlier than the frame before)");
+        }
+
+        if (status.BackwardJumps > 0)
+        {
+            parts.Add($"the capture clock jumped back {status.BackwardJumps.ToString(CultureInfo.InvariantCulture)} time(s) (treated as a restart)");
+        }
+
         LiveNumbers.Text = string.Join("  |  ", parts);
         LiveTimeline.Show(new TimelineData(memory, null, newest - LiveWindowMs, newest, newest, null, null, null, null, [], detected.Events.Select(e => e.TimestampMs).ToList()));
     }
@@ -632,11 +663,8 @@ public partial class MainWindow : Window
 
         if (mark.CaptureTime is { } time)
         {
-            var uncText = time.UncertaintyMs <= 100
-                ? $"Clock uncertainty: +/-{time.UncertaintyMs.ToString("0", CultureInfo.InvariantCulture)} ms"
-                : "Clock uncertainty: fast batch stream";
-            parts.Add(uncText);
-            parts.Add($"Pre-roll: {mark.Window.AvailablePreRollSeconds.ToString("0", CultureInfo.InvariantCulture)}/{mark.Window.RequestedPreRollSeconds.ToString("0", CultureInfo.InvariantCulture)} s");
+            parts.Add(KeyPressTimeText.Describe(time));
+            parts.Add($"Before the mark: {mark.Window.AvailablePreRollSeconds.ToString("0", CultureInfo.InvariantCulture)} s recorded of the {mark.Window.RequestedPreRollSeconds.ToString("0", CultureInfo.InvariantCulture)} s asked for" + (mark.Window.PreRollShort ? " (not enough history yet; it is never padded)." : "."));
         }
         else
         {
@@ -704,7 +732,7 @@ public partial class MainWindow : Window
             end,
             time.Ms,
             time.Ms,
-            time.UncertaintyMs,
+            time.UncertaintyIsMeaningful ? time.UncertaintyMs : null,
             windowEnd,
             mark.Selection?.TimestampMs,
             candidates,

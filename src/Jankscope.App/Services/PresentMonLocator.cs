@@ -6,14 +6,14 @@ namespace Jankscope.App.Services;
 /// <summary>Finds the pinned PresentMon console executable the way the command-line tool finds its catalogs: next to the program, or by walking up to the repository.</summary>
 public static class PresentMonLocator
 {
-    /// <summary>The lock file (the owner-approved size and SHA-256 of the one executable the product may start), or null.</summary>
+    /// <summary>The lock file (the owner-approved size and SHA-256 of the one executable the product may start), or null. Never directly under the root of the drive (<see cref="InstallTree"/>).</summary>
     public static string? FindLockFile(string startDirectory)
     {
-        for (var directory = new DirectoryInfo(startDirectory); directory is not null; directory = directory.Parent)
+        foreach (var directory in InstallTree.SearchDirectories(startDirectory))
         {
             foreach (var relative in new[] { Path.Combine("PresentMon", "presentmon.lock.json"), Path.Combine("third_party", "PresentMon", "presentmon.lock.json") })
             {
-                var candidate = Path.Combine(directory.FullName, relative);
+                var candidate = Path.Combine(directory, relative);
                 if (File.Exists(candidate))
                 {
                     return candidate;

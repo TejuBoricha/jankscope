@@ -27,6 +27,16 @@ public sealed class PresentMonCaptureFactory(PinnedExecutable pin) : ICaptureFac
     private static SuppressionDecision Check() =>
         AntiCheatSafety.Decide(CollectorClass.UnelevatedUserModeEtw, AntiCheatSafetyState.Unknown, userOverridePerGame: false);
 
+    /// <summary>
+    /// The parser a live capture of <paramref name="programName"/> uses. PresentMon cannot say that a program is the synthetic harness, so the label
+    /// comes from the name (<see cref="CaptureProvenance.ForProgram"/>): a capture of the harness is Simulated, anything else Measured (HC-9).
+    /// </summary>
+    public static Func<IFrameLogParser> ParserFor(string programName)
+    {
+        var provenance = CaptureProvenance.ForProgram(programName);
+        return () => new PresentMonCsvParser(provenance);
+    }
+
     public IFrameSource CreateCapture(string programName) => new RunnerFrameSource(PresentMonRunner.CreateDefault(
         new PresentMonRunnerOptions
         {
@@ -38,7 +48,7 @@ public sealed class PresentMonCaptureFactory(PinnedExecutable pin) : ICaptureFac
             WatchdogNoOutputTimeout = Timeout.InfiniteTimeSpan,
             AntiCheatSuppressionCheck = Check,
         },
-        () => new PresentMonCsvParser(DataProvenance.Measured)));
+        ParserFor(programName)));
 
     public IFrameSource CreateScan(int seconds) => new RunnerFrameSource(PresentMonRunner.CreateDefault(
         new PresentMonRunnerOptions
@@ -83,6 +93,8 @@ public sealed record CaptureStatus(
     long FramesReceived,
     long DroppedFrames,
     long IgnoredFrames,
+    long OutOfOrderFrames,
+    long BackwardJumps,
     int Restarts,
     IReadOnlyList<string> Problems,
     IReadOnlyList<string> Notes)
@@ -171,8 +183,8 @@ public sealed class CaptureController : IAsyncDisposable
         if (session is null)
         {
             return error is null
-                ? new CaptureStatus(CaptureState.Idle, "Not capturing", null, null, 0, 0, 0, 0, [], [])
-                : new CaptureStatus(CaptureState.Failed, "Could not capture", error, program, 0, 0, 0, 0, [], []);
+                ? new CaptureStatus(CaptureState.Idle, "Not capturing", null, null, 0, 0, 0, 0, 0, 0, [], [])
+                : new CaptureStatus(CaptureState.Failed, "Could not capture", error, program, 0, 0, 0, 0, 0, 0, [], []);
         }
 
         var health = session.Health;
@@ -197,6 +209,8 @@ public sealed class CaptureController : IAsyncDisposable
             session.FramesReceived,
             health.DroppedFrames,
             session.IgnoredFrames,
+            session.OutOfOrderFrames,
+            session.BackwardJumps,
             health.Restarts,
             health.Problems,
             health.Notes);
@@ -347,7 +361,7 @@ public sealed class CaptureController : IAsyncDisposable
     /// Makes a mark for a key press (or a tray click) now. Null when it is the same press as one a moment ago. A mark is recorded even before the
     /// capture clock is known, with an unknown time; <see cref="IsCapturing"/> says whether anything is running at all.
     /// </summary>
-    public IncidentMark? Mark(MarkKind kind) => Recorder.Mark(kind);
+    public IncidentMark? Mark(MarkKind kind, long? pressedTicks = null) => Recorder.Mark(kind, pressedTicks);
 
     /// <summary>
     /// Builds the redacted export of a mark and its preview. Runs the whole pipeline (bundle, redaction, guard) and writes nothing. Throws
@@ -358,8 +372,10 @@ public sealed class CaptureController : IAsyncDisposable
     {
         ArgumentNullException.ThrowIfNull(mark);
         var window = Recorder.CollectWindow(mark);
-        var dropped = Session?.Health.DroppedFrames ?? 0;
-        var bundle = IncidentBundleBuilder.Build(mark, window, _matrix(), dropped, redactSensitiveRows: redact);
+        var session = Session;
+        var dropped = session?.Health.DroppedFrames ?? 0;
+        var bundle = IncidentBundleBuilder.Build(
+            mark, window, _matrix(), dropped, redactSensitiveRows: redact, outOfOrderFrames: session?.OutOfOrderFrames ?? 0, backwardJumps: session?.BackwardJumps ?? 0);
         return ExportPipeline.Prepare(bundle, context ?? RedactionContext.ForThisMachine(), redact);
     }
 

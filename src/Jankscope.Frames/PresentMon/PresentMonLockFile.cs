@@ -34,9 +34,14 @@ public static class PresentMonLockFile
                 throw new InvalidDataException("The lock file has no positive 'sizeBytes'.");
             }
 
-            if (Path.IsPathRooted(file) || file.Contains(':', StringComparison.Ordinal))
+            if (Path.IsPathRooted(file) || file.Contains(':', StringComparison.Ordinal) || file[0] is '/' or '\\')
             {
                 throw new InvalidDataException("The lock file's 'file' must be a relative path.");
+            }
+
+            if (EscapesItsDirectory(file))
+            {
+                throw new InvalidDataException("The lock file's 'file' points outside the lock file's directory.");
             }
 
             var directory = Path.GetDirectoryName(lockFull)!;
@@ -56,6 +61,36 @@ public static class PresentMonLockFile
                 throw new InvalidDataException("The lock file's 'sha256' is not a SHA-256 (" + e.GetType().Name + ").");
             }
         }
+    }
+
+    /// <summary>
+    /// True when walking the path's segments ever steps above the directory it starts in. Both <c>/</c> and <c>\</c> separate segments, whatever the
+    /// machine: <see cref="Path"/> only treats <c>\</c> as a separator on Windows, so <c>..\evil.exe</c> would pass as a plain file name anywhere else.
+    /// </summary>
+    private static bool EscapesItsDirectory(string file)
+    {
+        var depth = 0;
+        foreach (var segment in file.Split('/', '\\'))
+        {
+            if (segment.Length == 0 || segment == ".")
+            {
+                continue;
+            }
+
+            if (segment == "..")
+            {
+                if (--depth < 0)
+                {
+                    return true;
+                }
+            }
+            else
+            {
+                depth++;
+            }
+        }
+
+        return false;
     }
 
     private static string ReadString(JsonElement root, string name)

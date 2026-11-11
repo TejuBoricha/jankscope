@@ -238,6 +238,33 @@ public class MainWindowSmokeTests
     private static async Task Flush() => await WpfHost.Dispatcher.InvokeAsync(() => { }, DispatcherPriority.ApplicationIdle).Task;
 
     [DesktopFact]
+    public async Task The_live_refresh_runs_only_while_the_window_is_visible()
+    {
+        // Review of Stage 1b, finding 8: hidden to the tray during play, the 4 Hz refresh kept running and allocating for a window nobody sees.
+        var (host, _, shell) = await Make();
+        await using var owner = host;
+
+        await WpfHost.RunAsync(() =>
+        {
+            var window = new MainWindow(host, shell);
+            Assert.False(window.LiveRefreshRunning); // never shown yet
+
+            window.Show();
+            Assert.True(window.LiveRefreshRunning);
+
+            window.Hide();
+            Assert.False(window.LiveRefreshRunning);
+
+            window.Show();
+            Assert.True(window.LiveRefreshRunning);
+
+            window.AllowClose();
+            window.Close();
+            Assert.False(window.LiveRefreshRunning);
+        });
+    }
+
+    [DesktopFact]
     public async Task The_window_builds_shows_every_page_and_reflects_the_capture_state()
     {
         var (host, factory, shell) = await Make();
