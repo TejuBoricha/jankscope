@@ -147,7 +147,7 @@ public sealed class FrameDistributionView : FrameworkElement
             _ => Themed("DangerBrush", Brushes.IndianRed),
         };
 
-        DrawText(dc, compact ? "SMOOTHNESS" : "SMOOTHNESS INDEX", muted, new Point(10, 7), dpi, 9.0, true, mono: true);
+        DrawText(dc, compact ? "SMOOTH" : "SMOOTHNESS INDEX", muted, new Point(10, 7), dpi, 9.0, true, mono: true);
 
         var cx = gaugeBayWidth * 0.5;
         var cy = Math.Min(height * 0.50, 74.0);
@@ -170,7 +170,7 @@ public sealed class FrameDistributionView : FrameworkElement
 
         // Right bay: 5-tier latency distribution histogram
         var barsLeft = gaugeBayWidth + 10;
-        DrawText(dc, compact ? "LATENCY TIERS" : "FRAME-TIME TIER DISTRIBUTION", muted, new Point(barsLeft, 7), dpi, 9.0, true, mono: true);
+        DrawText(dc, compact ? "TIERS" : "FRAME-TIME TIER DISTRIBUTION", muted, new Point(barsLeft, 7), dpi, 9.0, true, mono: true);
 
         var topOffset = 24.0;
         var rowHeight = Math.Max(18.0, (height - topOffset - 8) / Bands.Length);
