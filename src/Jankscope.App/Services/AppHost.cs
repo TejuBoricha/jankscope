@@ -88,6 +88,19 @@ public sealed class AppHost : IAsyncDisposable
         return ExportPipeline.Prepare(report, context ?? RedactionContext.ForThisMachine(), redact);
     }
 
+    /// <summary>Plays a test audio cue when the user clicks the preview button in Settings.</summary>
+    public void PreviewTone(MarkKind? kind)
+    {
+        if (kind is { } k)
+        {
+            _audio.Marked(k);
+        }
+        else
+        {
+            _audio.NotRecorded();
+        }
+    }
+
     /// <summary>Raised from whichever thread changed a mark (added, chosen anchor, note).</summary>
     public event Action<IncidentMark>? MarkChanged;
 

@@ -54,7 +54,7 @@ public sealed class TimelineView : FrameworkElement
         Focusable = true;
         ClipToBounds = true;
         SnapsToDevicePixels = false;
-        MinHeight = 140;
+        MinHeight = 150;
     }
 
     /// <summary>True when a click or Enter chooses a time (the investigator); false for the live view.</summary>
@@ -92,7 +92,7 @@ public sealed class TimelineView : FrameworkElement
         var width = ActualWidth;
         var height = ActualHeight;
         var plot = new Rect(LeftMargin, TopMargin, Math.Max(0, width - LeftMargin - RightMargin), Math.Max(0, height - TopMargin - BottomMargin));
-        dc.DrawRectangle(Themed("ChartBackgroundBrush", Brushes.Black), null, new Rect(0, 0, width, height));
+        dc.DrawRoundedRectangle(Themed("ChartBackgroundBrush", Brushes.Black), null, new Rect(0, 0, width, height), 8, 8);
         if (plot.Width < 40 || plot.Height < 40 || _data.EndMs <= _data.StartMs)
         {
             return;
@@ -102,11 +102,16 @@ public sealed class TimelineView : FrameworkElement
         EnsureBuckets(plot);
 
         var maxFrame = 0.0;
+        var nonEmptyBuckets = 0;
         foreach (var bucket in _buckets)
         {
-            if (!bucket.IsEmpty && bucket.MaxMs > maxFrame)
+            if (!bucket.IsEmpty)
             {
-                maxFrame = bucket.MaxMs;
+                nonEmptyBuckets++;
+                if (bucket.MaxMs > maxFrame)
+                {
+                    maxFrame = bucket.MaxMs;
+                }
             }
         }
 
@@ -133,7 +138,7 @@ public sealed class TimelineView : FrameworkElement
 
             var y = Y(ms);
             dc.DrawLine(new Pen(grid, 1), new Point(plot.Left, y), new Point(plot.Right, y));
-            Label(dc, $"{ms.ToString("0.#", CultureInfo.InvariantCulture)} ms ({(1000 / ms).ToString("0", CultureInfo.InvariantCulture)} fps)", text, new Point(4, y - 7), dpi, 10.5);
+            Label(dc, $"{ms.ToString("0.#", CultureInfo.InvariantCulture)} ms ({(1000 / ms).ToString("0", CultureInfo.InvariantCulture)} fps)", text, new Point(6, y - 7), dpi, 10.5);
         }
 
         // time axis
@@ -191,6 +196,61 @@ public sealed class TimelineView : FrameworkElement
             }
         }
 
+        // Subtle area fill under the mean curve for visual depth
+        if (nonEmptyBuckets > 1 && line is SolidColorBrush lineSolid)
+        {
+            var area = new StreamGeometry();
+            using (var context = area.Open())
+            {
+                var previous = -1;
+                var segStartX = plot.Left;
+                for (var i = 0; i < _buckets.Length; i++)
+                {
+                    if (_buckets[i].IsEmpty)
+                    {
+                        continue;
+                    }
+
+                    var x = plot.Left + (i + 0.5) * step;
+                    var y = Y(_buckets[i].MeanMs);
+                    if (previous >= 0 && i - previous - 1 < _gapColumns)
+                    {
+                        context.LineTo(new Point(x, y), false, false);
+                    }
+                    else
+                    {
+                        if (previous >= 0)
+                        {
+                            var prevX = plot.Left + (previous + 0.5) * step;
+                            context.LineTo(new Point(prevX, plot.Bottom), false, false);
+                            context.LineTo(new Point(segStartX, plot.Bottom), false, false);
+                        }
+
+                        segStartX = x;
+                        context.BeginFigure(new Point(x, plot.Bottom), true, true);
+                        context.LineTo(new Point(x, y), false, false);
+                    }
+
+                    previous = i;
+                }
+
+                if (previous >= 0)
+                {
+                    var prevX = plot.Left + (previous + 0.5) * step;
+                    context.LineTo(new Point(prevX, plot.Bottom), false, false);
+                }
+            }
+
+            area.Freeze();
+            var fillBrush = new LinearGradientBrush(
+                Color.FromArgb(46, lineSolid.Color.R, lineSolid.Color.G, lineSolid.Color.B),
+                Color.FromArgb(4, lineSolid.Color.R, lineSolid.Color.G, lineSolid.Color.B),
+                new Point(0, 0),
+                new Point(0, 1));
+            fillBrush.Freeze();
+            dc.DrawGeometry(fillBrush, null, area);
+        }
+
         var barPen = new Pen(line, Math.Max(1.0, step)) { StartLineCap = PenLineCap.Flat, EndLineCap = PenLineCap.Flat };
         var spikePen = new Pen(warnBrush, Math.Max(1.0, step)) { StartLineCap = PenLineCap.Flat, EndLineCap = PenLineCap.Flat };
         for (var i = 0; i < _buckets.Length; i++)
@@ -235,7 +295,7 @@ public sealed class TimelineView : FrameworkElement
         }
 
         trend.Freeze();
-        dc.DrawGeometry(null, new Pen(line, 1.5) { LineJoin = PenLineJoin.Round }, trend);
+        dc.DrawGeometry(null, new Pen(line, 1.6) { LineJoin = PenLineJoin.Round }, trend);
 
         // detector events (live view): small ticks along the top edge
         foreach (var eventMs in _data.EventsMs)
@@ -243,7 +303,7 @@ public sealed class TimelineView : FrameworkElement
             if (Inside(eventMs))
             {
                 var x = X(eventMs);
-                dc.DrawLine(new Pen(warnBrush, 2), new Point(x, plot.Top), new Point(x, plot.Top + 8));
+                dc.DrawLine(new Pen(warnBrush, 2.2), new Point(x, plot.Top), new Point(x, plot.Top + 9));
             }
         }
 
@@ -280,15 +340,27 @@ public sealed class TimelineView : FrameworkElement
             dc.DrawText(number, new Point(center.X - number.Width / 2, center.Y - number.Height / 2));
         }
 
+        // Interactive crosshair & floating HUD pill
         if (_cursorMs is { } cursor && Inside(cursor))
         {
             var x = X(cursor);
-            dc.DrawLine(new Pen(text, 1), new Point(x, plot.Top), new Point(x, plot.Bottom));
+            dc.DrawLine(new Pen(text, 1) { DashStyle = DashStyles.Dash }, new Point(x, plot.Top), new Point(x, plot.Bottom));
+            if (DescribeCursor() is { } hudText)
+            {
+                var formatted = new FormattedText(hudText, CultureInfo.InvariantCulture, FlowDirection.LeftToRight, new Typeface("Consolas"), 11, Themed("ForegroundBrush", Brushes.White), dpi);
+                var boxWidth = formatted.Width + 16;
+                var boxHeight = formatted.Height + 8;
+                var boxX = Math.Clamp(x + 10, plot.Left + 4, Math.Max(plot.Left + 4, plot.Right - boxWidth - 4));
+                var boxY = plot.Top + 22;
+                var hudRect = new Rect(boxX, boxY, boxWidth, boxHeight);
+                dc.DrawRoundedRectangle(Themed("PanelRaisedBrush", Brushes.DarkSlateGray), new Pen(Themed("AccentBrush", Brushes.DeepSkyBlue), 1), hudRect, 4, 4);
+                dc.DrawText(formatted, new Point(boxX + 8, boxY + 4));
+            }
         }
 
         if (IsKeyboardFocused)
         {
-            dc.DrawRectangle(null, new Pen(Themed("ChartMarkBrush", Brushes.Orange), 1.5) { DashStyle = DashStyles.Dot }, new Rect(1, 1, width - 2, height - 2));
+            dc.DrawRoundedRectangle(null, new Pen(Themed("ChartMarkBrush", Brushes.Orange), 1.5) { DashStyle = DashStyles.Dot }, new Rect(1, 1, width - 2, height - 2), 8, 8);
         }
     }
 
