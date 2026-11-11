@@ -44,19 +44,25 @@ public partial class MainWindow : Window
     private (double Start, double End)? _view;
 
     /// <summary>The live (last 30 s) timeline on the capture page. Created in code, not in XAML (RS0030).</summary>
-    public TimelineView LiveTimeline { get; } = new() { Height = 230 };
+    public TimelineView LiveTimeline { get; } = new() { MinHeight = 170 };
+
+    /// <summary>The live 31-frame spike micro-anatomy waterfall and Poincare jitter radar on the capture page.</summary>
+    public SpikeAnatomyView LiveAnatomy { get; } = new() { MinHeight = 155 };
 
     /// <summary>The live frame-time distribution and pacing consistency view on the capture page.</summary>
-    public FrameDistributionView LiveDistribution { get; } = new() { Height = 152 };
+    public FrameDistributionView LiveDistribution { get; } = new() { MinHeight = 155 };
 
     /// <summary>The timeline of the selected mark on the investigator page.</summary>
-    public TimelineView InvestigatorTimeline { get; } = new() { Height = 250 };
+    public TimelineView InvestigatorTimeline { get; } = new() { MinHeight = 165 };
+
+    /// <summary>The 31-frame spike micro-anatomy waterfall and Poincare radar for the selected mark on the investigator page.</summary>
+    public SpikeAnatomyView InvestigatorAnatomy { get; } = new() { MinHeight = 165 };
 
     /// <summary>The frame-time distribution view for the selected mark on the investigator page.</summary>
-    public FrameDistributionView InvestigatorDistribution { get; } = new() { Height = 142 };
+    public FrameDistributionView InvestigatorDistribution { get; } = new() { MinHeight = 140 };
 
     /// <summary>The interactive mouse polling and motion-continuity analyzer on the Input Lab page.</summary>
-    public InputPollingView InputPollingLab { get; } = new() { Height = 270 };
+    public InputPollingView InputPollingLab { get; } = new() { MinHeight = 220 };
 
     public MainWindow(AppHost host, IShell shell)
     {
@@ -67,14 +73,18 @@ public partial class MainWindow : Window
         MarksList.ItemsSource = _marks;
 
         System.Windows.Automation.AutomationProperties.SetName(LiveTimeline, "Live frame times for the last 30 seconds");
+        System.Windows.Automation.AutomationProperties.SetName(LiveAnatomy, "Live 31-frame spike micro-anatomy waterfall and Poincare jitter radar");
         System.Windows.Automation.AutomationProperties.SetName(InvestigatorTimeline, "Frame times around the mark. Arrow keys move a cursor; Enter chooses that time as the event.");
+        System.Windows.Automation.AutomationProperties.SetName(InvestigatorAnatomy, "Incident 31-frame spike micro-anatomy waterfall and Poincare jitter radar");
         System.Windows.Automation.AutomationProperties.SetName(LiveDistribution, "Live frame time latency distribution");
         System.Windows.Automation.AutomationProperties.SetName(InvestigatorDistribution, "Incident frame time latency distribution");
         System.Windows.Automation.AutomationProperties.SetName(InputPollingLab, "Interactive mouse motion continuity test pad");
 
         LiveTimelineHost.Content = LiveTimeline;
+        LiveAnatomyHost.Content = LiveAnatomy;
         LiveDistributionHost.Content = LiveDistribution;
         InvestigatorTimelineHost.Content = InvestigatorTimeline;
+        InvestigatorAnatomyHost.Content = InvestigatorAnatomy;
         InvestigatorDistributionHost.Content = InvestigatorDistribution;
         InputPollingHost.Content = InputPollingLab;
 
@@ -328,6 +338,7 @@ public partial class MainWindow : Window
             KpiStutterSub.Text = "No stutters in window";
             ProvenanceBadge.Visibility = Visibility.Collapsed;
             LiveTimeline.Show(new TimelineData(default, null, 0, LiveWindowMs, null, null, null, null, null, [], []));
+            LiveAnatomy.Show(ReadOnlySpan<FrameSample>.Empty);
             LiveDistribution.Show([]);
             return;
         }
@@ -359,6 +370,7 @@ public partial class MainWindow : Window
         }
 
         var span30 = System.Runtime.InteropServices.CollectionsMarshal.AsSpan(all30);
+        LiveAnatomy.Show(window);
         LiveDistribution.Show(span30);
 
         var fps = FrameStats.AverageFps([.. times5]);
@@ -738,7 +750,9 @@ public partial class MainWindow : Window
             candidates,
             []));
 
-        // Populate Forensic KPI Cards, Frame Distribution, and Evidence-Graded Hypotheses
+        // Populate Forensic KPI Cards, Spike Micro-Anatomy Waterfall, Frame Distribution, and Evidence-Graded Hypotheses
+        var focusMs = mark.Selection?.TimestampMs ?? mark.Search.Candidates.FirstOrDefault()?.TimestampMs ?? time.Ms;
+        InvestigatorAnatomy.Show(series, focusMs);
         var samples = series.ToSamples();
         var frameTimes = samples.Where(s => double.IsFinite(s.FrameTimeMs) && s.FrameTimeMs > 0).Select(s => s.FrameTimeMs).ToArray();
         InvestigatorDistribution.Show(frameTimes);

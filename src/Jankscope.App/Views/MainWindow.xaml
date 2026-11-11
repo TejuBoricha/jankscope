@@ -1,73 +1,76 @@
 <Window x:Class="Jankscope.App.Views.MainWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        Title="Jankscope Studio - Frame Pacing &amp; Stutter Forensics" Width="1340" Height="880" MinWidth="980" MinHeight="660"
+        Title="Jankscope Studio - Frame Pacing &amp; Stutter Forensics" Width="1440" Height="900" MinWidth="1020" MinHeight="700"
         WindowStartupLocation="CenterScreen"
         Background="{DynamicResource WindowBackgroundBrush}" Foreground="{DynamicResource ForegroundBrush}"
-        FontFamily="Segoe UI" FontSize="13">
+        FontFamily="Segoe UI" FontSize="12.5">
     <Grid>
         <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="244"/>
+            <ColumnDefinition Width="228"/>
             <ColumnDefinition Width="*"/>
         </Grid.ColumnDefinitions>
 
-        <!-- STUDIO NAVIGATION SIDEBAR -->
+        <!-- MACHINED INSTRUMENT CHASSIS RAIL -->
         <Border Grid.Column="0" Background="{DynamicResource SidebarBrush}" BorderBrush="{DynamicResource BorderLineBrush}" BorderThickness="0,0,1,0">
-            <DockPanel Margin="10,16">
-                <!-- Brand Header -->
-                <StackPanel DockPanel.Dock="Top" Margin="10,0,10,16">
+            <DockPanel Margin="10,14">
+                <!-- Brand Emblem & Telemetry Identity -->
+                <StackPanel DockPanel.Dock="Top" Margin="8,0,8,14">
                     <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
-                        <Border Width="10" Height="10" CornerRadius="5" Background="{DynamicResource AccentBrush}" Margin="0,0,8,0"/>
-                        <TextBlock Text="JANKSCOPE" FontSize="17" FontWeight="Bold" VerticalAlignment="Center"/>
-                        <Border Style="{StaticResource BadgeBorder}" Margin="8,0,0,0" Padding="6,1">
-                            <TextBlock Text="STUDIO" FontSize="10" FontWeight="Bold" Foreground="{DynamicResource CyanAccentBrush}"/>
+                        <Border Width="8" Height="16" CornerRadius="2" Background="{DynamicResource CyanAccentBrush}" Margin="0,0,8,0"/>
+                        <TextBlock Text="JANK//SCOPE" FontFamily="Consolas" FontSize="16" FontWeight="Bold" VerticalAlignment="Center"/>
+                        <Border Style="{StaticResource BadgeBorder}" Background="{DynamicResource AccentSoftBrush}" BorderBrush="{DynamicResource AccentBrush}" Margin="8,0,0,0" Padding="5,1">
+                            <TextBlock Text="PRO" FontFamily="Consolas" FontSize="9.5" FontWeight="Bold" Foreground="{DynamicResource CyanAccentBrush}"/>
                         </Border>
                     </StackPanel>
-                    <TextBlock Style="{StaticResource Muted}" FontSize="11.5" Margin="0,4,0,0" Text="Evidence-graded frame pacing &amp; stutter forensics"/>
+                    <TextBlock Style="{StaticResource Muted}" FontFamily="Consolas" FontSize="10" Margin="0,4,0,0" Text="PRECISION FRAME &amp; INPUT FORENSICS"/>
                 </StackPanel>
 
-                <!-- Bottom Hotkey & Live Posture Pod -->
-                <Border DockPanel.Dock="Bottom" Style="{StaticResource KpiCard}" Margin="4,10,4,0" Padding="12,10">
+                <!-- Bottom Global Hotkey & Hardware Coexistence Pod -->
+                <Border DockPanel.Dock="Bottom" Style="{StaticResource KpiCard}" Margin="4,8,4,0" Padding="10,9">
                     <StackPanel>
-                        <TextBlock Style="{StaticResource Overline}" Text="GLOBAL MARK HOTKEYS"/>
-                        <TextBlock x:Name="NavHotkeyStutter" Style="{StaticResource MonoValue}" FontSize="12" Margin="0,6,0,2"/>
-                        <TextBlock x:Name="NavHotkeyInput" Style="{StaticResource MonoValue}" FontSize="12" Margin="0,0,0,4"/>
-                        <TextBlock x:Name="NavHotkeyProblem" Foreground="{DynamicResource WarningBrush}" TextWrapping="Wrap" FontSize="11.5" Visibility="Collapsed"/>
-                        <Border Height="1" Background="{DynamicResource BorderLineBrush}" Margin="0,8"/>
-                        <TextBlock Style="{StaticResource Muted}" FontSize="11" Text="Zero hooks. Zero overlays. Zero network telemetry."/>
+                        <StackPanel Orientation="Horizontal" Margin="0,0,0,4">
+                            <Border Width="6" Height="6" CornerRadius="3" Background="{DynamicResource OkBrush}" VerticalAlignment="Center" Margin="0,0,6,0"/>
+                            <TextBlock Style="{StaticResource Overline}" Text="GLOBAL MARK HOTKEYS"/>
+                        </StackPanel>
+                        <TextBlock x:Name="NavHotkeyStutter" Style="{StaticResource MonoValue}" FontSize="11.5" Margin="0,2,0,2"/>
+                        <TextBlock x:Name="NavHotkeyInput" Style="{StaticResource MonoValue}" FontSize="11.5" Margin="0,0,0,2"/>
+                        <TextBlock x:Name="NavHotkeyProblem" Foreground="{DynamicResource WarningBrush}" TextWrapping="Wrap" FontSize="11" Visibility="Collapsed"/>
+                        <Border Height="1" Background="{DynamicResource BorderLineBrush}" Margin="0,6"/>
+                        <TextBlock Style="{StaticResource Muted}" FontFamily="Consolas" FontSize="9.5" Text="HC-1..13 // ZERO HOOKS // OFFLINE"/>
                     </StackPanel>
                 </Border>
 
-                <!-- Navigation Rail -->
+                <!-- Studio Workspace Matrix Rail -->
                 <StackPanel>
-                    <TextBlock Style="{StaticResource Overline}" Margin="12,0,0,6" Text="DIAGNOSTIC WORKSPACES"/>
+                    <TextBlock Style="{StaticResource Overline}" Margin="10,0,0,5" Text="TELEMETRY DECKS"/>
                     <RadioButton x:Name="NavCapture" Style="{StaticResource NavButton}" GroupName="Nav" IsChecked="True" Checked="OnNavChanged"
-                                 Content="1. Live Capture &amp; Scope" AutomationProperties.Name="Live Capture and Scope"/>
+                                 Content="01 // Live Capture Scope" AutomationProperties.Name="Live Capture and Scope"/>
                     <RadioButton x:Name="NavInvestigator" Style="{StaticResource NavButton}" GroupName="Nav" Checked="OnNavChanged"
-                                 Content="2. Forensic Investigator" AutomationProperties.Name="Stutter investigator"/>
+                                 Content="02 // Forensic Workbench" AutomationProperties.Name="Stutter investigator"/>
                     <RadioButton x:Name="NavRadar" Style="{StaticResource NavButton}" GroupName="Nav" Checked="OnNavChanged"
-                                 Content="3. System Capability Radar" AutomationProperties.Name="System Capability Radar"/>
+                                 Content="03 // Capability Radar" AutomationProperties.Name="System Capability Radar"/>
                     <RadioButton x:Name="NavLab" Style="{StaticResource NavButton}" GroupName="Nav" Checked="OnNavChanged"
-                                 Content="4. Input &amp; Polling Lab" AutomationProperties.Name="Input and Polling Lab"/>
+                                 Content="04 // Input Polling Lab" AutomationProperties.Name="Input and Polling Lab"/>
 
-                    <TextBlock Style="{StaticResource Overline}" Margin="12,18,0,6" Text="CONFIGURATION &amp; TRUST"/>
+                    <TextBlock Style="{StaticResource Overline}" Margin="10,16,0,5" Text="SYSTEM &amp; TRUST"/>
                     <RadioButton x:Name="NavSettings" Style="{StaticResource NavButton}" GroupName="Nav" Checked="OnNavChanged"
-                                 Content="Settings &amp; Audio Cues" AutomationProperties.Name="Settings"/>
+                                 Content="05 // Studio Configuration" AutomationProperties.Name="Settings"/>
                     <RadioButton x:Name="NavAbout" Style="{StaticResource NavButton}" GroupName="Nav" Checked="OnNavChanged"
-                                 Content="About, Privacy &amp; Export" AutomationProperties.Name="About and privacy"/>
+                                 Content="06 // Spec &amp; Privacy Proof" AutomationProperties.Name="About and privacy"/>
                 </StackPanel>
             </DockPanel>
         </Border>
 
-        <!-- MAIN WORKSPACE AREA -->
+        <!-- MAIN INSTRUMENT CONSOLE VIEWPORT -->
         <Grid Grid.Column="1">
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto"/>
                 <RowDefinition Height="*"/>
             </Grid.RowDefinitions>
 
-            <!-- Persistent Top Studio Telemetry Bar & Interactive Quick-Start Guide -->
-            <Border Grid.Row="0" Background="{DynamicResource PanelBrush}" BorderBrush="{DynamicResource BorderLineBrush}" BorderThickness="0,0,0,1" Padding="24,11">
+            <!-- Persistent Top Studio Transport & Workbench Header -->
+            <Border Grid.Row="0" Background="{DynamicResource PanelBrush}" BorderBrush="{DynamicResource BorderLineBrush}" BorderThickness="0,0,0,1" Padding="18,8">
                 <Grid>
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="Auto"/>
@@ -75,547 +78,699 @@
                         <ColumnDefinition Width="Auto"/>
                     </Grid.ColumnDefinitions>
 
-                    <Border Grid.Column="0" Style="{StaticResource BadgeBorder}" Background="{DynamicResource AccentSoftBrush}" BorderBrush="{DynamicResource AccentBrush}" Margin="0,0,12,0" VerticalAlignment="Center">
-                        <TextBlock Text="WORKFLOW" FontSize="10.5" FontWeight="Bold" Foreground="{DynamicResource AccentBrush}"/>
+                    <Border Grid.Column="0" Style="{StaticResource BadgeBorder}" Background="{DynamicResource AccentSoftBrush}" BorderBrush="{DynamicResource AccentBrush}" Margin="0,0,10,0" VerticalAlignment="Center">
+                        <TextBlock Text="TELEMETRY PIPELINE" FontFamily="Consolas" FontSize="10" FontWeight="Bold" Foreground="{DynamicResource CyanAccentBrush}"/>
                     </Border>
 
-                    <TextBlock Grid.Column="1" VerticalAlignment="Center" TextTrimming="CharacterEllipsis" Margin="0,0,12,0" FontSize="12.5">
-                        <Run FontWeight="SemiBold" Text="1. Select / Demo"/>
-                        <Run Foreground="{DynamicResource MutedBrush}" Text=" -> "/>
-                        <Run FontWeight="SemiBold" Text="2. Press "/>
-                        <Run FontFamily="Consolas" FontWeight="SemiBold" Text="Ctrl+Alt+F9"/>
-                        <Run Foreground="{DynamicResource MutedBrush}" Text=" on hitch -> "/>
-                        <Run FontWeight="SemiBold" Text="3. Inspect &amp; Export"/>
+                    <TextBlock Grid.Column="1" VerticalAlignment="Center" TextTrimming="CharacterEllipsis" Margin="0,0,12,0" FontFamily="Consolas" FontSize="11.5">
+                        <Run Foreground="{DynamicResource CyanAccentBrush}" FontWeight="Bold" Text="[STEP 1]"/>
+                        <Run Text=" Target 3D App or Simulator  "/>
+                        <Run Foreground="{DynamicResource WarningBrush}" FontWeight="Bold" Text="[STEP 2]"/>
+                        <Run Text=" Press Ctrl+Alt+F9 on Hitch  "/>
+                        <Run Foreground="{DynamicResource OkBrush}" FontWeight="Bold" Text="[STEP 3]"/>
+                        <Run Text=" Inspect 31-Frame Waterfall &amp; Export"/>
                     </TextBlock>
 
                     <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center">
                         <Border x:Name="ProvenanceBadge" Style="{StaticResource BadgeBorder}" Margin="0,0,10,0" Visibility="Collapsed" VerticalAlignment="Center">
-                            <TextBlock x:Name="ProvenanceBadgeText" FontSize="11" FontWeight="SemiBold"/>
+                            <TextBlock x:Name="ProvenanceBadgeText" FontFamily="Consolas" FontSize="10.5" FontWeight="Bold"/>
                         </Border>
                         <Button x:Name="SimulateDemoButton" Style="{StaticResource SimButton}" Click="OnSimulateDemoClicked" Margin="0"
-                                Content="Try Instant Stutter Demo (Simulated)"
-                                ToolTip="Streams a realistic 120 FPS session with injected shader-compile and asset-streaming hitches and creates a sample mark so you can test the Forensic Investigator right now."/>
+                                Content="Simulate 120 FPS Stutter Trace"
+                                ToolTip="Streams a realistic 120 FPS session with injected shader-compile and asset-streaming hitches and records a sample mark so you can inspect the Forensic Workbench immediately."/>
                     </StackPanel>
                 </Grid>
             </Border>
 
-            <!-- WORKSPACE 1: LIVE CAPTURE & OSCILLOSCOPE -->
-            <ScrollViewer x:Name="PageCapture" Grid.Row="1" VerticalScrollBarVisibility="Auto" Padding="24,20">
-                <StackPanel MaxWidth="1220" HorizontalAlignment="Left">
-                    <!-- Hero Header + Live Status Banner -->
-                    <Border Style="{StaticResource HeroCard}" Margin="0,0,0,16">
+            <!-- ========================================================================= -->
+            <!-- WORKSPACE 01: ZERO-SCROLL LIVE CAPTURE & MULTI-SCOPE TELEMETRY CONSOLE     -->
+            <!-- ========================================================================= -->
+            <Grid x:Name="PageCapture" Grid.Row="1" Margin="16,12">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="1.18*"/>
+                    <RowDefinition Height="0.95*"/>
+                </Grid.RowDefinitions>
+
+                <!-- Row 0: Unified Hardware Transport & Target Acquisition Strip -->
+                <Border Grid.Row="0" Style="{StaticResource HeroCard}" Margin="0,0,0,10" Padding="14,9">
+                    <StackPanel>
                         <Grid>
                             <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="1.15*"/>
+                                <ColumnDefinition Width="Auto"/>
                                 <ColumnDefinition Width="Auto"/>
                             </Grid.ColumnDefinitions>
-                            <StackPanel Grid.Column="0">
-                                <StackPanel Orientation="Horizontal" Margin="0,0,0,4">
-                                    <Border x:Name="CaptureStateDot" Width="10" Height="10" CornerRadius="5" Background="{DynamicResource MutedBrush}" VerticalAlignment="Center" Margin="0,0,8,0"/>
-                                    <TextBlock x:Name="CaptureHeadline" FontSize="20" FontWeight="Bold" VerticalAlignment="Center" AutomationProperties.LiveSetting="Polite"/>
+
+                            <!-- Live Status Readout -->
+                            <StackPanel Grid.Column="0" VerticalAlignment="Center" Margin="0,0,14,0">
+                                <StackPanel Orientation="Horizontal">
+                                    <Border x:Name="CaptureStateDot" Width="9" Height="9" CornerRadius="4.5" Background="{DynamicResource MutedBrush}" VerticalAlignment="Center" Margin="0,0,8,0"/>
+                                    <TextBlock x:Name="CaptureHeadline" FontSize="15" FontWeight="Bold" VerticalAlignment="Center" AutomationProperties.LiveSetting="Polite"/>
+                                    <TextBlock x:Name="MarkFeedback" Margin="14,0,0,0" FontSize="12" FontWeight="SemiBold" VerticalAlignment="Center" Foreground="{DynamicResource CyanAccentBrush}" AutomationProperties.LiveSetting="Polite"/>
                                 </StackPanel>
-                                <TextBlock x:Name="CaptureDetail" Style="{StaticResource Muted}" Margin="0,2,0,0"/>
-                                <TextBlock x:Name="MarkFeedback" Margin="0,6,0,0" FontWeight="SemiBold" Foreground="{DynamicResource CyanAccentBrush}" AutomationProperties.LiveSetting="Polite"/>
+                                <TextBlock x:Name="CaptureDetail" Style="{StaticResource Muted}" FontSize="11.5" Margin="17,2,0,0" TextTrimming="CharacterEllipsis"/>
                             </StackPanel>
-                            <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center" Margin="16,0,0,0">
-                                <Button x:Name="MarkStutterButton" Content="Mark Stutter Now" Style="{StaticResource PrimaryButton}" Click="OnMarkStutterClicked"/>
-                                <Button x:Name="MarkInputButton" Content="Mark Input Freeze" Click="OnMarkInputClicked" Margin="0"/>
+
+                            <!-- Target Executable Input & Transport Controls -->
+                            <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center" Margin="0,0,8,0">
+                                <TextBlock Text="TARGET:" Style="{StaticResource Overline}" VerticalAlignment="Center" Margin="0,0,6,0"/>
+                                <TextBox x:Name="ProgramBox" Width="142" Margin="0,0,6,0" VerticalAlignment="Center"
+                                         AutomationProperties.Name="Executable file name, for example game.exe"
+                                         ToolTip="Plain executable name only, e.g. eldenring.exe or cs2.exe (no folder path)."/>
+                                <Button x:Name="StartButton" Content="Start" Style="{StaticResource PrimaryButton}" Click="OnStartClicked"/>
+                                <Button x:Name="StopButton" Content="Stop" Click="OnStopClicked" IsEnabled="False"/>
+                                <Button x:Name="ScanButton" Content="Scan 3D" Click="OnScanClicked" Margin="0"/>
                             </StackPanel>
+
+                            <!-- Instant Incident Triggers -->
+                            <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center">
+                                <Border Width="1" Height="24" Background="{DynamicResource BorderLineBrush}" Margin="4,0,10,0"/>
+                                <Button x:Name="MarkStutterButton" Content="Mark Stutter" Style="{StaticResource PrimaryButton}" Click="OnMarkStutterClicked"/>
+                                <Button x:Name="MarkInputButton" Content="Mark Input Stall" Click="OnMarkInputClicked" Margin="0"/>
+                            </StackPanel>
+                        </Grid>
+
+                        <TextBlock x:Name="ScanStatus" Style="{StaticResource Muted}" FontSize="11.5" Margin="0,6,0,0" Visibility="Collapsed" AutomationProperties.LiveSetting="Polite"/>
+                        <ListBox x:Name="ScanResultsList" MaxHeight="85" Margin="0,4,0,0" Visibility="Collapsed" SelectionChanged="OnScanResultPicked"
+                                 AutomationProperties.Name="Programs currently presenting frames"/>
+                    </StackPanel>
+                </Border>
+
+                <!-- Row 1: 5-Channel Digital Multimeter Telemetry Strip -->
+                <UniformGrid Grid.Row="1" Columns="5" Margin="0,0,0,10">
+                    <Border Style="{StaticResource KpiCard}" Margin="0,0,8,0">
+                        <StackPanel>
+                            <DockPanel>
+                                <Border Width="3" Height="11" CornerRadius="1.5" Background="{DynamicResource CyanAccentBrush}" Margin="0,0,6,0"/>
+                                <TextBlock Style="{StaticResource Overline}" Text="CH1 // FRAME RATE (5S)"/>
+                            </DockPanel>
+                            <TextBlock x:Name="KpiAvgFps" Style="{StaticResource KpiValue}" Text="-- FPS" Margin="0,3,0,1"/>
+                            <TextBlock x:Name="KpiAvgFpsSub" Style="{StaticResource Muted}" FontFamily="Consolas" FontSize="10.5" Text="Median: -- ms"/>
+                        </StackPanel>
+                    </Border>
+                    <Border Style="{StaticResource KpiCard}" Margin="0,0,8,0">
+                        <StackPanel>
+                            <DockPanel>
+                                <Border Width="3" Height="11" CornerRadius="1.5" Background="{DynamicResource AccentBrush}" Margin="0,0,6,0"/>
+                                <TextBlock Style="{StaticResource Overline}" Text="CH2 // 99TH TAIL (30S)"/>
+                            </DockPanel>
+                            <TextBlock x:Name="KpiP99Ms" Style="{StaticResource KpiValue}" Text="-- ms" Margin="0,3,0,1"/>
+                            <TextBlock x:Name="KpiP99Sub" Style="{StaticResource Muted}" FontFamily="Consolas" FontSize="10.5" Text="1% low: -- FPS"/>
+                        </StackPanel>
+                    </Border>
+                    <Border Style="{StaticResource KpiCard}" Margin="0,0,8,0">
+                        <StackPanel>
+                            <DockPanel>
+                                <Border Width="3" Height="11" CornerRadius="1.5" Background="{DynamicResource OkBrush}" Margin="0,0,6,0"/>
+                                <TextBlock Style="{StaticResource Overline}" Text="CH3 // PACING INDEX"/>
+                            </DockPanel>
+                            <TextBlock x:Name="KpiConsistency" Style="{StaticResource KpiValue}" Text="-- / 100" Margin="0,3,0,1"/>
+                            <TextBlock x:Name="KpiConsistencySub" Style="{StaticResource Muted}" FontFamily="Consolas" FontSize="10.5" Text="Awaiting stream"/>
+                        </StackPanel>
+                    </Border>
+                    <Border Style="{StaticResource KpiCard}" Margin="0,0,8,0">
+                        <StackPanel>
+                            <DockPanel>
+                                <Border Width="3" Height="11" CornerRadius="1.5" Background="{DynamicResource WarningBrush}" Margin="0,0,6,0"/>
+                                <TextBlock Style="{StaticResource Overline}" Text="CH4 // STUTTER EVENTS"/>
+                            </DockPanel>
+                            <TextBlock x:Name="KpiStutterCount" Style="{StaticResource KpiValue}" Text="0" Margin="0,3,0,1"/>
+                            <TextBlock x:Name="KpiStutterSub" Style="{StaticResource Muted}" FontFamily="Consolas" FontSize="10.5" Text=">2.5x P50 &amp; +4 ms"/>
+                        </StackPanel>
+                    </Border>
+                    <Border Style="{StaticResource KpiCard}">
+                        <StackPanel>
+                            <DockPanel>
+                                <Border Width="3" Height="11" CornerRadius="1.5" Background="{DynamicResource PurpleAccentBrush}" Margin="0,0,6,0"/>
+                                <TextBlock Style="{StaticResource Overline}" Text="CH5 // RING INTEGRITY"/>
+                            </DockPanel>
+                            <TextBlock x:Name="KpiIntegrity" Style="{StaticResource KpiValue}" Text="0 frames" Margin="0,3,0,1"/>
+                            <TextBlock x:Name="KpiIntegritySub" Style="{StaticResource Muted}" FontFamily="Consolas" FontSize="10.5" Text="0 dropped | Ready"/>
+                        </StackPanel>
+                    </Border>
+                </UniformGrid>
+
+                <!-- Row 2: Full-Width Digital Phosphor Oscilloscope -->
+                <Border Grid.Row="2" Style="{StaticResource Card}" Margin="0,0,0,10">
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="*"/>
+                            <RowDefinition Height="Auto"/>
+                        </Grid.RowDefinitions>
+                        <DockPanel Grid.Row="0" Margin="0,0,0,6">
+                            <TextBlock DockPanel.Dock="Right" Style="{StaticResource Muted}" FontFamily="Consolas" FontSize="10.5" VerticalAlignment="Center"
+                                       Text="BUDGET HAIRLINES: 8.3 ms (120 Hz) // 16.7 ms (60 Hz) // 33.3 ms (30 Hz) // HOVER FOR CURSOR LOUPE"/>
+                            <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                <Border Width="3" Height="12" CornerRadius="1.5" Background="{DynamicResource CyanAccentBrush}" Margin="0,0,7,0"/>
+                                <TextBlock Style="{StaticResource CardTitle}" Text="01 // DIGITAL PHOSPHOR FRAME-TIME OSCILLOSCOPE (30S ROLLING WINDOW)"/>
+                            </StackPanel>
+                        </DockPanel>
+                        <ContentControl x:Name="LiveTimelineHost" Grid.Row="1" Focusable="False"/>
+                        <TextBlock x:Name="LiveNumbers" Grid.Row="2" Style="{StaticResource MonoValue}" FontSize="11" Foreground="{DynamicResource MutedBrush}" Margin="0,6,0,0" TextTrimming="CharacterEllipsis"/>
+                    </Grid>
+                </Border>
+
+                <!-- Row 3: Dual-Bay Micro-Anatomy Waterfall & Radial Smoothness Gauge -->
+                <Grid Grid.Row="3">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="1.32*"/>
+                        <ColumnDefinition Width="1*"/>
+                    </Grid.ColumnDefinitions>
+
+                    <!-- Bay Left: 31-Frame Spike Micro-Anatomy & Poincare Jitter Radar -->
+                    <Border Grid.Column="0" Style="{StaticResource Card}" Margin="0,0,10,0">
+                        <Grid>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="*"/>
+                            </Grid.RowDefinitions>
+                            <DockPanel Grid.Row="0" Margin="0,0,0,6">
+                                <TextBlock DockPanel.Dock="Right" Style="{StaticResource Muted}" FontFamily="Consolas" FontSize="10" VerticalAlignment="Center"
+                                           Text="AUTO-LOCKS ON PEAK SPIKE IN WINDOW"/>
+                                <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                    <Border Width="3" Height="12" CornerRadius="1.5" Background="{DynamicResource WarningBrush}" Margin="0,0,7,0"/>
+                                    <TextBlock Style="{StaticResource CardTitle}" Text="02 // SPIKE MICRO-ANATOMY &amp; POINCARE PHASE-SPACE RADAR"/>
+                                </StackPanel>
+                            </DockPanel>
+                            <ContentControl x:Name="LiveAnatomyHost" Grid.Row="1" Focusable="False"/>
                         </Grid>
                     </Border>
 
-                    <!-- 5 Real-Time Telemetry KPI Cards -->
-                    <UniformGrid Columns="5" Margin="0,0,0,16">
-                        <Border Style="{StaticResource KpiCard}" Margin="0,0,10,0">
-                            <StackPanel>
-                                <TextBlock Style="{StaticResource Overline}" Text="AVERAGE FRAME RATE (5S)"/>
-                                <TextBlock x:Name="KpiAvgFps" Style="{StaticResource KpiValue}" Text="-- FPS" Margin="0,4,0,2"/>
-                                <TextBlock x:Name="KpiAvgFpsSub" Style="{StaticResource Muted}" FontSize="11.5" Text="Mean interval: -- ms"/>
-                            </StackPanel>
-                        </Border>
-                        <Border Style="{StaticResource KpiCard}" Margin="0,0,10,0">
-                            <StackPanel>
-                                <TextBlock Style="{StaticResource Overline}" Text="99TH PERCENTILE (30S)"/>
-                                <TextBlock x:Name="KpiP99Ms" Style="{StaticResource KpiValue}" Text="-- ms" Margin="0,4,0,2"/>
-                                <TextBlock x:Name="KpiP99Sub" Style="{StaticResource Muted}" FontSize="11.5" Text="1% low equivalent: -- FPS"/>
-                            </StackPanel>
-                        </Border>
-                        <Border Style="{StaticResource KpiCard}" Margin="0,0,10,0">
-                            <StackPanel>
-                                <TextBlock Style="{StaticResource Overline}" Text="PACING CONSISTENCY"/>
-                                <TextBlock x:Name="KpiConsistency" Style="{StaticResource KpiValue}" Text="-- / 100" Margin="0,4,0,2"/>
-                                <TextBlock x:Name="KpiConsistencySub" Style="{StaticResource Muted}" FontSize="11.5" Text="Median vs. 99th tail stability"/>
-                            </StackPanel>
-                        </Border>
-                        <Border Style="{StaticResource KpiCard}" Margin="0,0,10,0">
-                            <StackPanel>
-                                <TextBlock Style="{StaticResource Overline}" Text="DETECTED STUTTERS (30S)"/>
-                                <TextBlock x:Name="KpiStutterCount" Style="{StaticResource KpiValue}" Text="0" Margin="0,4,0,2"/>
-                                <TextBlock x:Name="KpiStutterSub" Style="{StaticResource Muted}" FontSize="11.5" Text=">2.5x median &amp; +4 ms excess"/>
-                            </StackPanel>
-                        </Border>
-                        <Border Style="{StaticResource KpiCard}">
-                            <StackPanel>
-                                <TextBlock Style="{StaticResource Overline}" Text="STREAM INTEGRITY"/>
-                                <TextBlock x:Name="KpiIntegrity" Style="{StaticResource KpiValue}" Text="0 frames" Margin="0,4,0,2"/>
-                                <TextBlock x:Name="KpiIntegritySub" Style="{StaticResource Muted}" FontSize="11.5" Text="0 dropped | Ready"/>
-                            </StackPanel>
-                        </Border>
-                    </UniformGrid>
-
-                    <!-- Target Selection & Control Deck -->
-                    <Border Style="{StaticResource Card}" Margin="0,0,0,16">
+                    <!-- Bay Right: Radial Smoothness Gauge & 5-Tier Latency Histogram -->
+                    <Border Grid.Column="1" Style="{StaticResource Card}">
                         <Grid>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="*"/>
+                            </Grid.RowDefinitions>
+                            <DockPanel Grid.Row="0" Margin="0,0,0,6">
+                                <TextBlock DockPanel.Dock="Right" Style="{StaticResource Muted}" FontFamily="Consolas" FontSize="10" VerticalAlignment="Center"
+                                           Text="240+ HZ TO SUB-30 HZ TIERS"/>
+                                <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                    <Border Width="3" Height="12" CornerRadius="1.5" Background="{DynamicResource OkBrush}" Margin="0,0,7,0"/>
+                                    <TextBlock Style="{StaticResource CardTitle}" Text="03 // PACING CONSISTENCY GAUGE &amp; TIER HISTOGRAM"/>
+                                </StackPanel>
+                            </DockPanel>
+                            <ContentControl x:Name="LiveDistributionHost" Grid.Row="1" Focusable="False"/>
+                        </Grid>
+                    </Border>
+                </Grid>
+            </Grid>
+
+            <!-- ========================================================================= -->
+            <!-- WORKSPACE 02: ZERO-SCROLL FORENSIC INCIDENT WORKBENCH                     -->
+            <!-- ========================================================================= -->
+            <Grid x:Name="PageInvestigator" Grid.Row="1" Visibility="Collapsed" Margin="16,12">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="236"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+
+                <!-- Left Column: Incident Tape & Quick Demo Generator -->
+                <Border Grid.Column="0" Style="{StaticResource Card}" Margin="0,0,12,0">
+                    <DockPanel>
+                        <StackPanel DockPanel.Dock="Top" Margin="0,0,0,8">
+                            <StackPanel Orientation="Horizontal" Margin="0,0,0,3">
+                                <Border Width="3" Height="12" CornerRadius="1.5" Background="{DynamicResource CyanAccentBrush}" Margin="0,0,7,0"/>
+                                <TextBlock Style="{StaticResource CardTitle}" Text="INCIDENT TAPE // MARKS"/>
+                            </StackPanel>
+                            <TextBlock Style="{StaticResource Muted}" FontSize="11"
+                                       Text="Frozen pre-roll &amp; post-roll capture windows."/>
+                        </StackPanel>
+
+                        <Border DockPanel.Dock="Bottom" Style="{StaticResource KpiCard}" Margin="0,8,0,0" Padding="10,8">
+                            <StackPanel>
+                                <TextBlock Style="{StaticResource Overline}" Text="SYNTHETIC BENCHMARK"/>
+                                <TextBlock Style="{StaticResource Muted}" FontSize="11" Margin="0,3,0,6"
+                                           Text="Generate an instant 120 FPS trace with a marked shader hitch:"/>
+                                <Button Content="Generate Simulated Mark" Style="{StaticResource SimButton}" Click="OnSimulateDemoClicked" Margin="0"/>
+                            </StackPanel>
+                        </Border>
+
+                        <ListBox x:Name="MarksList" SelectionChanged="OnMarkSelected" AutomationProperties.Name="Marks in this session">
+                            <ListBox.ItemTemplate>
+                                <DataTemplate>
+                                    <StackPanel Margin="0,2">
+                                        <TextBlock Text="{Binding Title}" FontFamily="Consolas" FontWeight="Bold" FontSize="11.5"/>
+                                        <TextBlock Text="{Binding Subtitle}" Style="{StaticResource Muted}" FontSize="10.5" Margin="0,2,0,0"/>
+                                    </StackPanel>
+                                </DataTemplate>
+                            </ListBox.ItemTemplate>
+                        </ListBox>
+                    </DockPanel>
+                </Border>
+
+                <!-- Right Column: Zero-Scroll Full-Viewport Forensic Cockpit -->
+                <Grid Grid.Column="1">
+                    <Border x:Name="NoMarkHint" Style="{StaticResource Card}" VerticalAlignment="Top">
+                        <StackPanel>
+                            <TextBlock Style="{StaticResource CardTitle}" Text="NO INCIDENT MARK SELECTED"/>
+                            <TextBlock Style="{StaticResource Muted}" Margin="0,4,0,0"
+                                       Text="Start capturing (or click 'Simulate 120 FPS Stutter Trace' in the top right) and press the stutter hotkey to inspect a frozen incident window here."/>
+                        </StackPanel>
+                    </Border>
+
+                    <Grid x:Name="MarkDetailPanel" Visibility="Collapsed">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="1.08*"/>
+                            <RowDefinition Height="1*"/>
+                        </Grid.RowDefinitions>
+
+                        <!-- Row 0: Incident Command Bar & Redacted Bundle Export -->
+                        <Border Grid.Row="0" Style="{StaticResource HeroCard}" Margin="0,0,0,8" Padding="14,8">
+                            <DockPanel>
+                                <Button x:Name="ExportButton" DockPanel.Dock="Right" Content="Preview &amp; Export Redacted Bundle..."
+                                        Style="{StaticResource PrimaryButton}" Click="OnExportClicked" VerticalAlignment="Center" Margin="12,0,0,0"/>
+                                <StackPanel>
+                                    <TextBlock x:Name="MarkSummaryLine" FontFamily="Consolas" FontSize="12.5" FontWeight="Bold" TextTrimming="CharacterEllipsis"/>
+                                    <TextBlock x:Name="SelectionStatus" FontFamily="Consolas" FontSize="11.5" Foreground="{DynamicResource CyanAccentBrush}" FontWeight="SemiBold" Margin="0,2,0,0" TextTrimming="CharacterEllipsis" AutomationProperties.LiveSetting="Polite"/>
+                                </StackPanel>
+                            </DockPanel>
+                        </Border>
+
+                        <!-- Row 1: 5-Channel Incident Window Readout Strip -->
+                        <UniformGrid Grid.Row="1" Columns="5" Margin="0,0,0,8">
+                            <Border Style="{StaticResource KpiCard}" Margin="0,0,8,0" Padding="10,6">
+                                <StackPanel>
+                                    <TextBlock Style="{StaticResource Overline}" Text="WINDOW AVG FPS"/>
+                                    <TextBlock x:Name="InvAvgFps" Style="{StaticResource KpiValue}" FontSize="18" Text="--" Margin="0,2,0,0"/>
+                                    <TextBlock x:Name="InvSampleCount" Style="{StaticResource Muted}" FontFamily="Consolas" FontSize="10" Text="-- samples"/>
+                                </StackPanel>
+                            </Border>
+                            <Border Style="{StaticResource KpiCard}" Margin="0,0,8,0" Padding="10,6">
+                                <StackPanel>
+                                    <TextBlock Style="{StaticResource Overline}" Text="MEDIAN (P50)"/>
+                                    <TextBlock x:Name="InvMedianMs" Style="{StaticResource KpiValue}" FontSize="18" Text="-- ms" Margin="0,2,0,0"/>
+                                    <TextBlock Style="{StaticResource Muted}" FontFamily="Consolas" FontSize="10" Text="Baseline cadence"/>
+                                </StackPanel>
+                            </Border>
+                            <Border Style="{StaticResource KpiCard}" Margin="0,0,8,0" Padding="10,6">
+                                <StackPanel>
+                                    <TextBlock Style="{StaticResource Overline}" Text="99TH PERCENTILE"/>
+                                    <TextBlock x:Name="InvP99Ms" Style="{StaticResource KpiValue}" FontSize="18" Text="-- ms" Margin="0,2,0,0"/>
+                                    <TextBlock Style="{StaticResource Muted}" FontFamily="Consolas" FontSize="10" Text="1% low frame time"/>
+                                </StackPanel>
+                            </Border>
+                            <Border Style="{StaticResource KpiCard}" Margin="0,0,8,0" Padding="10,6">
+                                <StackPanel>
+                                    <TextBlock Style="{StaticResource Overline}" Text="99.9TH TAIL PEAK"/>
+                                    <TextBlock x:Name="InvP999Ms" Style="{StaticResource KpiValue}" FontSize="18" Foreground="{DynamicResource WarningBrush}" Text="-- ms" Margin="0,2,0,0"/>
+                                    <TextBlock Style="{StaticResource Muted}" FontFamily="Consolas" FontSize="10" Text="0.1% worst excursion"/>
+                                </StackPanel>
+                            </Border>
+                            <Border Style="{StaticResource KpiCard}" Padding="10,6">
+                                <StackPanel>
+                                    <TextBlock Style="{StaticResource Overline}" Text="STUTTER EVENTS"/>
+                                    <TextBlock x:Name="InvStutters" Style="{StaticResource KpiValue}" FontSize="18" Text="--" Margin="0,2,0,0"/>
+                                    <TextBlock x:Name="InvClusters" Style="{StaticResource Muted}" FontFamily="Consolas" FontSize="10" Text="-- clusters"/>
+                                </StackPanel>
+                            </Border>
+                        </UniformGrid>
+
+                        <!-- Row 2: Split Dual-Scope Forensic Deck (Macro Incident Timeline + 31-Frame Spike Micro-Waterfall) -->
+                        <Grid Grid.Row="2" Margin="0,0,0,8">
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="1.25*"/>
                                 <ColumnDefinition Width="1*"/>
                             </Grid.ColumnDefinitions>
 
-                            <StackPanel Grid.Column="0" Margin="0,0,16,0">
-                                <TextBlock Style="{StaticResource CardTitle}" Text="Target Application Selection"/>
-                                <TextBlock Style="{StaticResource Muted}" FontSize="12" Margin="0,2,0,10"
-                                           Text="Enter the executable file name (for example game.exe), scan for active 3D applications, or run the built-in interactive simulator."/>
-                                <WrapPanel VerticalAlignment="Center">
-                                    <TextBox x:Name="ProgramBox" Width="250" Margin="0,0,8,0"
-                                             AutomationProperties.Name="Executable file name, for example game.exe"
-                                             ToolTip="Plain executable name only, e.g. eldenring.exe or cs2.exe (no folder path)."/>
-                                    <Button x:Name="StartButton" Content="Start Capture" Style="{StaticResource PrimaryButton}" Click="OnStartClicked"/>
-                                    <Button x:Name="StopButton" Content="Stop" Click="OnStopClicked" IsEnabled="False"/>
-                                    <Button x:Name="ScanButton" Content="Scan Active 3D Apps (4s)" Click="OnScanClicked" Margin="0"/>
-                                </WrapPanel>
-                                <TextBlock x:Name="ScanStatus" Style="{StaticResource Muted}" FontSize="12" Margin="0,8,0,0" Visibility="Collapsed" AutomationProperties.LiveSetting="Polite"/>
-                                <ListBox x:Name="ScanResultsList" MaxHeight="120" Margin="0,6,0,0" Visibility="Collapsed" SelectionChanged="OnScanResultPicked"
-                                         AutomationProperties.Name="Programs currently presenting frames"/>
-                            </StackPanel>
+                            <!-- Scope 01: Macro Incident Timeline & Reaction-Time Uncertainty Band -->
+                            <Border Grid.Column="0" Style="{StaticResource Card}" Margin="0,0,8,0">
+                                <Grid>
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition Height="Auto"/>
+                                        <RowDefinition Height="*"/>
+                                        <RowDefinition Height="Auto"/>
+                                    </Grid.RowDefinitions>
+                                    <DockPanel Grid.Row="0" Margin="0,0,0,5">
+                                        <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" VerticalAlignment="Center">
+                                            <RadioButton x:Name="ZoomAll" Style="{StaticResource PillRadio}" GroupName="Zoom" Content="Full" Checked="OnZoomChanged"/>
+                                            <RadioButton x:Name="Zoom30" Style="{StaticResource PillRadio}" GroupName="Zoom" Content="30 s" IsChecked="True" Checked="OnZoomChanged"/>
+                                            <RadioButton x:Name="Zoom10" Style="{StaticResource PillRadio}" GroupName="Zoom" Content="10 s" Checked="OnZoomChanged" Margin="0"/>
+                                        </StackPanel>
+                                        <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                            <Border Width="3" Height="12" CornerRadius="1.5" Background="{DynamicResource CyanAccentBrush}" Margin="0,0,7,0"/>
+                                            <TextBlock Style="{StaticResource CardTitle}" Text="01 // INCIDENT TIMELINE &amp; ANCHOR SCRUBBER"/>
+                                        </StackPanel>
+                                    </DockPanel>
+                                    <ContentControl x:Name="InvestigatorTimelineHost" Grid.Row="1" Focusable="False"/>
+                                    <TextBlock Grid.Row="2" Style="{StaticResource Muted}" FontFamily="Consolas" FontSize="10" Margin="0,4,0,0" TextTrimming="CharacterEllipsis"
+                                               Text="AMBER DASH = KEY PRESS // NUMBERED BADGES = CANDIDATE SPIKES // SOLID GREEN = CHOSEN ANCHOR (CLICK CHART TO SET)"/>
+                                </Grid>
+                            </Border>
 
-                            <Border Grid.Column="1" Style="{StaticResource KpiCard}" Padding="14,12">
-                                <StackPanel>
-                                    <TextBlock Style="{StaticResource Overline}" Text="WHAT MAKES THIS DIFFERENT"/>
-                                    <TextBlock FontWeight="SemiBold" Margin="0,4,0,4" Text="Why press a hotkey after a stutter?"/>
-                                    <TextBlock Style="{StaticResource Muted}" FontSize="12"
-                                               Text="Average FPS hides 60 ms single-frame hitches. Jankscope keeps a lock-free rolling pre-roll buffer in memory. When you press Ctrl+Alt+F9, it maps your reaction time (typically 150-400 ms after the freeze) back onto the frame clock and isolates the exact spike."/>
-                                </StackPanel>
+                            <!-- Scope 02: 31-Frame Spike Micro-Waterfall & Poincare Phase Radar -->
+                            <Border Grid.Column="1" Style="{StaticResource Card}">
+                                <Grid>
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition Height="Auto"/>
+                                        <RowDefinition Height="*"/>
+                                    </Grid.RowDefinitions>
+                                    <DockPanel Grid.Row="0" Margin="0,0,0,5">
+                                        <TextBlock DockPanel.Dock="Right" Style="{StaticResource Muted}" FontFamily="Consolas" FontSize="10" VerticalAlignment="Center"
+                                                   Text="CENTERED ON ANCHOR"/>
+                                        <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                            <Border Width="3" Height="12" CornerRadius="1.5" Background="{DynamicResource WarningBrush}" Margin="0,0,7,0"/>
+                                            <TextBlock Style="{StaticResource CardTitle}" Text="02 // ANCHOR SPIKE 31-FRAME ANATOMY"/>
+                                        </StackPanel>
+                                    </DockPanel>
+                                    <ContentControl x:Name="InvestigatorAnatomyHost" Grid.Row="1" Focusable="False"/>
+                                </Grid>
                             </Border>
                         </Grid>
-                    </Border>
 
-                    <!-- Live Frame-Time Oscilloscope -->
-                    <Border Style="{StaticResource Card}" Margin="0,0,0,16">
-                        <StackPanel>
-                            <DockPanel Margin="0,0,0,8">
-                                <TextBlock DockPanel.Dock="Right" Style="{StaticResource Muted}" FontSize="12" VerticalAlignment="Center"
-                                           Text="Reference lines: 8.3 ms (120 FPS) | 16.7 ms (60 FPS) | 33.3 ms (30 FPS) | Hover to inspect"/>
-                                <TextBlock Style="{StaticResource CardTitle}" Text="Live Frame-Time Oscilloscope (Last 30 Seconds)"/>
-                            </DockPanel>
-                            <ContentControl x:Name="LiveTimelineHost" Height="230" Focusable="False"/>
-                            <TextBlock x:Name="LiveNumbers" Style="{StaticResource MonoValue}" FontSize="12" Foreground="{DynamicResource MutedBrush}" Margin="0,10,0,0" TextWrapping="Wrap"/>
-                        </StackPanel>
-                    </Border>
+                        <!-- Row 3: 3-Column Causal Decision, Evidence-Graded Hypotheses & Smoothness Matrix -->
+                        <Grid Grid.Row="3">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="0.95*"/>
+                                <ColumnDefinition Width="1.35*"/>
+                                <ColumnDefinition Width="0.95*"/>
+                            </Grid.ColumnDefinitions>
 
-                    <!-- Live Frame-Time Latency Distribution & Consistency Breakdown -->
-                    <Border Style="{StaticResource Card}">
-                        <StackPanel>
-                            <DockPanel Margin="0,0,0,8">
-                                <TextBlock DockPanel.Dock="Right" Style="{StaticResource Muted}" FontSize="12" VerticalAlignment="Center"
-                                           Text="Shows what percentage of frames hit each latency tier over the last 30 seconds"/>
-                                <TextBlock Style="{StaticResource CardTitle}" Text="Live Frame-Time Distribution &amp; Smoothness Breakdown"/>
-                            </DockPanel>
-                            <ContentControl x:Name="LiveDistributionHost" Height="152" Focusable="False"/>
-                        </StackPanel>
-                    </Border>
-                </StackPanel>
-            </ScrollViewer>
-
-            <!-- WORKSPACE 2: FORENSIC STUTTER INVESTIGATOR -->
-            <Grid x:Name="PageInvestigator" Grid.Row="1" Visibility="Collapsed" Margin="24,18">
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="290"/>
-                    <ColumnDefinition Width="*"/>
-                </Grid.ColumnDefinitions>
-
-                <!-- Left Column: Recorded Marks Rail -->
-                <DockPanel Grid.Column="0" Margin="0,0,16,0">
-                    <StackPanel DockPanel.Dock="Top" Margin="0,0,0,10">
-                        <TextBlock Style="{StaticResource Heading}" FontSize="20" Text="Recorded Marks"/>
-                        <TextBlock Style="{StaticResource Muted}" FontSize="12"
-                                   Text="Each hotkey press freezes a pre-roll and post-roll window for forensic inspection."/>
-                    </StackPanel>
-                    <Border DockPanel.Dock="Bottom" Style="{StaticResource KpiCard}" Margin="0,10,0,0" Padding="12,10">
-                        <StackPanel>
-                            <TextBlock Style="{StaticResource Overline}" Text="NEED SAMPLE DATA?"/>
-                            <TextBlock Style="{StaticResource Muted}" FontSize="11.5" Margin="0,4,0,8"
-                                       Text="Click 'Try Instant Stutter Demo' in the top bar to generate a simulated 120 FPS capture with an anchored mark."/>
-                            <Button Content="Generate Simulated Incident" Style="{StaticResource SimButton}" Click="OnSimulateDemoClicked" Margin="0"/>
-                        </StackPanel>
-                    </Border>
-                    <ListBox x:Name="MarksList" SelectionChanged="OnMarkSelected" AutomationProperties.Name="Marks in this session">
-                        <ListBox.ItemTemplate>
-                            <DataTemplate>
-                                <StackPanel Margin="0,2">
-                                    <TextBlock Text="{Binding Title}" FontWeight="SemiBold"/>
-                                    <TextBlock Text="{Binding Subtitle}" Style="{StaticResource Muted}" FontSize="11.5" Margin="0,2,0,0"/>
-                                </StackPanel>
-                            </DataTemplate>
-                        </ListBox.ItemTemplate>
-                    </ListBox>
-                </DockPanel>
-
-                <!-- Right Column: Forensic Workbench -->
-                <ScrollViewer Grid.Column="1" VerticalScrollBarVisibility="Auto">
-                    <StackPanel>
-                        <TextBlock x:Name="NoMarkHint" Style="{StaticResource Muted}" Margin="0,24,0,0" FontSize="14"
-                                   Text="No marks recorded yet. Start capturing (or click 'Try Instant Stutter Demo' at the top right) and press the stutter hotkey to inspect a moment here."/>
-
-                        <StackPanel x:Name="MarkDetailPanel" Visibility="Collapsed">
-                            <!-- Top Action Bar & Export CTA -->
-                            <Border Style="{StaticResource HeroCard}" Margin="0,0,0,14" Padding="18,14">
-                                <DockPanel>
-                                    <Button x:Name="ExportButton" DockPanel.Dock="Right" Content="Preview &amp; Export Redacted Bundle..."
-                                            Style="{StaticResource PrimaryButton}" Click="OnExportClicked" VerticalAlignment="Center" Margin="16,0,0,0"/>
-                                    <StackPanel>
-                                        <TextBlock x:Name="MarkSummaryLine" FontSize="15" FontWeight="SemiBold" TextWrapping="Wrap"/>
-                                        <TextBlock x:Name="SelectionStatus" Foreground="{DynamicResource CyanAccentBrush}" FontWeight="SemiBold" Margin="0,4,0,0" TextWrapping="Wrap" AutomationProperties.LiveSetting="Polite"/>
+                            <!-- Col 0: Candidate Spike Anchors & Contextual Note -->
+                            <Border Grid.Column="0" Style="{StaticResource Card}" Margin="0,0,8,0">
+                                <Grid>
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition Height="Auto"/>
+                                        <RowDefinition Height="*"/>
+                                        <RowDefinition Height="Auto"/>
+                                        <RowDefinition Height="Auto"/>
+                                    </Grid.RowDefinitions>
+                                    <StackPanel Grid.Row="0" Margin="0,0,0,5">
+                                        <StackPanel Orientation="Horizontal">
+                                            <Border Width="3" Height="12" CornerRadius="1.5" Background="{DynamicResource OkBrush}" Margin="0,0,7,0"/>
+                                            <TextBlock Style="{StaticResource CardTitle}" Text="03 // CANDIDATE SPIKE ANCHORS"/>
+                                        </StackPanel>
+                                        <TextBlock Style="{StaticResource Muted}" FontSize="10.5" Margin="0,2,0,0"
+                                                   Text="Pick the spike that caused your reaction (150-400 ms before key press):"/>
                                     </StackPanel>
-                                </DockPanel>
+
+                                    <ListBox x:Name="CandidatesList" Grid.Row="1" SelectionChanged="OnCandidatePicked"
+                                             AutomationProperties.Name="Candidate moments before the key press">
+                                        <ListBox.ItemTemplate>
+                                            <DataTemplate>
+                                                <TextBlock Text="{Binding Text}" TextWrapping="Wrap" FontFamily="Consolas" FontSize="11"/>
+                                            </DataTemplate>
+                                        </ListBox.ItemTemplate>
+                                    </ListBox>
+
+                                    <WrapPanel Grid.Row="2" Margin="0,6,0,6">
+                                        <Button x:Name="UseKeyPressButton" Content="Use Key-Press Instant" Padding="8,4" FontSize="11" Click="OnUseKeyPressClicked"/>
+                                        <Button x:Name="ClearChoiceButton" Content="Clear Choice" Padding="8,4" FontSize="11" Click="OnClearChoiceClicked" Margin="0"/>
+                                    </WrapPanel>
+
+                                    <DockPanel Grid.Row="3">
+                                        <TextBlock DockPanel.Dock="Left" Text="NOTE:" Style="{StaticResource Overline}" VerticalAlignment="Center" Margin="0,0,6,0"/>
+                                        <TextBox x:Name="NoteBox" MaxLength="2000" Height="28" VerticalContentAlignment="Center"
+                                                 ToolTip="Optional note about what happened on screen (automatically redacted on export)."
+                                                 LostFocus="OnNoteLostFocus" AutomationProperties.Name="Note about this mark"/>
+                                    </DockPanel>
+                                </Grid>
                             </Border>
 
-                            <!-- Incident Window KPI Telemetry Strip -->
-                            <UniformGrid Columns="5" Margin="0,0,0,14">
-                                <Border Style="{StaticResource KpiCard}" Margin="0,0,8,0">
-                                    <StackPanel>
-                                        <TextBlock Style="{StaticResource Overline}" Text="WINDOW AVG FPS"/>
-                                        <TextBlock x:Name="InvAvgFps" Style="{StaticResource KpiValue}" FontSize="22" Text="--" Margin="0,4,0,0"/>
-                                        <TextBlock x:Name="InvSampleCount" Style="{StaticResource Muted}" FontSize="11" Text="-- samples"/>
-                                    </StackPanel>
-                                </Border>
-                                <Border Style="{StaticResource KpiCard}" Margin="0,0,8,0">
-                                    <StackPanel>
-                                        <TextBlock Style="{StaticResource Overline}" Text="MEDIAN (P50)"/>
-                                        <TextBlock x:Name="InvMedianMs" Style="{StaticResource KpiValue}" FontSize="22" Text="-- ms" Margin="0,4,0,0"/>
-                                        <TextBlock Style="{StaticResource Muted}" FontSize="11" Text="Baseline frame pacing"/>
-                                    </StackPanel>
-                                </Border>
-                                <Border Style="{StaticResource KpiCard}" Margin="0,0,8,0">
-                                    <StackPanel>
-                                        <TextBlock Style="{StaticResource Overline}" Text="99TH PERCENTILE"/>
-                                        <TextBlock x:Name="InvP99Ms" Style="{StaticResource KpiValue}" FontSize="22" Text="-- ms" Margin="0,4,0,0"/>
-                                        <TextBlock Style="{StaticResource Muted}" FontSize="11" Text="1% low frame time"/>
-                                    </StackPanel>
-                                </Border>
-                                <Border Style="{StaticResource KpiCard}" Margin="0,0,8,0">
-                                    <StackPanel>
-                                        <TextBlock Style="{StaticResource Overline}" Text="99.9TH PERCENTILE"/>
-                                        <TextBlock x:Name="InvP999Ms" Style="{StaticResource KpiValue}" FontSize="22" Text="-- ms" Margin="0,4,0,0"/>
-                                        <TextBlock Style="{StaticResource Muted}" FontSize="11" Text="0.1% worst tail spike"/>
-                                    </StackPanel>
-                                </Border>
-                                <Border Style="{StaticResource KpiCard}">
-                                    <StackPanel>
-                                        <TextBlock Style="{StaticResource Overline}" Text="STUTTER EVENTS"/>
-                                        <TextBlock x:Name="InvStutters" Style="{StaticResource KpiValue}" FontSize="22" Text="--" Margin="0,4,0,0"/>
-                                        <TextBlock x:Name="InvClusters" Style="{StaticResource Muted}" FontSize="11" Text="-- clusters"/>
-                                    </StackPanel>
-                                </Border>
-                            </UniformGrid>
-
-                            <!-- Interactive Forensic Timeline Card -->
-                            <Border Style="{StaticResource Card}" Margin="0,0,0,14">
-                                <StackPanel>
-                                    <DockPanel Margin="0,0,0,8">
-                                        <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" VerticalAlignment="Center">
-                                            <TextBlock Text="Zoom:" VerticalAlignment="Center" Margin="0,0,8,0" Style="{StaticResource Muted}"/>
-                                            <RadioButton x:Name="ZoomAll" Style="{StaticResource PillRadio}" GroupName="Zoom" Content="Full Window" Checked="OnZoomChanged"/>
-                                            <RadioButton x:Name="Zoom30" Style="{StaticResource PillRadio}" GroupName="Zoom" Content="Last 30 s" IsChecked="True" Checked="OnZoomChanged"/>
-                                            <RadioButton x:Name="Zoom10" Style="{StaticResource PillRadio}" GroupName="Zoom" Content="10 s Around Event" Checked="OnZoomChanged" Margin="0"/>
+                            <!-- Col 1: Evidence-Graded Root-Cause Hypotheses -->
+                            <Border Grid.Column="1" Style="{StaticResource Card}" Margin="0,0,8,0">
+                                <Grid>
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition Height="Auto"/>
+                                        <RowDefinition Height="*"/>
+                                    </Grid.RowDefinitions>
+                                    <DockPanel Grid.Row="0" Margin="0,0,0,5">
+                                        <Border DockPanel.Dock="Right" Style="{StaticResource BadgeBorder}" Padding="6,2">
+                                            <TextBlock Text="FACTS vs. INFERENCES" FontFamily="Consolas" FontSize="9.5" FontWeight="Bold" Foreground="{DynamicResource CyanAccentBrush}"/>
+                                        </Border>
+                                        <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                            <Border Width="3" Height="12" CornerRadius="1.5" Background="{DynamicResource AccentBrush}" Margin="0,0,7,0"/>
+                                            <TextBlock Style="{StaticResource CardTitle}" Text="04 // ROOT-CAUSE HYPOTHESIS ENGINE"/>
                                         </StackPanel>
-                                        <TextBlock Style="{StaticResource CardTitle}" VerticalAlignment="Center" Text="Interactive Incident Timeline &amp; Anchor Scrubber"/>
                                     </DockPanel>
 
-                                    <ContentControl x:Name="InvestigatorTimelineHost" Height="250" Focusable="False"/>
-
-                                    <TextBlock Style="{StaticResource Muted}" FontSize="12" Margin="0,8,0,0"
-                                               Text="Dashed amber line = when you pressed the hotkey (shaded band = clock uncertainty). Numbered circles = candidate spikes in the seconds before your reaction. Solid green line = your chosen event time. Click anywhere on the chart (or use Left/Right arrows + Enter) to place a custom anchor."/>
-                                </StackPanel>
+                                    <ListBox x:Name="HypothesesList" Grid.Row="1" AutomationProperties.Name="Evidence-graded hypotheses">
+                                        <ListBox.ItemTemplate>
+                                            <DataTemplate>
+                                                <StackPanel Margin="0,2">
+                                                    <StackPanel Orientation="Horizontal">
+                                                        <Border Style="{StaticResource BadgeBorder}" Background="{DynamicResource AccentSoftBrush}" BorderBrush="{DynamicResource AccentBrush}" Margin="0,0,8,0" Padding="6,1">
+                                                            <TextBlock Text="{Binding GradeBadge}" FontFamily="Consolas" FontSize="10" FontWeight="Bold" Foreground="{DynamicResource CyanAccentBrush}"/>
+                                                        </Border>
+                                                        <TextBlock Text="{Binding Name}" FontWeight="Bold" FontSize="12" VerticalAlignment="Center"/>
+                                                    </StackPanel>
+                                                    <TextBlock Text="{Binding Summary}" FontSize="11.5" Margin="0,3,0,2" TextWrapping="Wrap"/>
+                                                    <TextBlock Text="{Binding SupportingEvidence}" Style="{StaticResource Muted}" FontSize="11" TextWrapping="Wrap"/>
+                                                    <TextBlock Text="{Binding FalsifierText}" Foreground="{DynamicResource WarningBrush}" FontSize="11" Margin="0,2,0,0" TextWrapping="Wrap"/>
+                                                </StackPanel>
+                                            </DataTemplate>
+                                        </ListBox.ItemTemplate>
+                                    </ListBox>
+                                </Grid>
                             </Border>
 
-                            <!-- Two-Column Split: Candidate Anchor Selector + Evidence-Graded Hypotheses -->
-                            <Grid Margin="0,0,0,14">
-                                <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="1*"/>
-                                    <ColumnDefinition Width="1.15*"/>
-                                </Grid.ColumnDefinitions>
-
-                                <!-- Candidate Anchors & Note -->
-                                <Border Grid.Column="0" Style="{StaticResource Card}" Margin="0,0,12,0">
-                                    <StackPanel>
-                                        <TextBlock Style="{StaticResource CardTitle}" Text="1. Confirm Where the Event Happened"/>
-                                        <TextBlock Style="{StaticResource Muted}" FontSize="12" Margin="0,2,0,8"
-                                                   Text="Human reaction time is typically 150-400 ms after a visual freeze. Pick a candidate spike below, or click directly on the timeline."/>
-                                        <ListBox x:Name="CandidatesList" MaxHeight="155" SelectionChanged="OnCandidatePicked"
-                                                 AutomationProperties.Name="Candidate moments before the key press">
-                                            <ListBox.ItemTemplate>
-                                                <DataTemplate>
-                                                    <TextBlock Text="{Binding Text}" TextWrapping="Wrap" FontFamily="Consolas" FontSize="12"/>
-                                                </DataTemplate>
-                                            </ListBox.ItemTemplate>
-                                        </ListBox>
-                                        <WrapPanel Margin="0,10,0,0">
-                                            <Button x:Name="UseKeyPressButton" Content="Use Key-Press Instant" Click="OnUseKeyPressClicked"/>
-                                            <Button x:Name="ClearChoiceButton" Content="Leave Unchosen" Click="OnClearChoiceClicked" Margin="0"/>
-                                        </WrapPanel>
-
-                                        <Border Height="1" Background="{DynamicResource BorderLineBrush}" Margin="0,14"/>
-
-                                        <TextBlock Style="{StaticResource CardTitle}" Text="2. Contextual Note (Optional)"/>
-                                        <TextBlock Style="{StaticResource Muted}" FontSize="11.5" Margin="0,2,0,6"
-                                                   Text="Describe what happened on screen (e.g. 'entered new zone, camera froze'). Personal usernames/hostnames/IPs are automatically redacted on export."/>
-                                        <TextBox x:Name="NoteBox" MaxLength="2000" Height="62" TextWrapping="Wrap" AcceptsReturn="True"
-                                                 LostFocus="OnNoteLostFocus" AutomationProperties.Name="Note about this mark"/>
+                            <!-- Col 2: Incident Smoothness Gauge & Latency Tier Distribution -->
+                            <Border Grid.Column="2" Style="{StaticResource Card}">
+                                <Grid>
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition Height="Auto"/>
+                                        <RowDefinition Height="*"/>
+                                    </Grid.RowDefinitions>
+                                    <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="0,0,0,5">
+                                        <Border Width="3" Height="12" CornerRadius="1.5" Background="{DynamicResource PurpleAccentBrush}" Margin="0,0,7,0"/>
+                                        <TextBlock Style="{StaticResource CardTitle}" Text="05 // WINDOW PACING TIERS"/>
                                     </StackPanel>
-                                </Border>
-
-                                <!-- Evidence-Graded Root-Cause Hypotheses & Frame Distribution -->
-                                <StackPanel Grid.Column="1">
-                                    <Border Style="{StaticResource Card}" Margin="0,0,0,12">
-                                        <StackPanel>
-                                            <DockPanel Margin="0,0,0,6">
-                                                <Border DockPanel.Dock="Right" Style="{StaticResource BadgeBorder}" Margin="8,0,0,0">
-                                                    <TextBlock Text="FACTS vs. INFERENCES" FontSize="10" FontWeight="Bold" Foreground="{DynamicResource CyanAccentBrush}"/>
-                                                </Border>
-                                                <TextBlock Style="{StaticResource CardTitle}" Text="Root-Cause Hypotheses" VerticalAlignment="Center"/>
-                                            </DockPanel>
-                                            <TextBlock Style="{StaticResource Muted}" FontSize="12" Margin="0,0,0,8"
-                                                       Text="Every hypothesis states its confidence grade (capped while thresholds are uncalibrated), supporting facts, and what evidence would falsify it."/>
-                                            <ListBox x:Name="HypothesesList" MaxHeight="240" AutomationProperties.Name="Evidence-graded hypotheses">
-                                                <ListBox.ItemTemplate>
-                                                    <DataTemplate>
-                                                        <StackPanel Margin="0,3">
-                                                            <StackPanel Orientation="Horizontal">
-                                                                <Border Style="{StaticResource BadgeBorder}" Background="{DynamicResource AccentSoftBrush}" BorderBrush="{DynamicResource AccentBrush}" Margin="0,0,8,0">
-                                                                    <TextBlock Text="{Binding GradeBadge}" FontSize="11" FontWeight="Bold" Foreground="{DynamicResource AccentBrush}"/>
-                                                                </Border>
-                                                                <TextBlock Text="{Binding Name}" FontWeight="Bold" VerticalAlignment="Center"/>
-                                                            </StackPanel>
-                                                            <TextBlock Text="{Binding Summary}" Margin="0,4,0,2" TextWrapping="Wrap"/>
-                                                            <TextBlock Text="{Binding SupportingEvidence}" Style="{StaticResource Muted}" FontSize="11.5" TextWrapping="Wrap"/>
-                                                            <TextBlock Text="{Binding FalsifierText}" Foreground="{DynamicResource WarningBrush}" FontSize="11.5" Margin="0,2,0,0" TextWrapping="Wrap"/>
-                                                        </StackPanel>
-                                                    </DataTemplate>
-                                                </ListBox.ItemTemplate>
-                                            </ListBox>
-                                        </StackPanel>
-                                    </Border>
-
-                                    <Border Style="{StaticResource Card}">
-                                        <StackPanel>
-                                            <TextBlock Style="{StaticResource CardTitle}" Margin="0,0,0,6" Text="Incident Window Latency Distribution"/>
-                                            <ContentControl x:Name="InvestigatorDistributionHost" Height="152" Focusable="False"/>
-                                        </StackPanel>
-                                    </Border>
-                                </StackPanel>
-                            </Grid>
-                        </StackPanel>
-                    </StackPanel>
-                </ScrollViewer>
+                                    <ContentControl x:Name="InvestigatorDistributionHost" Grid.Row="1" Focusable="False"/>
+                                </Grid>
+                            </Border>
+                        </Grid>
+                    </Grid>
+                </Grid>
             </Grid>
 
-            <!-- WORKSPACE 3: SYSTEM READINESS & CAPABILITY RADAR -->
-            <ScrollViewer x:Name="PageRadar" Grid.Row="1" Visibility="Collapsed" VerticalScrollBarVisibility="Auto" Padding="24,20">
-                <StackPanel MaxWidth="1220" HorizontalAlignment="Left">
-                    <Border Style="{StaticResource HeroCard}" Margin="0,0,0,16">
-                        <DockPanel>
-                            <Button DockPanel.Dock="Right" Content="Export Redacted Compatibility Report..." Style="{StaticResource PrimaryButton}"
-                                    Click="OnExportCompatibilityClicked" VerticalAlignment="Center" Margin="16,0,0,0"/>
-                            <StackPanel>
-                                <TextBlock Style="{StaticResource Heading}" Text="System Readiness &amp; Capability Radar"/>
-                                <TextBlock Style="{StaticResource Muted}"
-                                           Text="Jankscope probes 41 read-only hardware, display, OS security, anti-cheat coexistence, and ETW telemetry rows at startup. Every row below explains what was detected, where it came from, and what it means for your frame pacing."/>
+            <!-- ========================================================================= -->
+            <!-- WORKSPACE 03: ZERO-SCROLL SYSTEM CAPABILITY & COEXISTENCE RADAR           -->
+            <!-- ========================================================================= -->
+            <Grid x:Name="PageRadar" Grid.Row="1" Visibility="Collapsed" Margin="16,12">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="*"/>
+                </Grid.RowDefinitions>
+
+                <Border Grid.Row="0" Style="{StaticResource HeroCard}" Margin="0,0,0,10">
+                    <DockPanel>
+                        <Button DockPanel.Dock="Right" Content="Export Redacted Compatibility Report..." Style="{StaticResource PrimaryButton}"
+                                Click="OnExportCompatibilityClicked" VerticalAlignment="Center" Margin="16,0,0,0"/>
+                        <StackPanel>
+                            <TextBlock Style="{StaticResource Heading}" Text="System Readiness &amp; Capability Radar"/>
+                            <TextBlock Style="{StaticResource Muted}" FontSize="12"
+                                       Text="Probes 41 read-only hardware, display, OS security, anti-cheat coexistence, and ETW telemetry rows at startup. Every row explains what was detected, its provenance, and its impact on frame pacing."/>
+                        </StackPanel>
+                    </DockPanel>
+                </Border>
+
+                <UniformGrid Grid.Row="1" Columns="4" Margin="0,0,0,10">
+                    <Border Style="{StaticResource KpiCard}" Margin="0,0,8,0">
+                        <StackPanel>
+                            <TextBlock Style="{StaticResource Overline}" Text="CAPABILITY ROWS PROBED"/>
+                            <TextBlock x:Name="RadarTotalCount" Style="{StaticResource KpiValue}" Text="--" Margin="0,3,0,1"/>
+                            <TextBlock Style="{StaticResource Muted}" FontFamily="Consolas" FontSize="10.5" Text="14 read-only system probes"/>
+                        </StackPanel>
+                    </Border>
+                    <Border Style="{StaticResource KpiCard}" Margin="0,0,8,0">
+                        <StackPanel>
+                            <TextBlock Style="{StaticResource Overline}" Text="AVAILABLE &amp; READY"/>
+                            <TextBlock x:Name="RadarReadyCount" Style="{StaticResource KpiValue}" Foreground="{DynamicResource OkBrush}" Text="--" Margin="0,3,0,1"/>
+                            <TextBlock Style="{StaticResource Muted}" FontFamily="Consolas" FontSize="10.5" Text="Full telemetry coverage"/>
+                        </StackPanel>
+                    </Border>
+                    <Border Style="{StaticResource KpiCard}" Margin="0,0,8,0">
+                        <StackPanel>
+                            <TextBlock Style="{StaticResource Overline}" Text="NEEDS SETUP / PERMISSION"/>
+                            <TextBlock x:Name="RadarAttentionCount" Style="{StaticResource KpiValue}" Foreground="{DynamicResource WarningBrush}" Text="--" Margin="0,3,0,1"/>
+                            <TextBlock Style="{StaticResource Muted}" FontFamily="Consolas" FontSize="10.5" Text="Optional group or elevation"/>
+                        </StackPanel>
+                    </Border>
+                    <Border Style="{StaticResource KpiCard}">
+                        <StackPanel>
+                            <TextBlock Style="{StaticResource Overline}" Text="ANTI-CHEAT POSTURE"/>
+                            <TextBlock x:Name="RadarAntiCheatStatus" Style="{StaticResource KpiValue}" FontSize="19" Text="Checking..." Margin="0,3,0,1"/>
+                            <TextBlock Style="{StaticResource Muted}" FontFamily="Consolas" FontSize="10.5" Text="HC-1 passive coexistence"/>
+                        </StackPanel>
+                    </Border>
+                </UniformGrid>
+
+                <Border Grid.Row="2" Style="{StaticResource Card}">
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="*"/>
+                        </Grid.RowDefinitions>
+                        <DockPanel Grid.Row="0" Margin="0,0,0,8">
+                            <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" VerticalAlignment="Center">
+                                <TextBlock Text="FILTER:" Style="{StaticResource Overline}" VerticalAlignment="Center" Margin="0,0,8,0"/>
+                                <RadioButton x:Name="RadarFilterAll" Style="{StaticResource PillRadio}" GroupName="RadarFilter" Content="All Rows" IsChecked="True" Checked="OnRadarFilterChanged"/>
+                                <RadioButton x:Name="RadarFilterReady" Style="{StaticResource PillRadio}" GroupName="RadarFilter" Content="Ready" Checked="OnRadarFilterChanged"/>
+                                <RadioButton x:Name="RadarFilterAttention" Style="{StaticResource PillRadio}" GroupName="RadarFilter" Content="Action / Unavailable" Checked="OnRadarFilterChanged" Margin="0"/>
+                            </StackPanel>
+                            <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                <Border Width="3" Height="12" CornerRadius="1.5" Background="{DynamicResource CyanAccentBrush}" Margin="0,0,7,0"/>
+                                <TextBlock Style="{StaticResource CardTitle}" Text="HARDWARE, DISPLAY, SECURITY &amp; TELEMETRY CAPABILITY MATRIX"/>
                             </StackPanel>
                         </DockPanel>
+
+                        <ListBox x:Name="RadarList" Grid.Row="1" AutomationProperties.Name="System capability matrix rows">
+                            <ListBox.ItemTemplate>
+                                <DataTemplate>
+                                    <Grid Margin="0,3">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="150"/>
+                                            <ColumnDefinition Width="230"/>
+                                            <ColumnDefinition Width="*"/>
+                                            <ColumnDefinition Width="130"/>
+                                        </Grid.ColumnDefinitions>
+                                        <StackPanel Grid.Column="0" VerticalAlignment="Top">
+                                            <Border Style="{StaticResource BadgeBorder}" HorizontalAlignment="Left">
+                                                <TextBlock Text="{Binding Domain}" FontFamily="Consolas" FontSize="10" FontWeight="Bold" Foreground="{DynamicResource CyanAccentBrush}"/>
+                                            </Border>
+                                            <TextBlock Text="{Binding Id}" Style="{StaticResource Muted}" FontFamily="Consolas" FontSize="10.5" Margin="2,3,0,0"/>
+                                        </StackPanel>
+                                        <StackPanel Grid.Column="1" VerticalAlignment="Top" Margin="8,0">
+                                            <TextBlock Text="{Binding Title}" FontWeight="SemiBold" TextWrapping="Wrap"/>
+                                            <TextBlock Text="{Binding SourceInfo}" Style="{StaticResource Muted}" FontFamily="Consolas" FontSize="10" Margin="0,2,0,0"/>
+                                        </StackPanel>
+                                        <StackPanel Grid.Column="2" VerticalAlignment="Top" Margin="8,0">
+                                            <TextBlock Text="{Binding ValueOrReason}" FontFamily="Consolas" FontSize="11.5" TextWrapping="Wrap"/>
+                                            <TextBlock Text="{Binding PlainEnglishImpact}" Style="{StaticResource Muted}" FontSize="11" Margin="0,2,0,0" TextWrapping="Wrap"/>
+                                        </StackPanel>
+                                        <Border Grid.Column="3" Style="{StaticResource BadgeBorder}" HorizontalAlignment="Right" VerticalAlignment="Top">
+                                            <TextBlock Text="{Binding StatusBadge}" FontFamily="Consolas" FontSize="10.5" FontWeight="Bold"/>
+                                        </Border>
+                                    </Grid>
+                                </DataTemplate>
+                            </ListBox.ItemTemplate>
+                        </ListBox>
+                    </Grid>
+                </Border>
+            </Grid>
+
+            <!-- ========================================================================= -->
+            <!-- WORKSPACE 04: ZERO-SCROLL INPUT & MOUSE POLLING CONTINUITY LAB            -->
+            <!-- ========================================================================= -->
+            <Grid x:Name="PageLab" Grid.Row="1" Visibility="Collapsed" Margin="16,12">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="*"/>
+                    <RowDefinition Height="Auto"/>
+                </Grid.RowDefinitions>
+
+                <Border Grid.Row="0" Style="{StaticResource HeroCard}" Margin="0,0,0,10">
+                    <DockPanel>
+                        <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" VerticalAlignment="Center" Margin="16,0,0,0">
+                            <Button Content="Load Simulated Stall Trace" Style="{StaticResource SimButton}" Click="OnLabSimulateClicked"/>
+                            <Button Content="Reset Lab Buffer" Click="OnLabResetClicked" Margin="0"/>
+                        </StackPanel>
+                        <StackPanel>
+                            <TextBlock Style="{StaticResource Heading}" Text="Input Continuity &amp; Mouse Polling Lab"/>
+                            <TextBlock Style="{StaticResource Muted}" FontSize="12"
+                                       Text="Distinguishes GPU/CPU frame hitches from wireless 2.4 GHz polling drops, USB hub contention, and message-pump stalls. Orbit your cursor inside the vector reticle below to measure pointer delivery intervals in real time (100% HC-4 compliant)."/>
+                        </StackPanel>
+                    </DockPanel>
+                </Border>
+
+                <UniformGrid Grid.Row="1" Columns="4" Margin="0,0,0,10">
+                    <Border Style="{StaticResource KpiCard}" Margin="0,0,8,0">
+                        <StackPanel>
+                            <TextBlock Style="{StaticResource Overline}" Text="EFFECTIVE EVENT RATE"/>
+                            <TextBlock x:Name="LabHzValue" Style="{StaticResource KpiValue}" Text="-- Hz" Margin="0,3,0,1"/>
+                            <TextBlock Style="{StaticResource Muted}" FontFamily="Consolas" FontSize="10.5" Text="Derived from median dt"/>
+                        </StackPanel>
                     </Border>
+                    <Border Style="{StaticResource KpiCard}" Margin="0,0,8,0">
+                        <StackPanel>
+                            <TextBlock Style="{StaticResource Overline}" Text="MEDIAN INTERVAL (DT)"/>
+                            <TextBlock x:Name="LabMedianDt" Style="{StaticResource KpiValue}" Text="-- ms" Margin="0,3,0,1"/>
+                            <TextBlock Style="{StaticResource Muted}" FontFamily="Consolas" FontSize="10.5" Text="Pointer update spacing"/>
+                        </StackPanel>
+                    </Border>
+                    <Border Style="{StaticResource KpiCard}" Margin="0,0,8,0">
+                        <StackPanel>
+                            <TextBlock Style="{StaticResource Overline}" Text="DELIVERY JITTER (P95-P50)"/>
+                            <TextBlock x:Name="LabJitterMs" Style="{StaticResource KpiValue}" Text="-- ms" Margin="0,3,0,1"/>
+                            <TextBlock Style="{StaticResource Muted}" FontFamily="Consolas" FontSize="10.5" Text="Lower = smoother turn"/>
+                        </StackPanel>
+                    </Border>
+                    <Border Style="{StaticResource KpiCard}">
+                        <StackPanel>
+                            <TextBlock Style="{StaticResource Overline}" Text="MID-MOTION STALLS"/>
+                            <TextBlock x:Name="LabStallCount" Style="{StaticResource KpiValue}" Text="0" Margin="0,3,0,1"/>
+                            <TextBlock x:Name="LabVerdictText" Style="{StaticResource Muted}" FontFamily="Consolas" FontSize="10.5" TextTrimming="CharacterEllipsis" Text="Move cursor in reticle"/>
+                        </StackPanel>
+                    </Border>
+                </UniformGrid>
 
-                    <!-- Radar KPI Summary Cards -->
-                    <UniformGrid Columns="4" Margin="0,0,0,16">
-                        <Border Style="{StaticResource KpiCard}" Margin="0,0,10,0">
-                            <StackPanel>
-                                <TextBlock Style="{StaticResource Overline}" Text="CAPABILITY ROWS PROBED"/>
-                                <TextBlock x:Name="RadarTotalCount" Style="{StaticResource KpiValue}" Text="--" Margin="0,4,0,2"/>
-                                <TextBlock Style="{StaticResource Muted}" FontSize="11.5" Text="Across 14 read-only system probes"/>
-                            </StackPanel>
-                        </Border>
-                        <Border Style="{StaticResource KpiCard}" Margin="0,0,10,0">
-                            <StackPanel>
-                                <TextBlock Style="{StaticResource Overline}" Text="AVAILABLE &amp; READY"/>
-                                <TextBlock x:Name="RadarReadyCount" Style="{StaticResource KpiValue}" Foreground="{DynamicResource OkBrush}" Text="--" Margin="0,4,0,2"/>
-                                <TextBlock Style="{StaticResource Muted}" FontSize="11.5" Text="Full telemetry coverage active"/>
-                            </StackPanel>
-                        </Border>
-                        <Border Style="{StaticResource KpiCard}" Margin="0,0,10,0">
-                            <StackPanel>
-                                <TextBlock Style="{StaticResource Overline}" Text="NEEDS SETUP / PERMISSION"/>
-                                <TextBlock x:Name="RadarAttentionCount" Style="{StaticResource KpiValue}" Foreground="{DynamicResource WarningBrush}" Text="--" Margin="0,4,0,2"/>
-                                <TextBlock Style="{StaticResource Muted}" FontSize="11.5" Text="Optional group or elevation notes"/>
-                            </StackPanel>
-                        </Border>
-                        <Border Style="{StaticResource KpiCard}">
-                            <StackPanel>
-                                <TextBlock Style="{StaticResource Overline}" Text="ANTI-CHEAT POSTURE"/>
-                                <TextBlock x:Name="RadarAntiCheatStatus" Style="{StaticResource KpiValue}" FontSize="20" Text="Checking..." Margin="0,4,0,2"/>
-                                <TextBlock Style="{StaticResource Muted}" FontSize="11.5" Text="HC-1 passive coexistence check"/>
-                            </StackPanel>
-                        </Border>
-                    </UniformGrid>
+                <Border Grid.Row="2" Style="{StaticResource Card}" Margin="0,0,0,10">
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="*"/>
+                        </Grid.RowDefinitions>
+                        <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="0,0,0,6">
+                            <Border Width="3" Height="12" CornerRadius="1.5" Background="{DynamicResource CyanAccentBrush}" Margin="0,0,7,0"/>
+                            <TextBlock Style="{StaticResource CardTitle}" Text="LIVE POINTER VECTOR RETICLE &amp; INTER-EVENT ARRIVAL SPECTRUM"/>
+                        </StackPanel>
+                        <ContentControl x:Name="InputPollingHost" Grid.Row="1" Focusable="False"/>
+                    </Grid>
+                </Border>
 
-                    <!-- Filter Bar + Matrix Inspector -->
+                <UniformGrid Grid.Row="3" Columns="3">
+                    <Border Style="{StaticResource Card}" Margin="0,0,8,0">
+                        <StackPanel>
+                            <TextBlock Style="{StaticResource Overline}" Foreground="{DynamicResource CyanAccentBrush}" Text="SIGNATURE A // RENDER STALL"/>
+                            <TextBlock Style="{StaticResource CardTitle}" Margin="0,3,0,3" Text="Pure Frame-Pacing Hitch"/>
+                            <TextBlock Style="{StaticResource Muted}" FontSize="11.5"
+                                       Text="Frame time spikes (> 33 ms) on the Capture Scope while mouse arrival intervals stay steady. Caused by shader compilation, asset traversal, or GPU/CPU submission stalls."/>
+                        </StackPanel>
+                    </Border>
+                    <Border Style="{StaticResource Card}" Margin="0,0,8,0">
+                        <StackPanel>
+                            <TextBlock Style="{StaticResource Overline}" Foreground="{DynamicResource WarningBrush}" Text="SIGNATURE B // INPUT STALL"/>
+                            <TextBlock Style="{StaticResource CardTitle}" Margin="0,3,0,3" Text="Pure Pointer / Polling Drop"/>
+                            <TextBlock Style="{StaticResource Muted}" FontSize="11.5"
+                                       Text="Frame times remain flat (8.3 ms at 120 FPS), but pointer intervals jump above 35 ms mid-swipe. Caused by 2.4 GHz wireless interference or USB hub contention."/>
+                        </StackPanel>
+                    </Border>
                     <Border Style="{StaticResource Card}">
                         <StackPanel>
-                            <DockPanel Margin="0,0,0,12">
-                                <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" VerticalAlignment="Center">
-                                    <TextBlock Text="Filter:" VerticalAlignment="Center" Margin="0,0,8,0" Style="{StaticResource Muted}"/>
-                                    <RadioButton x:Name="RadarFilterAll" Style="{StaticResource PillRadio}" GroupName="RadarFilter" Content="All Rows" IsChecked="True" Checked="OnRadarFilterChanged"/>
-                                    <RadioButton x:Name="RadarFilterReady" Style="{StaticResource PillRadio}" GroupName="RadarFilter" Content="Ready" Checked="OnRadarFilterChanged"/>
-                                    <RadioButton x:Name="RadarFilterAttention" Style="{StaticResource PillRadio}" GroupName="RadarFilter" Content="Action / Unavailable" Checked="OnRadarFilterChanged" Margin="0"/>
-                                </StackPanel>
-                                <TextBlock Style="{StaticResource CardTitle}" VerticalAlignment="Center" Text="Hardware, Display, Security &amp; Telemetry Capability Matrix"/>
-                            </DockPanel>
-
-                            <ListBox x:Name="RadarList" Height="460" AutomationProperties.Name="System capability matrix rows">
-                                <ListBox.ItemTemplate>
-                                    <DataTemplate>
-                                        <Grid Margin="0,4">
-                                            <Grid.ColumnDefinitions>
-                                                <ColumnDefinition Width="150"/>
-                                                <ColumnDefinition Width="230"/>
-                                                <ColumnDefinition Width="*"/>
-                                                <ColumnDefinition Width="130"/>
-                                            </Grid.ColumnDefinitions>
-                                            <StackPanel Grid.Column="0" VerticalAlignment="Top">
-                                                <Border Style="{StaticResource BadgeBorder}" HorizontalAlignment="Left">
-                                                    <TextBlock Text="{Binding Domain}" FontSize="10.5" FontWeight="Bold" Foreground="{DynamicResource CyanAccentBrush}"/>
-                                                </Border>
-                                                <TextBlock Text="{Binding Id}" Style="{StaticResource Muted}" FontFamily="Consolas" FontSize="11" Margin="2,4,0,0"/>
-                                            </StackPanel>
-                                            <StackPanel Grid.Column="1" VerticalAlignment="Top" Margin="8,0">
-                                                <TextBlock Text="{Binding Title}" FontWeight="SemiBold" TextWrapping="Wrap"/>
-                                                <TextBlock Text="{Binding SourceInfo}" Style="{StaticResource Muted}" FontSize="11" Margin="0,2,0,0"/>
-                                            </StackPanel>
-                                            <StackPanel Grid.Column="2" VerticalAlignment="Top" Margin="8,0">
-                                                <TextBlock Text="{Binding ValueOrReason}" FontFamily="Consolas" FontSize="12" TextWrapping="Wrap"/>
-                                                <TextBlock Text="{Binding PlainEnglishImpact}" Style="{StaticResource Muted}" FontSize="11.5" Margin="0,3,0,0" TextWrapping="Wrap"/>
-                                            </StackPanel>
-                                            <Border Grid.Column="3" Style="{StaticResource BadgeBorder}" HorizontalAlignment="Right" VerticalAlignment="Top">
-                                                <TextBlock Text="{Binding StatusBadge}" FontFamily="Consolas" FontSize="11" FontWeight="Bold"/>
-                                            </Border>
-                                        </Grid>
-                                    </DataTemplate>
-                                </ListBox.ItemTemplate>
-                            </ListBox>
+                            <TextBlock Style="{StaticResource Overline}" Foreground="{DynamicResource DangerBrush}" Text="SIGNATURE C // SYSTEM FREEZE"/>
+                            <TextBlock Style="{StaticResource CardTitle}" Margin="0,3,0,3" Text="Coupled Kernel / DPC Stall"/>
+                            <TextBlock Style="{StaticResource Muted}" FontSize="11.5"
+                                       Text="Both frame delivery and pointer arrival stall at the exact same timestamp. Typically caused by kernel DPC/ISR latency spikes or OS-wide thermal throttling."/>
                         </StackPanel>
                     </Border>
-                </StackPanel>
-            </ScrollViewer>
+                </UniformGrid>
+            </Grid>
 
-            <!-- WORKSPACE 4: INPUT & MOUSE POLLING LAB -->
-            <ScrollViewer x:Name="PageLab" Grid.Row="1" Visibility="Collapsed" VerticalScrollBarVisibility="Auto" Padding="24,20">
-                <StackPanel MaxWidth="1220" HorizontalAlignment="Left">
-                    <Border Style="{StaticResource HeroCard}" Margin="0,0,0,16">
-                        <DockPanel>
-                            <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" VerticalAlignment="Center" Margin="16,0,0,0">
-                                <Button Content="Load Simulated Stall Trace" Style="{StaticResource SimButton}" Click="OnLabSimulateClicked"/>
-                                <Button Content="Reset Lab Buffer" Click="OnLabResetClicked" Margin="0"/>
-                            </StackPanel>
-                            <StackPanel>
-                                <TextBlock Style="{StaticResource Heading}" Text="Input Continuity &amp; Mouse Polling Lab"/>
-                                <TextBlock Style="{StaticResource Muted}"
-                                           Text="Many perceived 'frame stutters' are actually wireless mouse polling drops, USB hub contention, or window message-pump stalls while frame times remain flat. Move your cursor inside the test pad below to measure pointer delivery intervals in real time (100% HC-4 compliant: zero keyboard hooks, zero key codes)."/>
-                            </StackPanel>
-                        </DockPanel>
-                    </Border>
-
-                    <!-- 4 Input Telemetry KPI Cards -->
-                    <UniformGrid Columns="4" Margin="0,0,0,16">
-                        <Border Style="{StaticResource KpiCard}" Margin="0,0,10,0">
-                            <StackPanel>
-                                <TextBlock Style="{StaticResource Overline}" Text="EFFECTIVE EVENT RATE"/>
-                                <TextBlock x:Name="LabHzValue" Style="{StaticResource KpiValue}" Text="-- Hz" Margin="0,4,0,2"/>
-                                <TextBlock Style="{StaticResource Muted}" FontSize="11.5" Text="Derived from median arrival dt"/>
-                            </StackPanel>
-                        </Border>
-                        <Border Style="{StaticResource KpiCard}" Margin="0,0,10,0">
-                            <StackPanel>
-                                <TextBlock Style="{StaticResource Overline}" Text="MEDIAN INTERVAL (DT)"/>
-                                <TextBlock x:Name="LabMedianDt" Style="{StaticResource KpiValue}" Text="-- ms" Margin="0,4,0,2"/>
-                                <TextBlock Style="{StaticResource Muted}" FontSize="11.5" Text="Typical pointer update spacing"/>
-                            </StackPanel>
-                        </Border>
-                        <Border Style="{StaticResource KpiCard}" Margin="0,0,10,0">
-                            <StackPanel>
-                                <TextBlock Style="{StaticResource Overline}" Text="DELIVERY JITTER (P95-P50)"/>
-                                <TextBlock x:Name="LabJitterMs" Style="{StaticResource KpiValue}" Text="-- ms" Margin="0,4,0,2"/>
-                                <TextBlock Style="{StaticResource Muted}" FontSize="11.5" Text="Lower = smoother camera turn"/>
-                            </StackPanel>
-                        </Border>
-                        <Border Style="{StaticResource KpiCard}">
-                            <StackPanel>
-                                <TextBlock Style="{StaticResource Overline}" Text="MID-MOTION STALLS"/>
-                                <TextBlock x:Name="LabStallCount" Style="{StaticResource KpiValue}" Text="0" Margin="0,4,0,2"/>
-                                <TextBlock x:Name="LabVerdictText" Style="{StaticResource Muted}" FontSize="11.5" Text="Move cursor in pad below"/>
-                            </StackPanel>
-                        </Border>
-                    </UniformGrid>
-
-                    <Border Style="{StaticResource Card}" Margin="0,0,0,16">
+            <!-- ========================================================================= -->
+            <!-- WORKSPACE 05: STUDIO CONFIGURATION & AUDIO CUES                           -->
+            <!-- ========================================================================= -->
+            <Grid x:Name="PageSettings" Grid.Row="1" Visibility="Collapsed" Margin="16,12">
+                <StackPanel>
+                    <Border Style="{StaticResource HeroCard}" Margin="0,0,0,12">
                         <StackPanel>
-                            <TextBlock Style="{StaticResource CardTitle}" Margin="0,0,0,8" Text="Live Pointer Motion Pad &amp; Inter-Event Interval (dt) Oscilloscope"/>
-                            <ContentControl x:Name="InputPollingHost" Height="270" Focusable="False"/>
-                        </StackPanel>
-                    </Border>
-
-                    <!-- Diagnostic Guide: How to Tell Frame Hitch vs Input Stall -->
-                    <UniformGrid Columns="3">
-                        <Border Style="{StaticResource Card}" Margin="0,0,12,0">
-                            <StackPanel>
-                                <TextBlock Style="{StaticResource Overline}" Foreground="{DynamicResource CyanAccentBrush}" Text="SIGNATURE A"/>
-                                <TextBlock Style="{StaticResource CardTitle}" Margin="0,4,0,4" Text="Pure Frame-Pacing Hitch"/>
-                                <TextBlock Style="{StaticResource Muted}" FontSize="12"
-                                           Text="Frame time spikes (> 30 ms) on the Capture Scope while mouse arrival intervals stay steady. Caused by shader compilation, asset traversal, or GPU/CPU submission stalls."/>
-                            </StackPanel>
-                        </Border>
-                        <Border Style="{StaticResource Card}" Margin="0,0,12,0">
-                            <StackPanel>
-                                <TextBlock Style="{StaticResource Overline}" Foreground="{DynamicResource WarningBrush}" Text="SIGNATURE B"/>
-                                <TextBlock Style="{StaticResource CardTitle}" Margin="0,4,0,4" Text="Pure Input / Polling Stall"/>
-                                <TextBlock Style="{StaticResource Muted}" FontSize="12"
-                                           Text="Frame times remain flat (e.g. 8.3 ms at 120 FPS), but pointer intervals jump above 35 ms mid-swipe. Caused by 2.4 GHz wireless interference, USB hub saturation, or high polling CPU load."/>
-                            </StackPanel>
-                        </Border>
-                        <Border Style="{StaticResource Card}">
-                            <StackPanel>
-                                <TextBlock Style="{StaticResource Overline}" Foreground="{DynamicResource DangerBrush}" Text="SIGNATURE C"/>
-                                <TextBlock Style="{StaticResource CardTitle}" Margin="0,4,0,4" Text="Coupled System Freeze"/>
-                                <TextBlock Style="{StaticResource Muted}" FontSize="12"
-                                           Text="Both frame delivery and pointer arrival stall at the exact same timestamp. Typically caused by kernel DPC/ISR latency spikes, display mode switches, or OS-wide power/thermal throttling."/>
-                            </StackPanel>
-                        </Border>
-                    </UniformGrid>
-                </StackPanel>
-            </ScrollViewer>
-
-            <!-- WORKSPACE 5: SETTINGS & AUDIO CUES -->
-            <ScrollViewer x:Name="PageSettings" Grid.Row="1" Visibility="Collapsed" VerticalScrollBarVisibility="Auto" Padding="24,20">
-                <StackPanel MaxWidth="820" HorizontalAlignment="Left">
-                    <Border Style="{StaticResource HeroCard}" Margin="0,0,0,16">
-                        <StackPanel>
-                            <TextBlock Style="{StaticResource Heading}" Text="Studio Settings &amp; Capture Window"/>
+                            <TextBlock Style="{StaticResource Heading}" Text="Studio Configuration &amp; Capture Ring"/>
                             <TextBlock Style="{StaticResource Muted}" Text="Configure global mark hotkeys, rolling pre-roll/post-roll memory window lengths, audible confirmation tones, and visual theme."/>
                         </StackPanel>
                     </Border>
 
-                    <Border Style="{StaticResource Card}" Margin="0,0,0,14">
+                    <Border Style="{StaticResource Card}" Margin="0,0,0,12">
                         <StackPanel>
-                            <TextBlock Style="{StaticResource CardTitle}" Text="Global Mark Hotkeys"/>
-                            <TextBlock Style="{StaticResource Muted}" FontSize="12" Margin="0,2,0,12"
-                                       Text="Each hotkey requires at least one modifier (Ctrl, Alt, or Shift) plus a key (for example Ctrl+Alt+F9). Windows notifies Jankscope only when that exact chord is pressed (HC-4: zero keyboard hooks)."/>
+                            <TextBlock Style="{StaticResource CardTitle}" Text="01 // GLOBAL MARK HOTKEYS (HC-4 REGISTERHOTKEY)"/>
+                            <TextBlock Style="{StaticResource Muted}" FontSize="11.5" Margin="0,3,0,10"
+                                       Text="Each hotkey requires at least one modifier (Ctrl, Alt, or Shift) plus a key (for example Ctrl+Alt+F9). Windows notifies Jankscope only when that exact chord is pressed."/>
                             <Grid>
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition Width="190"/>
@@ -626,9 +781,9 @@
                                     <RowDefinition Height="Auto"/>
                                     <RowDefinition Height="Auto"/>
                                 </Grid.RowDefinitions>
-                                <TextBlock Grid.Row="0" Grid.Column="0" Text="Mark Stutter Chord" VerticalAlignment="Center" Margin="0,0,0,10"/>
-                                <TextBox x:Name="StutterChordBox" Grid.Row="0" Grid.Column="1" Margin="0,0,12,10" AutomationProperties.Name="Mark stutter hotkey"/>
-                                <TextBlock x:Name="StutterChordStatus" Grid.Row="0" Grid.Column="2" VerticalAlignment="Center" Margin="0,0,0,10" TextWrapping="Wrap"/>
+                                <TextBlock Grid.Row="0" Grid.Column="0" Text="Mark Stutter Chord" VerticalAlignment="Center" Margin="0,0,0,8"/>
+                                <TextBox x:Name="StutterChordBox" Grid.Row="0" Grid.Column="1" Margin="0,0,12,8" AutomationProperties.Name="Mark stutter hotkey"/>
+                                <TextBlock x:Name="StutterChordStatus" Grid.Row="0" Grid.Column="2" VerticalAlignment="Center" Margin="0,0,0,8" TextWrapping="Wrap"/>
 
                                 <TextBlock Grid.Row="1" Grid.Column="0" Text="Mark Input Freeze Chord" VerticalAlignment="Center"/>
                                 <TextBox x:Name="InputChordBox" Grid.Row="1" Grid.Column="1" Margin="0,0,12,0" AutomationProperties.Name="Mark input stall hotkey"/>
@@ -637,11 +792,11 @@
                         </StackPanel>
                     </Border>
 
-                    <Border Style="{StaticResource Card}" Margin="0,0,0,14">
+                    <Border Style="{StaticResource Card}" Margin="0,0,0,12">
                         <StackPanel>
-                            <TextBlock Style="{StaticResource CardTitle}" Text="Rolling Memory Window &amp; Audio Feedback"/>
-                            <TextBlock Style="{StaticResource Muted}" FontSize="12" Margin="0,2,0,12"
-                                       Text="Controls how much history is frozen when you press a hotkey and how long post-mark recovery frames are collected."/>
+                            <TextBlock Style="{StaticResource CardTitle}" Text="02 // ROLLING MEMORY RING &amp; AUDIBLE CUES"/>
+                            <TextBlock Style="{StaticResource Muted}" FontSize="11.5" Margin="0,3,0,10"
+                                       Text="Controls how much pre-roll history is frozen when you press a hotkey and how long post-mark recovery frames are collected."/>
                             <Grid>
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition Width="260"/>
@@ -651,13 +806,13 @@
                                     <RowDefinition Height="Auto"/>
                                     <RowDefinition Height="Auto"/>
                                 </Grid.RowDefinitions>
-                                <TextBlock Grid.Row="0" Grid.Column="0" Text="Pre-roll before mark (30 to 600 seconds)" VerticalAlignment="Center" Margin="0,0,0,10"/>
-                                <TextBox x:Name="PreRollBox" Grid.Row="0" Grid.Column="1" Margin="0,0,0,10" AutomationProperties.Name="Seconds kept before a mark"/>
+                                <TextBlock Grid.Row="0" Grid.Column="0" Text="Pre-roll before mark (30 to 600 seconds)" VerticalAlignment="Center" Margin="0,0,0,8"/>
+                                <TextBox x:Name="PreRollBox" Grid.Row="0" Grid.Column="1" Margin="0,0,0,8" AutomationProperties.Name="Seconds kept before a mark"/>
                                 <TextBlock Grid.Row="1" Grid.Column="0" Text="Post-roll after mark (0 to 300 seconds)" VerticalAlignment="Center"/>
                                 <TextBox x:Name="PostRollBox" Grid.Row="1" Grid.Column="1" AutomationProperties.Name="Seconds recorded after a mark"/>
                             </Grid>
 
-                            <CheckBox x:Name="SoundCheck" Margin="0,14,0,10" Content="Play an audible confirmation tone when a mark hotkey is pressed (no in-game visual overlay)"/>
+                            <CheckBox x:Name="SoundCheck" Margin="0,12,0,8" Content="Play an audible confirmation tone when a mark hotkey is pressed (zero in-game visual overlay)"/>
                             <WrapPanel>
                                 <Button Content="Test Stutter Tone (Rising)" Click="OnTestStutterToneClicked"/>
                                 <Button Content="Test Input-Freeze Tone (Falling)" Click="OnTestInputToneClicked"/>
@@ -666,61 +821,63 @@
                         </StackPanel>
                     </Border>
 
-                    <Border Style="{StaticResource Card}" Margin="0,0,0,14">
+                    <Border Style="{StaticResource Card}" Margin="0,0,0,12">
                         <StackPanel>
-                            <TextBlock Style="{StaticResource CardTitle}" Text="Studio Appearance"/>
-                            <StackPanel Orientation="Horizontal" Margin="0,10,0,0">
+                            <TextBlock Style="{StaticResource CardTitle}" Text="03 // INSTRUMENT CHASSIS THEME"/>
+                            <StackPanel Orientation="Horizontal" Margin="0,8,0,0">
                                 <RadioButton x:Name="ThemeSystem" Style="{StaticResource PillRadio}" GroupName="Theme" Content="Follow Windows"/>
-                                <RadioButton x:Name="ThemeDark" Style="{StaticResource PillRadio}" GroupName="Theme" Content="Studio Dark (Recommended)"/>
-                                <RadioButton x:Name="ThemeLight" Style="{StaticResource PillRadio}" GroupName="Theme" Content="High-Contrast Light" Margin="0"/>
+                                <RadioButton x:Name="ThemeDark" Style="{StaticResource PillRadio}" GroupName="Theme" Content="Obsidian Phosphor Dark (Recommended)"/>
+                                <RadioButton x:Name="ThemeLight" Style="{StaticResource PillRadio}" GroupName="Theme" Content="Daylight Laboratory" Margin="0"/>
                             </StackPanel>
                         </StackPanel>
                     </Border>
 
                     <StackPanel Orientation="Horizontal" Margin="0,4,0,0">
-                        <Button x:Name="SaveSettingsButton" Content="Apply &amp; Save Settings" Style="{StaticResource PrimaryButton}" Click="OnSaveSettingsClicked"/>
-                        <Button Content="Reset to Defaults" Click="OnResetSettingsClicked"/>
+                        <Button x:Name="SaveSettingsButton" Content="Apply &amp; Save Configuration" Style="{StaticResource PrimaryButton}" Click="OnSaveSettingsClicked"/>
+                        <Button Content="Reset Defaults" Click="OnResetSettingsClicked"/>
                         <TextBlock x:Name="SettingsResult" VerticalAlignment="Center" Margin="8,0,0,0" TextWrapping="Wrap" AutomationProperties.LiveSetting="Polite"/>
                     </StackPanel>
                 </StackPanel>
-            </ScrollViewer>
+            </Grid>
 
-            <!-- WORKSPACE 6: ABOUT, PRIVACY & EXPORT -->
-            <ScrollViewer x:Name="PageAbout" Grid.Row="1" Visibility="Collapsed" VerticalScrollBarVisibility="Auto" Padding="24,20">
-                <StackPanel MaxWidth="900" HorizontalAlignment="Left">
-                    <Border Style="{StaticResource HeroCard}" Margin="0,0,0,16">
+            <!-- ========================================================================= -->
+            <!-- WORKSPACE 06: SPEC, PRIVACY PROOF & COMPATIBILITY EXPORT                  -->
+            <!-- ========================================================================= -->
+            <Grid x:Name="PageAbout" Grid.Row="1" Visibility="Collapsed" Margin="16,12">
+                <StackPanel>
+                    <Border Style="{StaticResource HeroCard}" Margin="0,0,0,12">
                         <DockPanel>
                             <Button DockPanel.Dock="Right" Content="Show Welcome &amp; Privacy Notice" Click="OnShowWelcomeClicked" VerticalAlignment="Center" Margin="16,0,0,0"/>
                             <StackPanel>
-                                <TextBlock Style="{StaticResource Heading}" Text="About Jankscope &amp; Privacy Guarantees"/>
-                                <TextBlock x:Name="VersionLine" Style="{StaticResource Muted}"/>
+                                <TextBlock Style="{StaticResource Heading}" Text="Architecture Specification &amp; Privacy Guarantees"/>
+                                <TextBlock x:Name="VersionLine" Style="{StaticResource Muted}" FontFamily="Consolas"/>
                             </StackPanel>
                         </DockPanel>
                     </Border>
 
-                    <UniformGrid Columns="2" Margin="0,0,0,16">
-                        <Border Style="{StaticResource Card}" Margin="0,0,12,0">
+                    <UniformGrid Columns="2" Margin="0,0,0,12">
+                        <Border Style="{StaticResource Card}" Margin="0,0,10,0">
                             <StackPanel>
-                                <TextBlock Style="{StaticResource Overline}" Foreground="{DynamicResource OkBrush}" Text="WHAT JANKSCOPE READS"/>
-                                <TextBlock Style="{StaticResource CardTitle}" Margin="0,4,0,6" Text="Documented User-Mode Windows Interfaces Only"/>
-                                <TextBlock Style="{StaticResource Muted}" FontSize="12"
+                                <TextBlock Style="{StaticResource Overline}" Foreground="{DynamicResource OkBrush}" Text="PERMITTED INTERFACES"/>
+                                <TextBlock Style="{StaticResource CardTitle}" Margin="0,4,0,6" Text="Documented User-Mode Windows Telemetry Only"/>
+                                <TextBlock Style="{StaticResource Muted}" FontSize="11.5"
                                            Text="1. PresentMon ETW swap-chain events for the chosen target application while capturing.&#x0a;2. Your two registered hotkey chords via RegisterHotKey.&#x0a;3. Read-only system capability probes (DXGI, CPU topology, display refresh, anti-cheat presence).&#x0a;4. Local Windows username and PC hostname solely to strip them from exported files."/>
                             </StackPanel>
                         </Border>
                         <Border Style="{StaticResource Card}">
                             <StackPanel>
-                                <TextBlock Style="{StaticResource Overline}" Foreground="{DynamicResource CyanAccentBrush}" Text="HARD CONSTRAINTS (HC-1 .. HC-13)"/>
-                                <TextBlock Style="{StaticResource CardTitle}" Margin="0,4,0,6" Text="What Jankscope Never Does"/>
-                                <TextBlock Style="{StaticResource Muted}" FontSize="12"
+                                <TextBlock Style="{StaticResource Overline}" Foreground="{DynamicResource CyanAccentBrush}" Text="COMPILE-TIME HARD CONSTRAINTS (HC-1 .. HC-13)"/>
+                                <TextBlock Style="{StaticResource CardTitle}" Margin="0,4,0,6" Text="Static Banned-Symbol Safety Proofs"/>
+                                <TextBlock Style="{StaticResource Muted}" FontSize="11.5"
                                            Text="1. Zero DLL injection, API hooks, or foreign process memory reads.&#x0a;2. Zero kernel drivers or undocumented syscalls.&#x0a;3. Zero in-game overlays or D3D/Vulkan swap-chain hooks.&#x0a;4. Zero outbound network connections (System.Net.* is banned at compile time)."/>
                             </StackPanel>
                         </Border>
                     </UniformGrid>
 
-                    <Border Style="{StaticResource Card}" Margin="0,0,0,16">
+                    <Border Style="{StaticResource Card}" Margin="0,0,0,12">
                         <StackPanel>
-                            <TextBlock Style="{StaticResource CardTitle}" Text="System Check Summary &amp; Compatibility Export"/>
-                            <TextBlock x:Name="CapabilitySummary" Style="{StaticResource MonoValue}" FontSize="12" Foreground="{DynamicResource MutedBrush}" TextWrapping="Wrap" Margin="0,8,0,10"/>
+                            <TextBlock Style="{StaticResource CardTitle}" Text="SYSTEM CHECK SUMMARY &amp; COMPATIBILITY EXPORT"/>
+                            <TextBlock x:Name="CapabilitySummary" Style="{StaticResource MonoValue}" FontSize="11.5" Foreground="{DynamicResource MutedBrush}" TextWrapping="Wrap" Margin="0,8,0,10"/>
                             <TextBlock x:Name="ProblemsBox" Foreground="{DynamicResource WarningBrush}" TextWrapping="Wrap" Margin="0,0,0,10" Visibility="Collapsed"/>
                             <WrapPanel>
                                 <Button x:Name="ExportCompatibilityButton" Content="Export Redacted Compatibility Report..." Style="{StaticResource PrimaryButton}" Click="OnExportCompatibilityClicked"/>
@@ -731,8 +888,8 @@
 
                     <Border Style="{StaticResource Card}">
                         <StackPanel>
-                            <TextBlock Style="{StaticResource CardTitle}" Text="Open-Source Community &amp; Support"/>
-                            <TextBlock Style="{StaticResource Muted}" FontSize="12" Margin="0,4,0,12"
+                            <TextBlock Style="{StaticResource CardTitle}" Text="OPEN-SOURCE COMMUNITY &amp; SUPPORT"/>
+                            <TextBlock Style="{StaticResource Muted}" FontSize="11.5" Margin="0,4,0,10"
                                        Text="Jankscope is MIT-licensed open-source software with zero telemetry, zero ads, and zero feature gates. The static links below open only in your default browser when clicked."/>
                             <WrapPanel>
                                 <Button x:Name="OpenSponsorButton" Content="Sponsor on GitHub" Click="OnOpenSponsorClicked"/>
@@ -741,7 +898,7 @@
                         </StackPanel>
                     </Border>
                 </StackPanel>
-            </ScrollViewer>
+            </Grid>
         </Grid>
     </Grid>
 </Window>
