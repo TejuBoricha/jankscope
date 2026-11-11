@@ -20,7 +20,7 @@
                         <Border Width="8" Height="16" CornerRadius="2" Background="{DynamicResource CyanAccentBrush}" Margin="0,0,8,0"/>
                         <TextBlock Text="Jankscope" FontFamily="Consolas" FontSize="16" FontWeight="Bold" VerticalAlignment="Center"/>
                     </StackPanel>
-                    <TextBlock Style="{StaticResource Muted}" FontFamily="Consolas" FontSize="10" Margin="0,4,0,0" Text="PRECISION FRAME &amp; INPUT FORENSICS"/>
+                    <TextBlock Style="{StaticResource Muted}" FontFamily="Consolas" FontSize="10" Margin="0,4,0,0" Text="FRAME PACING AND INPUT STALLS"/>
                 </StackPanel>
 
                 <!-- Bottom Global Hotkey & Hardware Coexistence Pod -->
@@ -563,7 +563,7 @@
                         <StackPanel>
                             <TextBlock Style="{StaticResource Heading}" Text="Capability check"/>
                             <TextBlock Style="{StaticResource Muted}" FontSize="12"
-                                       Text="Probes 41 read-only hardware, display, OS security, anti-cheat coexistence, and ETW telemetry rows at startup. Every row explains what was detected, its provenance, and its impact on frame pacing."/>
+                                       Text="Probes read-only hardware, display, OS security, anti-cheat coexistence, and ETW telemetry rows at startup. Every row explains what was detected, its provenance, and its impact on frame pacing."/>
                         </StackPanel>
                     </DockPanel>
                 </Border>
@@ -573,7 +573,7 @@
                         <StackPanel>
                             <TextBlock Style="{StaticResource Overline}" Text="CAPABILITY ROWS PROBED"/>
                             <TextBlock x:Name="RadarTotalCount" Style="{StaticResource KpiValue}" Text="--" Margin="0,3,0,1"/>
-                            <TextBlock Style="{StaticResource Muted}" FontFamily="Consolas" FontSize="10.5" Text="14 read-only system probes"/>
+                            <TextBlock Style="{StaticResource Muted}" FontFamily="Consolas" FontSize="10.5" Text="Counted live at startup"/>
                         </StackPanel>
                     </Border>
                     <Border Style="{StaticResource KpiCard}" Margin="0,0,8,0">
@@ -610,7 +610,7 @@
                                 <TextBlock Text="FILTER:" Style="{StaticResource Overline}" VerticalAlignment="Center" Margin="0,0,8,0"/>
                                 <RadioButton x:Name="RadarFilterAll" Style="{StaticResource PillRadio}" GroupName="RadarFilter" Content="All Rows" IsChecked="True" Checked="OnRadarFilterChanged"/>
                                 <RadioButton x:Name="RadarFilterReady" Style="{StaticResource PillRadio}" GroupName="RadarFilter" Content="Ready" Checked="OnRadarFilterChanged"/>
-                                <RadioButton x:Name="RadarFilterAttention" Style="{StaticResource PillRadio}" GroupName="RadarFilter" Content="Action / Unavailable" Checked="OnRadarFilterChanged" Margin="0"/>
+                                <RadioButton x:Name="RadarFilterAttention" Style="{StaticResource PillRadio}" GroupName="RadarFilter" Content="Needs attention" Checked="OnRadarFilterChanged" Margin="0"/>
                             </StackPanel>
                             <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
                                 <Border Width="3" Height="12" CornerRadius="1.5" Background="{DynamicResource CyanAccentBrush}" Margin="0,0,7,0"/>
@@ -683,12 +683,12 @@
                         <StackPanel>
                             <TextBlock Style="{StaticResource Overline}" Text="EFFECTIVE EVENT RATE"/>
                             <TextBlock x:Name="LabHzValue" Style="{StaticResource KpiValue}" Text="-- Hz" Margin="0,3,0,1"/>
-                            <TextBlock Style="{StaticResource Muted}" FontFamily="Consolas" FontSize="10.5" Text="Derived from median dt"/>
+                            <TextBlock Style="{StaticResource Muted}" FontFamily="Consolas" FontSize="10.5" Text="Derived from the median interval"/>
                         </StackPanel>
                     </Border>
                     <Border Style="{StaticResource KpiCard}" Margin="0,0,8,0">
                         <StackPanel>
-                            <TextBlock Style="{StaticResource Overline}" Text="MEDIAN INTERVAL (DT)"/>
+                            <TextBlock Style="{StaticResource Overline}" Text="MEDIAN INTERVAL"/>
                             <TextBlock x:Name="LabMedianDt" Style="{StaticResource KpiValue}" Text="-- ms" Margin="0,3,0,1"/>
                             <TextBlock Style="{StaticResource Muted}" FontFamily="Consolas" FontSize="10.5" Text="Pointer update spacing"/>
                         </StackPanel>
@@ -742,7 +742,7 @@
                     </Border>
                     <Border Style="{StaticResource Card}">
                         <StackPanel>
-                            <TextBlock Style="{StaticResource Overline}" Foreground="{DynamicResource DangerBrush}" Text="SIGNATURE C // SYSTEM FREEZE"/>
+                            <TextBlock Style="{StaticResource Overline}" Foreground="{DynamicResource DangerBrush}" Text="SIGNATURE C // SYSTEM-WIDE STALL"/>
                             <TextBlock Style="{StaticResource CardTitle}" Margin="0,3,0,3" Text="Coupled Kernel / DPC Stall"/>
                             <TextBlock Style="{StaticResource Muted}" FontSize="11.5"
                                        Text="Both frame delivery and pointer arrival stall at the exact same timestamp. Typically caused by kernel DPC/ISR latency spikes or OS-wide thermal throttling."/>
@@ -811,9 +811,9 @@
 
                             <CheckBox x:Name="SoundCheck" Margin="0,12,0,8" Content="Play an audible confirmation tone when a mark hotkey is pressed (zero in-game visual overlay)"/>
                             <WrapPanel>
-                                <Button Content="Test Stutter Tone (Rising)" Click="OnTestStutterToneClicked"/>
+                                <Button Content="Test stutter tone (rising)" Click="OnTestStutterToneClicked"/>
                                 <Button Content="Test input-stall tone (falling)" Click="OnTestInputToneClicked"/>
-                                <Button Content="Test Not-Capturing Tone (Low)" Click="OnTestWarnToneClicked" Margin="0"/>
+                                <Button Content="Test not-capturing tone (low)" Click="OnTestWarnToneClicked" Margin="0"/>
                             </WrapPanel>
                         </StackPanel>
                     </Border>
@@ -846,7 +846,7 @@
                         <DockPanel>
                             <Button DockPanel.Dock="Right" Content="Show Welcome &amp; Privacy Notice" Click="OnShowWelcomeClicked" VerticalAlignment="Center" Margin="16,0,0,0"/>
                             <StackPanel>
-                                <TextBlock Style="{StaticResource Heading}" Text="Trust: what Jankscope does and does not do"/>
+                                <TextBlock Style="{StaticResource Heading}" Text="What Jankscope does and does not do"/>
                                 <TextBlock x:Name="VersionLine" Style="{StaticResource Muted}" FontFamily="Consolas"/>
                             </StackPanel>
                         </DockPanel>
