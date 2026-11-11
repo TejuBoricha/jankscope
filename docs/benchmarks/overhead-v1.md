@@ -36,8 +36,10 @@ The observer-effect benchmark compares identical workloads run with collectors *
 | Metric | Measured Value | Budget (HC-4 / HC-6) | Status |
 | :--- | :--- | :--- | :--- |
 | **`jankscope-app.exe` CPU Usage (Idle / Live Capture)** | `0.682%` of total logical CPU | `<= 1.0%` | **PASS** |
-| **`jankscope-app.exe` Working Set (RAM)** | `198.9 MB` | `<= 250 MB` | **PASS** |
+| **`jankscope-app.exe` Working Set (RAM)** | `198.9 MB` | `<= 250 MB` (see the note below: the spec says 200 MB) | **PASS against 250 MB only** |
 | **Active TCP / UDP Endpoints (`Get-NetTCPConnection` / `Get-NetUDPEndpoint`)** | `0 TCP / 0 UDP` | `0` (Zero network capability) | **PASS** |
+
+**Note on the memory budget (`docs/LIMITATIONS.md` L30).** Spec section 14 sets 200 MB, summed over every app-owned process including the PresentMon child, over 10 minutes or more. The 250 MB used above is a revision with no recorded decision, the figure above is the app process alone, and the independent Stage 1b review measured 206 MB idle and 231 MB while capturing. The spec's budget is therefore not shown to be met; the owner decides whether to reduce or to revise it.
 
 ## Conclusion
 Real-time ETW event capture and the Stage 1b WPF desktop shell passed all observer-overhead, CPU, memory, and zero-network budgets across 10 interleaved runs (5 A/B pairs).
