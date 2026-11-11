@@ -146,7 +146,10 @@ public class TimelineViewTests
             {
                 for (var dx = -8; dx <= 8; dx++)
                 {
-                    if (data[(y * stride) + ((x + dx) * 4)] > 150) // the blue channel of the line colour; the background is dark
+                    // Pbgra32 bytes are B, G, R, A. A drawn line is bright in at least one channel: the dark theme's line is cyan
+                    // and the signal theme's is lime. The chart background is dark in both themes, so this still rejects background.
+                    var px = (y * stride) + ((x + dx) * 4);
+                    if (Math.Max(data[px], Math.Max(data[px + 1], data[px + 2])) > 150)
                     {
                         rows++;
                         break;
