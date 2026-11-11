@@ -355,11 +355,14 @@ public class AppHostTests
 
         factory.Capture.Push(new FrameSample(1000, endMs - 8.0, TestData.Frame, PresentMode: "Composed: Flip", Application: "game.exe", Provenance: DataProvenance.Fixture));
         factory.Capture.Push(new FrameSample(1001, endMs - 4000.0, TestData.Frame, PresentMode: "Composed: Flip", Application: "game.exe", Provenance: DataProvenance.Fixture));
-        await TestData.WaitUntil(() => host.Controller.Status() is { OutOfOrderFrames: 1, BackwardJumps: 1 });
+        // Wait for everything asserted below, not only the two counters: the pump counts a jump before it counts the frame as received, so waiting
+        // for the jump alone can read the received count one short (this failed once on CI for exactly that reason).
+        var expectedReceived = frames.Length + 1;
+        await TestData.WaitUntil(() => host.Controller.Status() is { OutOfOrderFrames: 1, BackwardJumps: 1 } status && status.FramesReceived == expectedReceived);
 
         var status = host.Controller.Status();
         Assert.Equal(0, status.IgnoredFrames);
-        Assert.Equal(frames.Length + 1, status.FramesReceived);
+        Assert.Equal(expectedReceived, status.FramesReceived);
     }
 
     [Fact]
