@@ -424,11 +424,14 @@ public class MainWindowSmokeTests
             var hypotheses = (ListBox)window!.FindName("HypothesesList");
             Assert.NotEmpty(hypotheses.Items);
             Assert.True(window.InvestigatorDistribution.TotalFrames > 100);
+            Assert.True(window.InvestigatorAnatomy.TotalFrames > 100);
+            Assert.True(window.InvestigatorAnatomy.AnchorPeakMs > 30.0);
             Snapshots.Save(window, "window-investigator-simulated");
 
             // Verify Live Capture KPIs & Distribution with simulated data
             ((RadioButton)window.FindName("NavCapture")).IsChecked = true;
             window.UpdateLayout();
+            Assert.True(window.LiveAnatomy.TotalFrames > 100);
             Snapshots.Save(window, "window-capture-simulated");
 
             // Verify Input & Polling Lab simulated trace

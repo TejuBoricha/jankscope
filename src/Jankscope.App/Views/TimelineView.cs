@@ -252,7 +252,7 @@ public sealed class TimelineView : FrameworkElement
         }
 
         var barPen = new Pen(line, Math.Max(1.0, step)) { StartLineCap = PenLineCap.Flat, EndLineCap = PenLineCap.Flat };
-        var spikePen = new Pen(warnBrush, Math.Max(1.0, step)) { StartLineCap = PenLineCap.Flat, EndLineCap = PenLineCap.Flat };
+        var spikePen = new Pen(warnBrush, Math.Max(1.4, step)) { StartLineCap = PenLineCap.Flat, EndLineCap = PenLineCap.Flat };
         for (var i = 0; i < _buckets.Length; i++)
         {
             var bucket = _buckets[i];
@@ -265,6 +265,10 @@ public sealed class TimelineView : FrameworkElement
             var top = Y(bucket.MaxMs);
             var bottom = Math.Max(Y(bucket.MinMs), top + 1.0);
             dc.DrawLine(bucket.MaxMs > yMax ? spikePen : barPen, new Point(x, top), new Point(x, bottom));
+            if (bucket.MaxMs >= 33.33)
+            {
+                dc.DrawEllipse(warnBrush, null, new Point(x, Math.Max(plot.Top + 2, top)), 2.2, 2.2);
+            }
         }
 
         // A line through the column means joins neighbouring columns, so a spike that fills a column on its own (min equals max) still reads as a peak
@@ -295,6 +299,7 @@ public sealed class TimelineView : FrameworkElement
         }
 
         trend.Freeze();
+        dc.DrawGeometry(null, new Pen(Translucent(line, 0.24), 4.2) { LineJoin = PenLineJoin.Round }, trend);
         dc.DrawGeometry(null, new Pen(line, 1.6) { LineJoin = PenLineJoin.Round }, trend);
 
         // detector events (live view): small ticks along the top edge

@@ -14,7 +14,7 @@ namespace Jankscope.App.Views;
 public sealed class InputPollingView : FrameworkElement
 {
     private const int MaxSamples = 240;
-    private readonly List<(double IntervalMs, double SpeedPxPerMs, Point Position, bool IsStall)> _samples = new(MaxSamples);
+    private readonly List<(double IntervalMs, double SpeedPxPerMs, Point Position, bool IsStall, bool Normalized)> _samples = new(MaxSamples);
     private long _lastTicks;
     private Point _lastPoint;
     private int _stallEvents;
@@ -38,7 +38,7 @@ public sealed class InputPollingView : FrameworkElement
     {
         if (_samples.Count < 4)
         {
-            return (0, 0, 0, 0, "Move cursor in smooth circles inside the test pad below");
+            return (0, 0, 0, 0, "Move cursor in smooth circles inside the radar reticle below");
         }
 
         var intervals = _samples.Select(s => s.IntervalMs).Order().ToArray();
@@ -49,10 +49,10 @@ public sealed class InputPollingView : FrameworkElement
         var jitter = Math.Round(Math.Max(0, p95 - median), 2);
 
         var verdict = _stallEvents > 0
-            ? $"Detected {_stallEvents.ToString(CultureInfo.InvariantCulture)} mid-motion discontinuity stall(s) (> 35 ms gap while moving fast)"
+            ? $"ALERT // {_stallEvents.ToString(CultureInfo.InvariantCulture)} mid-motion discontinuity stall(s) (> 35 ms gap while moving)"
             : jitter <= 3.5
-                ? "Consistent motion delivery (low inter-event jitter)"
-                : "Elevated delivery variance (check wireless receiver distance or USB hub load)";
+                ? "LOCKED // Continuous pointer delivery (low inter-event variance)"
+                : "VARIANCE // Elevated delivery jitter (check wireless receiver or USB hub load)";
 
         return (hz, Math.Round(median, 2), Math.Round(max, 2), jitter, verdict);
     }
@@ -66,19 +66,15 @@ public sealed class InputPollingView : FrameworkElement
         InvalidateVisual();
     }
 
-    /// <summary>Feeds a synthetic 125 Hz / 500 Hz motion trace with an injected 55 ms stall so users or tests can inspect the analyzer with one click.</summary>
+    /// <summary>Feeds a synthetic 250 Hz motion trace with an injected 58 ms stall so users or tests can inspect the analyzer with one click.</summary>
     public void LoadSimulatedTrace()
     {
         _samples.Clear();
         _stallEvents = 0;
-        var width = Math.Max(360.0, ActualWidth);
-        var height = Math.Max(180.0, ActualHeight);
-        var cx = width * 0.5;
-        var cy = height * 0.5;
         for (var i = 0; i < 120; i++)
         {
-            var angle = i * 0.12;
-            var pt = new Point(cx + (Math.Cos(angle) * 90), cy + (Math.Sin(angle) * 45));
+            var angle = i * 0.14;
+            var pt = new Point(Math.Cos(angle), Math.Sin(angle * 2.0) * 0.72);
             var dt = i == 72 ? 58.0 : 4.0 + ((i % 5) * 0.35);
             var isStall = dt >= 35.0;
             if (isStall)
@@ -86,7 +82,7 @@ public sealed class InputPollingView : FrameworkElement
                 _stallEvents++;
             }
 
-            _samples.Add((dt, 1.4, pt, isStall));
+            _samples.Add((dt, 1.4, pt, isStall, true));
         }
 
         MetricsUpdated?.Invoke(this, EventArgs.Empty);
@@ -108,7 +104,6 @@ public sealed class InputPollingView : FrameworkElement
             {
                 var prevSpeed = _samples.Count > 0 ? _samples[^1].SpeedPxPerMs : 1.0;
                 var speed = dist / dtMs;
-                // ADR-0009 heuristic: distinguish natural hand deceleration from an abrupt mid-motion delivery gap
                 var isStall = dtMs >= 35.0 && prevSpeed >= 0.45 && dist >= 12.0;
                 if (isStall)
                 {
@@ -120,7 +115,7 @@ public sealed class InputPollingView : FrameworkElement
                     _samples.RemoveAt(0);
                 }
 
-                _samples.Add((dtMs, speed, pos, isStall));
+                _samples.Add((dtMs, speed, pos, isStall, false));
                 MetricsUpdated?.Invoke(this, EventArgs.Empty);
                 InvalidateVisual();
             }
@@ -154,30 +149,50 @@ public sealed class InputPollingView : FrameworkElement
         var muted = Themed("MutedBrush", Brushes.Gray);
         var fg = Themed("ForegroundBrush", Brushes.White);
 
-        dc.DrawRoundedRectangle(bg, new Pen(grid, 1), new Rect(0, 0, width, height), 8, 8);
+        dc.DrawRoundedRectangle(bg, new Pen(grid, 1), new Rect(0, 0, width, height), 6, 6);
 
-        // Split: Left 42% is interactive motion pad + trail, Right 58% is live inter-event dt oscilloscope
         var padWidth = Math.Max(160, width * 0.42);
         var padRect = new Rect(10, 10, padWidth - 16, height - 20);
-        var chartRect = new Rect(padWidth + 6, 22, Math.Max(80, width - padWidth - 18), height - 42);
+        var chartRect = new Rect(padWidth + 6, 26, Math.Max(80, width - padWidth - 18), height - 42);
 
-        dc.DrawRoundedRectangle(Themed("PanelInsetBrush", Brushes.Black), new Pen(grid, 1) { DashStyle = DashStyles.Dash }, padRect, 6, 6);
-        DrawText(dc, "INTERACTIVE MOTION TEST PAD (MOVE MOUSE HERE)", muted, new Point(padRect.Left + 10, padRect.Top + 8), dpi, 10, true);
+        dc.DrawRoundedRectangle(Themed("PanelInsetBrush", Brushes.Black), new Pen(grid, 1), padRect, 6, 6);
+        DrawText(dc, "01 // VECTOR RETICLE TEST SURFACE (ORBIT CURSOR HERE)", muted, new Point(padRect.Left + 10, padRect.Top + 7), dpi, 9.5, true, mono: true);
+
+        // Radar bullseye concentric rings & crosshairs
+        var center = new Point(padRect.Left + (padRect.Width * 0.5), padRect.Top + 14 + ((padRect.Height - 14) * 0.5));
+        var maxR = Math.Max(20, Math.Min(padRect.Width, padRect.Height - 28) * 0.42);
+        var ringPen = new Pen(grid, 1) { DashStyle = DashStyles.Dot };
+        dc.DrawEllipse(null, ringPen, center, maxR, maxR);
+        dc.DrawEllipse(null, ringPen, center, maxR * 0.62, maxR * 0.62);
+        dc.DrawEllipse(null, ringPen, center, maxR * 0.28, maxR * 0.28);
+        dc.DrawLine(ringPen, new Point(padRect.Left + 12, center.Y), new Point(padRect.Right - 12, center.Y));
+        dc.DrawLine(ringPen, new Point(center.X, padRect.Top + 26), new Point(center.X, padRect.Bottom - 10));
 
         if (_samples.Count < 2)
         {
-            DrawText(dc, "Move your mouse continuously in smooth figure-8s here", fg, new Point(padRect.Left + 12, padRect.Top + (padRect.Height / 2) - 8), dpi, 11, false);
+            DrawText(dc, "ORBIT MOUSE CONTINUOUSLY INSIDE RETICLE", fg, new Point(Math.Max(padRect.Left + 12, center.X - 115), center.Y - 6), dpi, 10, true, mono: true);
         }
         else
         {
+            Point ResolvePoint((double IntervalMs, double SpeedPxPerMs, Point Position, bool IsStall, bool Normalized) sample)
+            {
+                if (sample.Normalized)
+                {
+                    return new Point(center.X + (sample.Position.X * maxR * 0.86), center.Y + (sample.Position.Y * maxR * 0.86));
+                }
+
+                return new Point(
+                    Math.Clamp(sample.Position.X, padRect.Left + 6, padRect.Right - 6),
+                    Math.Clamp(sample.Position.Y, padRect.Top + 26, padRect.Bottom - 6));
+            }
+
             var trail = new StreamGeometry();
             using (var ctx = trail.Open())
             {
-                var startIdx = Math.Max(0, _samples.Count - 60);
+                var startIdx = Math.Max(0, _samples.Count - 70);
                 for (var i = startIdx; i < _samples.Count; i++)
                 {
-                    var p = _samples[i].Position;
-                    var clamped = new Point(Math.Clamp(p.X, padRect.Left + 4, padRect.Right - 4), Math.Clamp(p.Y, padRect.Top + 26, padRect.Bottom - 4));
+                    var clamped = ResolvePoint(_samples[i]);
                     if (i == startIdx)
                     {
                         ctx.BeginFigure(clamped, false, false);
@@ -190,25 +205,37 @@ public sealed class InputPollingView : FrameworkElement
             }
 
             trail.Freeze();
-            dc.DrawGeometry(null, new Pen(line, 2.0), trail);
+            var glowPen = new Pen(new SolidColorBrush(Color.FromArgb(55, 0, 229, 255)), 5.0) { LineJoin = PenLineJoin.Round };
+            glowPen.Freeze();
+            dc.DrawGeometry(null, glowPen, trail);
+            dc.DrawGeometry(null, new Pen(line, 1.8) { LineJoin = PenLineJoin.Round }, trail);
 
-            var latest = _samples[^1].Position;
-            var latestClamped = new Point(Math.Clamp(latest.X, padRect.Left + 6, padRect.Right - 6), Math.Clamp(latest.Y, padRect.Top + 26, padRect.Bottom - 6));
-            dc.DrawEllipse(ok, null, latestClamped, 4.5, 4.5);
+            var startDots = Math.Max(0, _samples.Count - 70);
+            for (var i = startDots; i < _samples.Count; i++)
+            {
+                if (_samples[i].IsStall)
+                {
+                    var stallPt = ResolvePoint(_samples[i]);
+                    dc.DrawEllipse(warn, new Pen(fg, 1), stallPt, 5.5, 5.5);
+                }
+            }
+
+            var latestClamped = ResolvePoint(_samples[^1]);
+            dc.DrawEllipse(ok, new Pen(fg, 1), latestClamped, 4.5, 4.5);
         }
 
-        // Right side: Inter-Event Interval (dt ms) Oscilloscope
-        DrawText(dc, "INTER-EVENT ARRIVAL INTERVAL (MS) - LOWER & FLATTER IS BETTER", muted, new Point(chartRect.Left, 6), dpi, 10, true);
+        // Right side: Inter-Event Interval (dt ms) Spectrum
+        DrawText(dc, "02 // INTER-EVENT ARRIVAL SPECTRUM (DT MS // LOWER IS FASTER)", muted, new Point(chartRect.Left, 7), dpi, 9.5, true, mono: true);
         dc.DrawRectangle(null, new Pen(grid, 1), chartRect);
 
         const double yMax = 45.0;
         double Y(double ms) => chartRect.Bottom - (Math.Clamp(ms, 0, yMax) / yMax * chartRect.Height);
 
-        foreach (var refMs in new[] { 4.0, 8.0, 16.0, 35.0 })
+        foreach (var (refMs, hzLabel) in new[] { (4.0, "4 ms (250 Hz)"), (8.0, "8 ms (125 Hz)"), (16.0, "16 ms (60 Hz)"), (35.0, "35 ms STALL GATE") })
         {
             var y = Y(refMs);
-            dc.DrawLine(new Pen(grid, 1), new Point(chartRect.Left, y), new Point(chartRect.Right, y));
-            DrawText(dc, $"{refMs.ToString("0", CultureInfo.InvariantCulture)} ms", muted, new Point(chartRect.Right - 36, y - 13), dpi, 9.5, false, mono: true);
+            dc.DrawLine(new Pen(refMs >= 35.0 ? warn : grid, 1) { DashStyle = refMs >= 35.0 ? DashStyles.Dash : DashStyles.Dot }, new Point(chartRect.Left, y), new Point(chartRect.Right, y));
+            DrawText(dc, hzLabel, refMs >= 35.0 ? warn : muted, new Point(chartRect.Right - 96, y - 13), dpi, 9.0, refMs >= 35.0, mono: true);
         }
 
         if (_samples.Count > 0)
