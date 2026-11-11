@@ -184,6 +184,24 @@ public class AppHostTests
     }
 
     [Fact]
+    public async Task Starting_a_new_capture_starts_a_fresh_clock_so_the_old_capture_cannot_place_a_new_key_press()
+    {
+        // Mutation survivor L2 of the independent Stage 1b review: nothing failed when the reset at the start of a capture was removed.
+        var (host, factory, _) = Create();
+        await using var owner = host;
+        Assert.True(host.Controller.Start("game.exe").Started);
+        await FeedAndWait(host, factory, TestData.Stream(5).Frames);
+        Assert.True(host.Controller.Clock.Observations > 0);
+        Assert.NotNull(host.Controller.Clock.Estimate(TimeProvider.System.GetTimestamp()));
+
+        await host.Controller.StopAsync();
+        Assert.True(host.Controller.Start("other.exe").Started);
+
+        Assert.Equal(0, host.Controller.Clock.Observations);
+        Assert.Null(host.Controller.Clock.Estimate(TimeProvider.System.GetTimestamp())); // unknown again, never the old capture's time
+    }
+
+    [Fact]
     public async Task The_same_press_twice_in_a_row_is_one_mark()
     {
         var (host, factory, _) = Create();
