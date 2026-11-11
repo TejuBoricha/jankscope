@@ -119,13 +119,15 @@ public sealed class AppHost : IAsyncDisposable
     /// </summary>
     public async Task<MarkOutcome> MarkAsync(MarkKind kind)
     {
+        // Taken here, on the thread that learned of the press, before the hop to a worker: that hop is slowest exactly when the machine is stuttering.
+        var pressedTicks = Controller.Recorder.Timestamp();
         if (!Controller.IsCapturing)
         {
             _audio.NotRecorded();
             return new MarkOutcome(MarkOutcomeKind.NotCapturing, null, "Nothing is being captured, so there is nothing to mark. Start watching a program first.");
         }
 
-        var mark = await Task.Run(() => Controller.Mark(kind)).ConfigureAwait(false);
+        var mark = await Task.Run(() => Controller.Mark(kind, pressedTicks)).ConfigureAwait(false);
         if (mark is null)
         {
             return new MarkOutcome(MarkOutcomeKind.Debounced, null, "That was the same key press as a moment ago.");
