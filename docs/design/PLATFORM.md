@@ -265,8 +265,9 @@ catalog.
 
 ## 11. Competitors: what to learn, what to avoid
 
-This section is from general knowledge of these products, not from a fresh review of their current versions. It
-needs a verified pass before it informs any decision.
+This section is from general knowledge of these products, not from a fresh review of their current versions.
+A sourced 2026 review now exists in `docs/design/COMPETITORS_2026.md` (some pages were not reachable; its
+"could not be verified" list says which). Where the two disagree, the review wins.
 
 | Product family | What it does well | Where it falls short for our goals |
 |---|---|---|
@@ -296,8 +297,8 @@ What not to copy: overlays, driver-based writes without consent, dense single sc
 
 1. **Constraint question (section 1):** Option A (observer and advisor) or Option B (narrow write path, requires an
    ADR and a change to the risk register).
-2. **Sensor feasibility:** approve a short spike to check which temperature, voltage, fan and power readings are
-   reachable through documented user-mode interfaces on a few reference machines.
-3. **Competitor pass:** approve a verified review of current versions of the products in section 11, or accept the
-   general-knowledge summary for now.
+2. **Sensor feasibility:** a first spike ran on one reference laptop (`docs/design/SENSOR_FEASIBILITY.md`). Power,
+   clocks, GPU load and battery are reachable without a driver; CPU temperature, fan RPM, voltages and power limits
+   are not, except through vendor-specific routes. More machines would be needed to generalise.
+3. **Competitor pass:** done in `docs/design/COMPETITORS_2026.md`, with gaps listed in the file.
 4. **Mode names:** confirm "Beginner" and "Advanced" as the disclosure modes, or give other names.
