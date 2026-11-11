@@ -88,14 +88,35 @@ public partial class MainWindow : Window
         {
             RefreshHotkeyTexts();
             RefreshStatus();
-            _tick.Start();
+            if (IsVisible)
+            {
+                _tick.Start(); // Loaded can arrive after the window was already hidden to the tray
+            }
+
             foreach (var problem in _host.Problems)
             {
                 ShowNotice(problem, problem: true);
             }
         };
         Closing += OnClosing;
+
+        // The live refresh only draws this window. Hidden to the tray during play it would still run four times a second and allocate for nothing
+        // (review of Stage 1b, finding 8), so it runs only while the window can be seen.
+        IsVisibleChanged += (_, _) =>
+        {
+            if (IsVisible)
+            {
+                _tick.Start();
+            }
+            else
+            {
+                _tick.Stop();
+            }
+        };
     }
+
+    /// <summary>True while the live refresh timer runs: only while the window is visible.</summary>
+    internal bool LiveRefreshRunning => _tick.IsEnabled;
 
     public void AllowClose() => _quitting = true;
 

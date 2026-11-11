@@ -95,6 +95,9 @@ public sealed class MarkItem : ObservableObject
 /// <summary>One candidate anchor in the list.</summary>
 public sealed record CandidateItem(int Rank, string Text)
 {
+    /// <summary>What a screen reader announces for the list item. Without this it read the record itself ("CandidateItem { Rank = 1, Text = ... }").</summary>
+    public override string ToString() => Text;
+
     public static CandidateItem From(CandidateAnchor candidate)
     {
         var when = candidate.SecondsBeforeMark >= 0
