@@ -67,3 +67,19 @@ jobs:
       - name: Run build, banned-symbol proof, analyzer wiring proof, test suite & CLI smoke gate
         shell: pwsh
         run: ./build.ps1 -Configuration Release
+
+      # Renders every window the App tests draw (WpfTests) to PNG, so each run keeps a current picture of the design.
+      - name: Render the app's windows to PNG
+        shell: pwsh
+        env:
+          JANKSCOPE_SNAPSHOT_DIR: ${{ github.workspace }}/app-snapshots
+        run: dotnet test tests/Jankscope.App.Tests -c Release --filter "FullyQualifiedName~WpfTests"
+
+      - name: Keep the rendered app windows
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: app-window-renders
+          path: app-snapshots/
+          if-no-files-found: warn
+          retention-days: 30
