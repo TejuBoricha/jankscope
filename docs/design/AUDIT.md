@@ -47,10 +47,10 @@ skipped; the three internal analysis views (`TimelineView`, `SpikeAnatomyView`,
 5. **Three names for the product.** The window title is "Jankscope Studio - Frame
    Pacing & Stutter Forensics", the header is "JANK//SCOPE", and the docs, the
    welcome text and the export are "Jankscope".
-6. **Four names for one thing.** The same event is called "input stall" (Capture
-   buttons, Investigator, tray), "Input Freeze" (Settings: "Mark Input Freeze Chord"),
-   "input-stall" (the mark kind in the export) and "freeze" in the Settings tone label
-   ("Input-Freeze Tone"). One concept, one name is the minimum.
+6. **Three names for one thing.** The same event is called "input stall" (Capture
+   buttons, Investigator, tray and the export), "Input Freeze" (Settings: "Mark Input
+   Freeze Chord") and "freeze" in the Settings tone label ("Input-Freeze Tone"). One
+   concept, one name is the minimum.
 7. **Internal codes shown to users.** "HC-1..13", "HC-4 REGISTERHOTKEY" and
    "COMPILE-TIME HARD CONSTRAINTS" appear on the Settings and About pages and in the
    sidebar footer ("HC-1..13 // ZERO HOOKS // OFFLINE"). These are the owner's audit
