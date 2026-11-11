@@ -121,7 +121,7 @@
                             </Grid.ColumnDefinitions>
 
                             <!-- Live Status Readout -->
-                            <StackPanel Grid.Column="0" VerticalAlignment="Center" Margin="0,0,14,0">
+                            <StackPanel Grid.Column="0" VerticalAlignment="Center" Margin="0,0,8,0">
                                 <StackPanel Orientation="Horizontal">
                                     <Border x:Name="CaptureStateDot" Width="9" Height="9" CornerRadius="4.5" Background="{DynamicResource MutedBrush}" VerticalAlignment="Center" Margin="0,0,8,0"/>
                                     <TextBlock x:Name="CaptureHeadline" FontSize="15" FontWeight="Bold" VerticalAlignment="Center" AutomationProperties.LiveSetting="Polite"/>
@@ -133,7 +133,7 @@
                             <!-- Target Executable Input & Transport Controls -->
                             <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center" Margin="0,0,8,0">
                                 <TextBlock Text="TARGET:" Style="{StaticResource Overline}" VerticalAlignment="Center" Margin="0,0,6,0"/>
-                                <TextBox x:Name="ProgramBox" Width="142" Margin="0,0,6,0" VerticalAlignment="Center"
+                                <TextBox x:Name="ProgramBox" Width="104" Margin="0,0,6,0" VerticalAlignment="Center"
                                          AutomationProperties.Name="Executable file name, for example game.exe"
                                          ToolTip="Plain executable name only, e.g. eldenring.exe or cs2.exe (no folder path)."/>
                                 <Button x:Name="StartButton" Content="Start" Style="{StaticResource PrimaryButton}" Click="OnStartClicked"/>
@@ -143,7 +143,7 @@
 
                             <!-- Instant Incident Triggers -->
                             <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center">
-                                <Border Width="1" Height="24" Background="{DynamicResource BorderLineBrush}" Margin="4,0,10,0"/>
+                                <Border Width="1" Height="24" Background="{DynamicResource BorderLineBrush}" Margin="4,0,6,0"/>
                                 <Button x:Name="MarkStutterButton" Content="Mark Stutter" Style="{StaticResource PrimaryButton}" Click="OnMarkStutterClicked"/>
                                 <Button x:Name="MarkInputButton" Content="Mark Input Stall" Click="OnMarkInputClicked" Margin="0"/>
                             </StackPanel>
