@@ -38,7 +38,8 @@ public sealed record AnchorSearchResult(
     double? WindowStartMs,
     double? WindowEndMs,
     int FramesExamined,
-    IReadOnlyList<string> Notes);
+    IReadOnlyList<string> Notes,
+    IReadOnlyList<SwapChainUse>? SwapChains = null);
 
 /// <param name="WindowMs">How far back from the mark to look (spec section 7.3: about 10 s).</param>
 /// <param name="MaxCandidates">Length limit of the list offered.</param>
@@ -146,6 +147,22 @@ public static class CandidateAnchorFinder
         var withContext = FrameRingExtensions.SelectWindow(chronological, windowEnd, options.WindowMs + options.ContextMs + mark.UncertaintyMs);
         var inWindow = FrameRingExtensions.SelectWindow(chronological, windowEnd, options.WindowMs + mark.UncertaintyMs);
 
+        // A program that presents on two swap chains writes two interleaved series (review of Stage 1b, finding 7). Nothing is filtered out or re-measured here: the
+        // chains are counted, and a candidate whose frame is on a chain other than the main one says so.
+        var chains = SwapChainSummary.Summarize(inWindow);
+        var mainChain = SwapChainSummary.MainChain(chains);
+        var secondary = new HashSet<long>();
+        if (chains.Count > 1)
+        {
+            foreach (var frame in withContext)
+            {
+                if (frame.SwapChain is { } chain && chain != mainChain)
+                {
+                    secondary.Add(frame.Index);
+                }
+            }
+        }
+
         var candidates = new List<CandidateAnchor>();
         var eventFrames = new HashSet<long>();
         var detected = StutterDetector.Analyze(withContext, stutterOptions);
@@ -166,12 +183,12 @@ public static class CandidateAnchorFinder
                 e.ExcessMs,
                 (mark.Ms - e.TimestampMs) / 1000.0,
                 e.FrameIndex,
-                $"Frame {Number(e.FrameIndex)}: {Ms(e.FrameTimeMs)} ms, {Ms(e.ExcessMs)} ms longer than the {Ms(e.MedianMs)} ms median ({e.Severity})."));
+                $"Frame {Number(e.FrameIndex)}: {Ms(e.FrameTimeMs)} ms, {Ms(e.ExcessMs)} ms longer than the {Ms(e.MedianMs)} ms median ({e.Severity}).{(secondary.Contains(e.FrameIndex) ? SwapChainSummary.SecondaryChainTag : string.Empty)}"));
         }
 
         var median = MedianFrameTime(inWindow);
         AddCollectorGaps(inWindow, median, mark, options, candidates);
-        AddWeakSpike(inWindow, median, eventFrames, mark, options, stutterOptions, candidates);
+        AddWeakSpike(inWindow, median, eventFrames, secondary, mark, options, stutterOptions, candidates);
 
         var ordered = candidates
             .OrderBy(c => c.Kind == AnchorKind.WeakSpike ? 1 : 0)
@@ -198,8 +215,13 @@ public static class CandidateAnchorFinder
             notes.Add($"The mark time is uncertain by about {Ms(mark.UncertaintyMs)} ms because frames reach this program with varying delay.");
         }
 
+        if (SwapChainSummary.Notice(chains) is { } swapChainNotice)
+        {
+            notes.Add(swapChainNotice);
+        }
+
         notes.Add(InputNote);
-        return new AnchorSearchResult(ordered, windowStart, windowEnd, inWindow.Length, notes);
+        return new AnchorSearchResult(ordered, windowStart, windowEnd, inWindow.Length, notes, chains);
     }
 
     private static void AddCollectorGaps(
@@ -232,6 +254,7 @@ public static class CandidateAnchorFinder
         ReadOnlySpan<FrameSample> frames,
         double median,
         HashSet<long> eventFrames,
+        HashSet<long> secondary,
         CaptureTime mark,
         AnchorSearchOptions options,
         StutterOptions stutterOptions,
@@ -278,7 +301,7 @@ public static class CandidateAnchorFinder
             (mark.Ms - frame.TimestampMs) / 1000.0,
             frame.Index,
             $"Frame {Number(frame.Index)}: {Ms(frame.FrameTimeMs)} ms against a {Ms(median)} ms median; this is below the stutter definition " +
-            $"(it needs {Ms(stutterOptions.Multiplier)}x the median and {Ms(stutterOptions.MinExcessMs)} ms more) but is the longest frame in the window."));
+            $"(it needs {Ms(stutterOptions.Multiplier)}x the median and {Ms(stutterOptions.MinExcessMs)} ms more) but is the longest frame in the window.{(secondary.Contains(frame.Index) ? SwapChainSummary.SecondaryChainTag : string.Empty)}"));
     }
 
     private static double MedianFrameTime(ReadOnlySpan<FrameSample> frames)

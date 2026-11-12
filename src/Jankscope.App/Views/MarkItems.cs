@@ -34,6 +34,34 @@ internal static class KeyPressTimeText
         : $"Key-press time: only {time.Observations.ToString(CultureInfo.InvariantCulture)} frame(s) had been seen, too few to say how exact it is. The capture tool's own minimum delay is not measured either.";
 }
 
+/// <summary>
+/// The line under the investigator's title: how well the key-press time is known, how much history was recorded before the mark, and (independent Stage 1b review, finding 7)
+/// that the program presented on more than one swap chain, when it did, since the capture tool's frame times are per swap chain and a slow secondary chain can look like stutter.
+/// </summary>
+internal static class MarkQualityText
+{
+    public static string Describe(IncidentMark mark)
+    {
+        var parts = new List<string>();
+        if (mark.CaptureTime is { } time)
+        {
+            parts.Add(KeyPressTimeText.Describe(time));
+            parts.Add($"Before the mark: {mark.Window.AvailablePreRollSeconds.ToString("0", CultureInfo.InvariantCulture)} s recorded of the {mark.Window.RequestedPreRollSeconds.ToString("0", CultureInfo.InvariantCulture)} s asked for" + (mark.Window.PreRollShort ? " (not enough history yet; it is never padded)." : "."));
+        }
+        else
+        {
+            parts.Add("No frames had arrived when the key was pressed");
+        }
+
+        if (SwapChainSummary.Notice(mark.Search.SwapChains) is { } swapChains)
+        {
+            parts.Add(swapChains);
+        }
+
+        return string.Join(" | ", parts);
+    }
+}
+
 /// <summary>One mark in the list on the investigator page.</summary>
 public sealed class MarkItem : ObservableObject
 {

@@ -16,6 +16,11 @@ namespace Jankscope.Frames;
 /// <see cref="DataProvenance.Simulated"/> for a row of the synthetic harness's own log, which says so in its <c>JankscopeProvenance</c> column.
 /// A sample built by hand defaults to <see cref="DataProvenance.Assumed"/>, so it can never be exported as a measurement by accident.
 /// </param>
+/// <param name="SwapChain">
+/// The swap chain the frame was presented on (PresentMon <c>SwapChainAddress</c>, for example <c>0x103E8</c>), or <c>null</c> when the log does not say.
+/// PresentMon measures <paramref name="FrameTimeMs"/> per swap chain, so one program that presents on two interleaves two series (<c>LIMITATIONS</c> L26).
+/// It is only used to notice that; it is never exported (it is a memory address of the program's own).
+/// </param>
 public readonly record struct FrameSample(
     long Index,
     double TimestampMs,
@@ -26,4 +31,5 @@ public readonly record struct FrameSample(
     string? PresentMode = null,
     string? Application = null,
     int? ProcessId = null,
-    DataProvenance Provenance = DataProvenance.Assumed);
+    DataProvenance Provenance = DataProvenance.Assumed,
+    string? SwapChain = null);

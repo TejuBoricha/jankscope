@@ -260,6 +260,32 @@ public class IncidentBundleTests
     }
 
     [Fact]
+    public void A_program_on_two_swap_chains_is_said_in_the_export_and_no_swap_chain_address_is_exported()
+    {
+        // Independent Stage 1b review, finding 7, end to end: recorder -> mark -> bundle -> the exact text that would be saved.
+        const string main = "0x103E8";
+        const string overlay = "0x7F00BEEF";
+        var rig = new RecorderRig { MainChain = main };
+        rig.Feed(20);
+        rig.FeedFrame(400, overlay); // a slow frame on a second swap chain
+        rig.Feed(0.5);
+        var mark = rig.Recorder.Mark(MarkKind.Stutter)!;
+        rig.Feed(31);
+        var current = rig.Recorder.Marks.Single();
+
+        var bundle = IncidentBundleBuilder.Build(current, rig.Recorder.CollectWindow(current), Matrix(Row("os.build", "10.0.26300")));
+        var preview = ExportPipeline.Prepare(bundle, RedactionContext.Empty);
+
+        Assert.Equal(2, current.Search.SwapChains!.Count);
+        Assert.Contains(bundle.Anchors.Notes, n => n.Contains("2 swap chains"));
+        Assert.Contains(bundle.Anchors.Candidates, c => c.Description.Contains("secondary swap chain"));
+        Assert.Contains("2 swap chains", preview.Text);
+        Assert.DoesNotContain(main, preview.Text, StringComparison.OrdinalIgnoreCase);
+        Assert.DoesNotContain(overlay, preview.Text, StringComparison.OrdinalIgnoreCase);
+        Assert.DoesNotContain("0x7F", preview.Text, StringComparison.OrdinalIgnoreCase);
+    }
+
+    [Fact]
     public void A_two_and_a_half_minute_window_at_high_frame_rate_stays_a_reasonable_size()
     {
         var rig = new RecorderRig(ringCapacity: 131_072);
