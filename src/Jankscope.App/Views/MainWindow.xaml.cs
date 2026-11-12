@@ -298,7 +298,7 @@ public partial class MainWindow : Window
 
         if ( detail is null && status.State == CaptureState.Idle)
         {
-            detail = "Select an active 3D application below, or click 'Try Instant Stutter Demo (Simulated)' in the top right to explore a live diagnostic trace immediately.";
+            detail = "Select an active 3D application below, or click 'Simulate 120 FPS Stutter Trace' in the top right to explore a live diagnostic trace immediately.";
         }
 
         CaptureDetail.Text = detail ?? string.Empty;
@@ -902,16 +902,18 @@ public partial class MainWindow : Window
         _allRadarItems = entries.Select(BuildRadarItem).ToList();
 
         var ready = _allRadarItems.Count(i => i.IsReady);
-        var attention = _allRadarItems.Count - ready;
+        var attention = _allRadarItems.Count(i => i.NeedsAttention);
+        var other = _allRadarItems.Count - ready - attention; // not available on this PC, not measurable, not built yet, or unknown: nothing to set up
 
         RadarTotalCount.Text = _allRadarItems.Count.ToString(CultureInfo.InvariantCulture);
         RadarReadyCount.Text = ready.ToString(CultureInfo.InvariantCulture);
         RadarAttentionCount.Text = attention.ToString(CultureInfo.InvariantCulture);
+        RadarTotalNote.Text = other > 0
+            ? $"{other.ToString(CultureInfo.InvariantCulture)} more are not available or not built yet"
+            : "Counted live at startup";
 
         var acEntry = entries.FirstOrDefault(r => r.Id == "anticheat.state") ?? entries.FirstOrDefault(r => r.Id.StartsWith("anticheat.", StringComparison.Ordinal));
-        RadarAntiCheatStatus.Text = acEntry is { Availability: Availability.Available, Value: { Length: > 0 } v }
-            ? (v.Length <= 18 ? v : "Detected (Safe)")
-            : "Passive / Clear";
+        RadarAntiCheatStatus.Text = CapabilityText.AntiCheatPosture(acEntry);
 
         ApplyRadarFilter();
     }
@@ -947,25 +949,19 @@ public partial class MainWindow : Window
                 "Virtualization-based security (HVCI/VBS) and hypervisor posture can add measurable context-switch overhead in CPU-bound games.",
             var id when id.StartsWith("pdh.", StringComparison.Ordinal) =>
                 "Read-only Windows Performance Counters used to correlate CPU/GPU/disk saturation with frame-time spikes.",
-            _ => "Read-only environmental context included in diagnostic bundles to make incidents reproducible.",
+            _ => string.Empty, // no specific explanation: the row's own stated reason is the useful text
         };
 
-        var isReady = entry.Availability == Availability.Available;
-        var valText = isReady
-            ? (string.IsNullOrWhiteSpace(entry.Value) ? "Available" : entry.Value!)
-            : $"{entry.Availability}: {entry.Reason ?? "Not available on this system"}";
-
-        var statusBadge = isReady ? "READY [TIER " + entry.Tier + "]" : entry.Availability.ToString().ToUpperInvariant();
         return new CapabilityRadarItem(
             Id: entry.Id,
             Domain: domain,
             Title: entry.Title,
-            StatusBadge: statusBadge,
-            ValueOrReason: valText,
+            StatusBadge: CapabilityText.Badge(entry),
+            ValueOrReason: CapabilityText.Detail(entry),
             SourceInfo: $"Source: {entry.Source} | Provenance: {entry.Provenance}",
             PlainEnglishImpact: impact,
-            IsReady: isReady,
-            NeedsAttention: !isReady);
+            IsReady: entry.Availability == Availability.Available,
+            NeedsAttention: CapabilityText.NeedsAttention(entry.Availability));
     }
 
     private void OnRadarFilterChanged(object sender, RoutedEventArgs e)
@@ -1135,6 +1131,7 @@ public partial class MainWindow : Window
         var isGameSession = _host.Controller.IsCapturing;
         OpenSponsorButton.Visibility = !isGameSession && !string.IsNullOrWhiteSpace(Branding.SponsorUrl) ? Visibility.Visible : Visibility.Collapsed;
         OpenStoreButton.Visibility = !isGameSession && !string.IsNullOrWhiteSpace(Branding.StoreUrl) ? Visibility.Visible : Visibility.Collapsed;
+        SupportLinksNote.Visibility = OpenSponsorButton.Visibility == Visibility.Visible || OpenStoreButton.Visibility == Visibility.Visible ? Visibility.Visible : Visibility.Collapsed;
     }
 
     private void OnExportCompatibilityClicked(object sender, RoutedEventArgs e)

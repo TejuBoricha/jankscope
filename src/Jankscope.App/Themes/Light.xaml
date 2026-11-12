@@ -41,7 +41,7 @@
     <!-- Status and evidence -->
     <SolidColorBrush x:Key="OkBrush" Color="#2F6B1F"/>
     <SolidColorBrush x:Key="OkSurfaceBrush" Color="#E0EED4"/>
-    <SolidColorBrush x:Key="WarningBrush" Color="#A35B00"/>
+    <SolidColorBrush x:Key="WarningBrush" Color="#8A4B00"/>
     <SolidColorBrush x:Key="WarningSurfaceBrush" Color="#FBEBC8"/>
     <SolidColorBrush x:Key="DangerBrush" Color="#B42318"/>
     <SolidColorBrush x:Key="DangerSurfaceBrush" Color="#FBE3E0"/>

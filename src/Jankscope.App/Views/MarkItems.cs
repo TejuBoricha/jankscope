@@ -1,6 +1,7 @@
 using System.ComponentModel;
 using System.Globalization;
 using System.Runtime.CompilerServices;
+using Jankscope.Core;
 using Jankscope.Frames.Incidents;
 
 namespace Jankscope.App.Views;
@@ -90,6 +91,9 @@ public sealed class MarkItem : ObservableObject
         parts.Add(mark.Selection is null ? "event not chosen yet" : "event chosen");
         Subtitle = string.Join(" | ", parts);
     }
+
+    /// <summary>What a screen reader announces for the list item (otherwise it reads the type name).</summary>
+    public override string ToString() => $"{Title}. {Subtitle}";
 }
 
 /// <summary>One candidate anchor in the list.</summary>
@@ -113,7 +117,11 @@ public sealed record HypothesisCardItem(
     string Name,
     string Summary,
     string SupportingEvidence,
-    string FalsifierText);
+    string FalsifierText)
+{
+    /// <summary>What a screen reader announces for the list item (otherwise it reads the record itself).</summary>
+    public override string ToString() => $"{GradeBadge}: {Name}. {Summary}";
+}
 
 /// <summary>One capability probe entry shown in the System Readiness &amp; Capability Radar.</summary>
 public sealed record CapabilityRadarItem(
@@ -125,5 +133,57 @@ public sealed record CapabilityRadarItem(
     string SourceInfo,
     string PlainEnglishImpact,
     bool IsReady,
-    bool NeedsAttention);
+    bool NeedsAttention)
+{
+    /// <summary>What a screen reader announces for the list item (otherwise it reads the record itself).</summary>
+    public override string ToString() => $"{Title}: {StatusBadge}. {ValueOrReason}";
+}
+
+/// <summary>
+/// The words the capability check uses for a row's state, in one place so they can be tested without a screen. A row the program can do nothing about
+/// (not available on this PC, not built yet) is not "needs attention": that is kept for what the person could set up. Unknown is never shown as clear.
+/// </summary>
+internal static class CapabilityText
+{
+    /// <summary>The badge on a row, in plain words (never the raw enum name such as "NOTIMPLEMENTED").</summary>
+    public static string Badge(CapabilityEntry entry) => entry.Availability switch
+    {
+        Availability.Available => "READY [TIER " + entry.Tier + "]",
+        Availability.NeedsElevation => "NEEDS ADMIN",
+        Availability.NeedsOptionalTool => "OPTIONAL TOOL",
+        Availability.NeedsUserAction => "YOUR ACTION",
+        Availability.NotMeasurableBySoftware => "NOT MEASURABLE",
+        Availability.NotAvailable => "NOT AVAILABLE",
+        Availability.NotImplemented => "NOT BUILT YET",
+        _ => "UNKNOWN",
+    };
+
+    /// <summary>The value of a ready row, or the stated reason of any other row (the badge already says which state, so the reason is not prefixed with it).</summary>
+    public static string Detail(CapabilityEntry entry) => entry.Availability == Availability.Available
+        ? (string.IsNullOrWhiteSpace(entry.Value) ? "Available" : entry.Value!)
+        : entry.Reason ?? "Not available on this system";
+
+    /// <summary>True for a row the person could act on: an admin right, an optional tool or a setting. Not for "not available" or "not built yet".</summary>
+    public static bool NeedsAttention(Availability availability) =>
+        availability is Availability.NeedsElevation or Availability.NeedsOptionalTool or Availability.NeedsUserAction;
+
+    /// <summary>The anti-cheat card. The state the program reached is shown as it is; when the state could not be read it says Unknown, never "clear".</summary>
+    public static string AntiCheatPosture(CapabilityEntry? entry)
+    {
+        if (entry is not { Availability: Availability.Available, Value: { Length: > 0 } value })
+        {
+            return "Unknown";
+        }
+
+        // The value reads "<state>; elevated and kernel collectors suppressed" (or "not suppressed"): the state is the part before the semicolon.
+        return value.Split(';')[0].Trim() switch
+        {
+            nameof(AntiCheatSafetyState.Idle) => "No game running",
+            nameof(AntiCheatSafetyState.ResidentOnly) => "Resident, idle",
+            nameof(AntiCheatSafetyState.GameSession) => "Game session",
+            nameof(AntiCheatSafetyState.ProtectedTitle) => "Protected title",
+            _ => "Unknown",
+        };
+    }
+}
 
