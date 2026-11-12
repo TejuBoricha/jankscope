@@ -20,7 +20,10 @@ public static class ThemeService
         }
     }
 
-    /// <summary>Swaps the colour dictionary (the first merged dictionary) and returns whether the dark one is now in use.</summary>
+    /// <summary>
+    /// Swaps the colour dictionary (the first merged dictionary), restyles the title bars of the open windows (<see cref="TitleBarTheme"/>) and returns whether
+    /// the dark one is now in use. Call it on the interface thread: it reads the application's window list.
+    /// </summary>
     public static bool Apply(Application application, string theme)
     {
         var dark = theme == "Dark" || (theme != "Light" && SystemPrefersDark());
@@ -35,6 +38,7 @@ public static class ThemeService
             merged.Insert(0, dictionary);
         }
 
+        TitleBarTheme.ThemeChanged(application, dark);
         return dark;
     }
 }

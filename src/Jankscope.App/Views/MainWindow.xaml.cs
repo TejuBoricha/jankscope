@@ -69,6 +69,7 @@ public partial class MainWindow : Window
         _host = host;
         _shell = shell;
         InitializeComponent();
+        TitleBarTheme.Follow(this);
         Icon = IconFactory.WindowIcon();
         (Width, Height) = WindowSizing.Fit(Width, Height, SystemParameters.WorkArea.Width, SystemParameters.WorkArea.Height, MinWidth, MinHeight);
         PagesViewport.SizeChanged += (_, e) => ApplyPageScale(e.NewSize);
