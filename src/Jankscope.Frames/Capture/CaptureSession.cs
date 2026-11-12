@@ -197,7 +197,7 @@ public sealed class CaptureSession : IAsyncDisposable
 
                 haveTimestamp = true;
                 lastTimestampMs = sample.TimestampMs;
-                _clock.Observe(ticks, sample.TimestampMs);
+                _clock.Observe(captured.ArrivalTicks ?? ticks, sample.TimestampMs);
                 if (_history.TryWrite(in sample))
                 {
                     Interlocked.Increment(ref _received);

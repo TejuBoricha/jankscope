@@ -28,7 +28,7 @@ internal sealed class ScriptedFrameSource : IFrameSource
 
     public RunnerHealth Health => new(State, 0, null, 0, 0, [], 0, 0, [], null, 0, null);
 
-    public void Push(int run, FrameSample sample) => _channel.Writer.TryWrite(new CapturedFrame(run, sample));
+    public void Push(int run, FrameSample sample, long? arrivalTicks = null) => _channel.Writer.TryWrite(new CapturedFrame(run, sample, arrivalTicks));
 
     public void End()
     {
@@ -91,6 +91,56 @@ public class CaptureSessionTests
         Assert.NotNull(session.SinceLastFrame);
         Assert.Equal("game.exe", session.History.Snapshot()[0].Application);
         _ = time;
+    }
+
+    [Fact]
+    public async Task A_source_that_states_when_frames_arrived_decides_what_the_clock_map_sees_not_the_moment_they_were_queued()
+    {
+        var (session, source, time) = Create();
+        time.Advance(TimeSpan.FromSeconds(30));
+        var start = time.GetTimestamp();
+        session.Start();
+        for (var i = 1; i <= 100; i++)
+        {
+            // 10 ms of capture time per frame, all queued in an instant (a replay of history), but stated to have arrived on schedule.
+            source.Push(1, Frame(i, 10.0 * i), start + TimeSpan.FromMilliseconds(10.0 * i).Ticks);
+        }
+
+        await session.StopAsync();
+
+        var estimate = session.Clock.Estimate(start + TimeSpan.FromSeconds(1).Ticks)!.Value;
+        Assert.True(estimate.UncertaintyIsMeaningful);
+        Assert.Equal(0.0, estimate.UncertaintyMs, 3);
+    }
+
+    [Fact]
+    public async Task Without_a_stated_arrival_the_same_burst_is_read_as_delivery_jitter()
+    {
+        var (session, source, _) = Create();
+        session.Start();
+        for (var i = 1; i <= 100; i++)
+        {
+            source.Push(1, Frame(i, 10.0 * i));
+        }
+
+        await session.StopAsync();
+
+        // A live capture states nothing: the whole 1000 ms of capture time reaching us in an instant is a real burst of delivery, and says so.
+        var estimate = session.Clock.Estimate(0)!.Value;
+        Assert.True(estimate.UncertaintyMs > 900.0, $"the burst was read as only {estimate.UncertaintyMs} ms of jitter");
+    }
+
+    [Fact]
+    public async Task A_stated_arrival_does_not_change_how_long_ago_the_latest_frame_was_taken_from_the_queue()
+    {
+        var (session, source, time) = Create();
+        time.Advance(TimeSpan.FromHours(2));
+        session.Start();
+        source.Push(1, Frame(1, 10.0), time.GetTimestamp() - TimeSpan.FromHours(1).Ticks);
+
+        await session.StopAsync();
+
+        Assert.Equal(TimeSpan.Zero, session.SinceLastFrame); // the waiting-for-frames message follows the real clock, never a stated time
     }
 
     [Fact]

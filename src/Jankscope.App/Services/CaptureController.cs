@@ -309,7 +309,7 @@ public sealed class CaptureController : IAsyncDisposable
         }
 
         Clock.Reset();
-        var session = new CaptureSession(new SimulatedFrameSource(programName), History, Clock, _time);
+        var session = new CaptureSession(new SimulatedFrameSource(programName, time: _time), History, Clock, _time);
         session.Start();
 
         lock (_gate)

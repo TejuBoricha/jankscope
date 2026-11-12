@@ -51,8 +51,17 @@ public sealed record RunnerHealth(
     int Stalls,
     string? UncleanedSession);
 
-/// <summary>A parsed frame together with the capture it belongs to. A restart begins a new <see cref="Run"/> whose clock and indices start again.</summary>
-public readonly record struct CapturedFrame(int Run, FrameSample Sample);
+/// <summary>
+/// A parsed frame together with the capture it belongs to. A restart begins a new <see cref="Run"/> whose clock and indices start again.
+/// </summary>
+/// <param name="Run">The capture the frame belongs to.</param>
+/// <param name="Sample">The frame.</param>
+/// <param name="ArrivalTicks">
+/// When the frame reached this program, in <see cref="TimeProvider"/> ticks, if the source states it. Only a source that replays or synthesizes frames sets it
+/// (the built-in demo writes twenty seconds of history in an instant but stamps each frame as if it had arrived on schedule); a live capture leaves it null
+/// and the session reads its own clock when it takes the frame from the queue. It feeds the capture clock map only.
+/// </param>
+public readonly record struct CapturedFrame(int Run, FrameSample Sample, long? ArrivalTicks = null);
 
 /// <summary>Exponential back-off between restarts: the k-th restart waits <c>initial * 2^(k-1)</c>, never more than <c>max</c>.</summary>
 public static class RestartBackoff

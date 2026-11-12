@@ -511,12 +511,17 @@
                                         <ListBox.ItemTemplate>
                                             <DataTemplate>
                                                 <StackPanel Margin="0,2">
-                                                    <StackPanel Orientation="Horizontal">
-                                                        <Border Style="{StaticResource BadgeBorder}" Background="{DynamicResource AccentSoftBrush}" BorderBrush="{DynamicResource AccentBrush}" Margin="0,0,8,0" Padding="6,1">
+                                                    <Grid>
+                                                        <Grid.ColumnDefinitions>
+                                                            <ColumnDefinition Width="Auto"/>
+                                                            <ColumnDefinition Width="*"/>
+                                                        </Grid.ColumnDefinitions>
+                                                        <Border Grid.Column="0" Style="{StaticResource BadgeBorder}" Background="{DynamicResource AccentSoftBrush}" BorderBrush="{DynamicResource AccentBrush}" Margin="0,1,8,0" Padding="6,1" VerticalAlignment="Top">
                                                             <TextBlock Text="{Binding GradeBadge}" FontFamily="Consolas" FontSize="10" FontWeight="Bold" Foreground="{DynamicResource CyanAccentBrush}"/>
                                                         </Border>
-                                                        <TextBlock Text="{Binding Name}" FontWeight="Bold" FontSize="12" VerticalAlignment="Center"/>
-                                                    </StackPanel>
+                                                        <!-- The title comes from the rules engine and can be long: it wraps instead of being cut off. -->
+                                                        <TextBlock Grid.Column="1" Text="{Binding Name}" FontWeight="Bold" FontSize="12" TextWrapping="Wrap" VerticalAlignment="Center"/>
+                                                    </Grid>
                                                     <TextBlock Text="{Binding Summary}" FontSize="11.5" Margin="0,3,0,2" TextWrapping="Wrap"/>
                                                     <TextBlock Text="{Binding SupportingEvidence}" Style="{StaticResource Muted}" FontSize="11" TextWrapping="Wrap"/>
                                                     <TextBlock Text="{Binding FalsifierText}" Foreground="{DynamicResource WarningBrush}" FontSize="11" Margin="0,2,0,0" TextWrapping="Wrap"/>
