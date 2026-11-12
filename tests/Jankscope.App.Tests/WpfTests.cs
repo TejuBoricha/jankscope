@@ -267,6 +267,7 @@ public class MainWindowSmokeTests
             Assert.True(host2.ActualWidth >= PageScaling.DesignWidth - 1.0, $"the pages were laid out {host2.ActualWidth} px wide at the smallest window");
             Assert.True(host2.ActualHeight >= PageScaling.DesignHeight - 1.0, $"the pages were laid out {host2.ActualHeight} px high at the smallest window");
             Assert.NotEqual(System.Windows.Media.Transform.Identity, host2.LayoutTransform); // scaled down, not squeezed
+            AssertScaledAsTheRuleSays(host2, (FrameworkElement)window.FindName("PagesViewport"));
 
             var headline = (TextBlock)window.FindName("CaptureHeadline");
             var feedback = (TextBlock)window.FindName("MarkFeedback");
@@ -278,12 +279,35 @@ public class MainWindowSmokeTests
             window.Width = 1700;
             window.Height = 1000;
             window.UpdateLayout();
-            Assert.Equal(System.Windows.Media.Transform.Identity, host2.LayoutTransform); // a roomy window is not scaled
-            Assert.True(Math.Abs(host2.ActualWidth - ((FrameworkElement)window.FindName("PagesViewport")).ActualWidth) < 1.0, "the pages do not fill a roomy window");
+
+            // The operating system will not make a window larger than the screen, so how big this one really became depends on the machine (a CI runner's screen is small).
+            // Check the rule against the viewport the window got; a roomy window is only expected to be unscaled when it really is roomy.
+            var viewport = (FrameworkElement)window.FindName("PagesViewport");
+            AssertScaledAsTheRuleSays(host2, viewport);
+            if (viewport.ActualWidth >= PageScaling.DesignWidth && viewport.ActualHeight >= PageScaling.DesignHeight)
+            {
+                Assert.Equal(System.Windows.Media.Transform.Identity, host2.LayoutTransform); // a roomy window is not scaled
+                Assert.True(Math.Abs(host2.ActualWidth - viewport.ActualWidth) < 1.0, "the pages do not fill a roomy window");
+            }
 
             window.AllowClose();
             window.Close();
         });
+    }
+
+    /// <summary>The pages are scaled exactly as <see cref="PageScaling"/> says for the viewport they are in: not at all when it is at least the design size, otherwise uniformly down.</summary>
+    private static void AssertScaledAsTheRuleSays(FrameworkElement pages, FrameworkElement viewport)
+    {
+        var expected = PageScaling.For(viewport.ActualWidth, viewport.ActualHeight);
+        if (expected >= 1.0)
+        {
+            Assert.Equal(System.Windows.Media.Transform.Identity, pages.LayoutTransform);
+            return;
+        }
+
+        var scale = Assert.IsType<System.Windows.Media.ScaleTransform>(pages.LayoutTransform);
+        Assert.Equal(expected, scale.ScaleX, 3);
+        Assert.Equal(expected, scale.ScaleY, 3);
     }
 
     [DesktopFact]
