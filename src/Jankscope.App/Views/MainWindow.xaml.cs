@@ -70,6 +70,8 @@ public partial class MainWindow : Window
         _shell = shell;
         InitializeComponent();
         Icon = IconFactory.WindowIcon();
+        (Width, Height) = WindowSizing.Fit(Width, Height, SystemParameters.WorkArea.Width, SystemParameters.WorkArea.Height, MinWidth, MinHeight);
+        PagesViewport.SizeChanged += (_, e) => ApplyPageScale(e.NewSize);
         MarksList.ItemsSource = _marks;
 
         System.Windows.Automation.AutomationProperties.SetName(LiveTimeline, "Live frame times for the last 30 seconds");
@@ -183,6 +185,13 @@ public partial class MainWindow : Window
         e.Cancel = true;
         Hide();
         _shell.ChangeWindowVisibility(false);
+    }
+
+    /// <summary>Scales the pages together when the window is smaller than the size they are laid out for (see <see cref="PageScaling"/>).</summary>
+    private void ApplyPageScale(Size viewport)
+    {
+        var scale = PageScaling.For(viewport.Width, viewport.Height);
+        PagesHost.LayoutTransform = scale >= 1.0 ? Transform.Identity : new ScaleTransform(scale, scale);
     }
 
     private void OnNavChanged(object sender, RoutedEventArgs e)
@@ -635,7 +644,8 @@ public partial class MainWindow : Window
         _shownMarkId = mark.Id;
         MarkDetailPanel.Visibility = Visibility.Visible;
         var item = _marks.First(m => m.Id == mark.Id);
-        MarkSummaryLine.Text = $"{item.Title}  -  {DescribeQuality(mark)}";
+        MarkSummaryLine.Text = mark.TargetProcess is { } program ? $"{item.Title}  -  Target: {program}" : item.Title;
+        MarkQualityLine.Text = DescribeQuality(mark);
 
         _updating = true;
         CandidatesList.ItemsSource = mark.Search.Candidates.Select(CandidateItem.From).ToList();
@@ -668,11 +678,6 @@ public partial class MainWindow : Window
     private static string DescribeQuality(IncidentMark mark)
     {
         var parts = new List<string>();
-        if (mark.TargetProcess is { } program)
-        {
-            parts.Add($"Target: {program}");
-        }
-
         if (mark.CaptureTime is { } time)
         {
             parts.Add(KeyPressTimeText.Describe(time));

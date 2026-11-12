@@ -199,7 +199,7 @@ public sealed class SpikeAnatomyView : FrameworkElement
 
         if (_totalFrames == 0 || _windowMs.Length == 0)
         {
-            DrawText(dc, "AWAITING TELEMETRY STREAM // START CAPTURE OR CLICK 'SIMULATE 120 FPS'", muted, new Point(16, (height / 2) - 7), dpi, 10.5, true, mono: true);
+            DrawText(dc, "AWAITING TELEMETRY STREAM // START CAPTURE OR CLICK 'SIMULATE 120 FPS'", muted, new Point(16, (height / 2) - 7), dpi, 10.5, true, mono: true, maxWidth: width - 32, maxLines: 3);
             return;
         }
 
@@ -217,7 +217,7 @@ public sealed class SpikeAnatomyView : FrameworkElement
             _anchorPeakMs,
             _medianMs,
             ratio);
-        DrawText(dc, summaryBadge, cyan, new Point(12, 7), dpi, compact ? 9.0 : 9.5, true, mono: true);
+        DrawText(dc, summaryBadge, cyan, new Point(12, 7), dpi, compact ? 9.0 : 9.5, true, mono: true, maxWidth: splitX - 18);
 
         var maxBarMs = Math.Clamp(Math.Max(36.0, _anchorPeakMs * 1.15), 36.0, 220.0);
         double WfY(double ms) => wfPlot.Bottom - (Math.Clamp(ms, 0, maxBarMs) / maxBarMs * wfPlot.Height);
@@ -277,7 +277,7 @@ public sealed class SpikeAnatomyView : FrameworkElement
 
         // ---- RIGHT BAY: Poincare Phase-Space Return Map (f[n-1] vs f[n]) ----
         var mapLeft = splitX + 10;
-        DrawText(dc, compact ? "POINCARE JITTER MAP" : "POINCARE MAP (f[n-1] -> f[n])", muted, new Point(mapLeft, 7), dpi, compact ? 9.0 : 9.5, true, mono: true);
+        DrawText(dc, compact ? "POINCARE JITTER MAP" : "POINCARE MAP (f[n-1] -> f[n])", muted, new Point(mapLeft, 7), dpi, compact ? 9.0 : 9.5, true, mono: true, maxWidth: width - mapLeft - 6);
 
         var mapPlot = new Rect(mapLeft + 4, 26, Math.Max(40, width - mapLeft - 14), Math.Max(40, height - 48));
         dc.DrawRectangle(null, new Pen(grid, 1), mapPlot);
@@ -321,10 +321,18 @@ public sealed class SpikeAnatomyView : FrameworkElement
         DrawText(dc, "LOCK", ok, new Point(mapPlot.Left + 4, mapPlot.Bottom - 14), dpi, 8.5, true, mono: true);
     }
 
-    private static void DrawText(DrawingContext dc, string text, Brush brush, Point at, double dpi, double size, bool bold, bool mono = false)
+    /// <summary>Draws text that stays inside <paramref name="maxWidth"/>: it is cut with an ellipsis (<paramref name="maxLines"/> of 1) or wraps onto at most that many lines, never into the next element.</summary>
+    private static void DrawText(DrawingContext dc, string text, Brush brush, Point at, double dpi, double size, bool bold, bool mono = false, double maxWidth = double.PositiveInfinity, int maxLines = 1)
     {
         var typeface = new Typeface(new FontFamily(mono ? "Consolas" : "Segoe UI"), FontStyles.Normal, bold ? FontWeights.SemiBold : FontWeights.Normal, FontStretches.Normal);
         var formatted = new FormattedText(text, CultureInfo.InvariantCulture, FlowDirection.LeftToRight, typeface, size, brush, dpi);
+        if (double.IsFinite(maxWidth))
+        {
+            formatted.MaxTextWidth = Math.Max(1.0, maxWidth);
+            formatted.MaxLineCount = Math.Max(1, maxLines);
+            formatted.Trimming = TextTrimming.CharacterEllipsis;
+        }
+
         dc.DrawText(formatted, at);
     }
 

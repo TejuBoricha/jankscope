@@ -131,7 +131,7 @@ public sealed class FrameDistributionView : FrameworkElement
 
         if (_totalFrames == 0)
         {
-            DrawText(dc, "NO FRAMES IN WINDOW // START CAPTURE OR SIMULATOR", muted, new Point(16, (height / 2) - 7), dpi, 10.5, true, mono: true);
+            DrawText(dc, "NO FRAMES IN WINDOW // START CAPTURE OR SIMULATOR", muted, new Point(16, (height / 2) - 7), dpi, 10.5, true, mono: true, maxWidth: width - 32, maxLines: 3);
             return;
         }
 
@@ -231,10 +231,18 @@ public sealed class FrameDistributionView : FrameworkElement
         dc.DrawGeometry(null, pen, geom);
     }
 
-    private static void DrawText(DrawingContext dc, string text, Brush brush, Point at, double dpi, double size, bool bold, bool mono = false)
+    /// <summary>Draws text that stays inside <paramref name="maxWidth"/>: it is cut with an ellipsis (<paramref name="maxLines"/> of 1) or wraps onto at most that many lines, never past the edge.</summary>
+    private static void DrawText(DrawingContext dc, string text, Brush brush, Point at, double dpi, double size, bool bold, bool mono = false, double maxWidth = double.PositiveInfinity, int maxLines = 1)
     {
         var typeface = new Typeface(new FontFamily(mono ? "Consolas" : "Segoe UI"), FontStyles.Normal, bold ? FontWeights.SemiBold : FontWeights.Normal, FontStretches.Normal);
         var formatted = new FormattedText(text, CultureInfo.InvariantCulture, FlowDirection.LeftToRight, typeface, size, brush, dpi);
+        if (double.IsFinite(maxWidth))
+        {
+            formatted.MaxTextWidth = Math.Max(1.0, maxWidth);
+            formatted.MaxLineCount = Math.Max(1, maxLines);
+            formatted.Trimming = TextTrimming.CharacterEllipsis;
+        }
+
         dc.DrawText(formatted, at);
     }
 

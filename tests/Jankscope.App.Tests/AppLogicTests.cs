@@ -318,6 +318,30 @@ public class AppHostTests
     }
 
     [Fact]
+    public async Task A_long_tray_tooltip_drops_the_hotkeys_before_it_cuts_the_headline()
+    {
+        // Real-app run of 2026-11-12, defect 16: "Jankscope: Capturing simulated-workbench.exe | Ctrl+Alt+F9, Ct~" (Windows cuts a tooltip at 63 characters).
+        var (host, _, _) = Create();
+        await using var owner = host;
+        var hotkeys = new[]
+        {
+            new HotkeyStatus(HotkeyAction.MarkStutter, HotkeyChord.Parse("Ctrl+Alt+F9"), true, HotkeyFailure.None, null),
+            new HotkeyStatus(HotkeyAction.MarkInputStall, HotkeyChord.Parse("Ctrl+Alt+F10"), true, HotkeyFailure.None, null),
+        };
+
+        var idle = host.TrayStatus(hotkeys).Tooltip;
+        Assert.Contains("Ctrl+Alt+F9, Ctrl+Alt+F10", idle); // short enough: the hotkeys stay
+
+        Assert.True(host.Controller.StartSimulation("simulated-workbench.exe").Started);
+        var capturing = host.TrayStatus(hotkeys).Tooltip;
+        await host.Controller.StopAsync();
+
+        Assert.True(capturing.Length <= TrayIcon.MaxTipLength, $"'{capturing}' is {capturing.Length} characters");
+        Assert.Contains("simulated-workbench.exe", capturing); // the headline is whole, not cut mid-word
+        Assert.DoesNotContain("~", capturing);
+    }
+
+    [Fact]
     public async Task Settings_changes_are_saved_normalized_and_a_failed_save_is_reported()
     {
         var path = TestData.TempFile("settings.json");

@@ -242,6 +242,90 @@ public class MainWindowSmokeTests
     private static async Task Flush() => await WpfHost.Dispatcher.InvokeAsync(() => { }, DispatcherPriority.ApplicationIdle).Task;
 
     [DesktopFact]
+    public async Task The_pages_are_never_laid_out_smaller_than_their_design_size_and_the_watch_status_keeps_clear_of_its_feedback()
+    {
+        // Real-app run of 2026-11-12, defects 1, 4, 5 and 6: at the smallest window labels collided and were cut; the Watch headline was cut by the target box.
+        var (host, _, shell) = await Make();
+        await using var owner = host;
+
+        MainWindow? window = null;
+        await WpfHost.RunAsync(() =>
+        {
+            window = new MainWindow(host, shell);
+            window.Show();
+            window.Width = window.MinWidth;
+            window.Height = window.MinHeight;
+            ((TextBlock)window.FindName("CaptureHeadline")).Text = "Capturing a program with a very long executable name that cannot possibly fit on one line.exe";
+            ((TextBlock)window.FindName("MarkFeedback")).Text = "Marked a stutter at 12:00:00";
+            window.UpdateLayout();
+        });
+        await Flush();
+
+        await WpfHost.RunAsync(() =>
+        {
+            var host2 = (FrameworkElement)window!.FindName("PagesHost");
+            Assert.True(host2.ActualWidth >= PageScaling.DesignWidth - 1.0, $"the pages were laid out {host2.ActualWidth} px wide at the smallest window");
+            Assert.True(host2.ActualHeight >= PageScaling.DesignHeight - 1.0, $"the pages were laid out {host2.ActualHeight} px high at the smallest window");
+            Assert.NotEqual(System.Windows.Media.Transform.Identity, host2.LayoutTransform); // scaled down, not squeezed
+
+            var headline = (TextBlock)window.FindName("CaptureHeadline");
+            var feedback = (TextBlock)window.FindName("MarkFeedback");
+            var headlineRight = headline.TransformToAncestor(window).Transform(new Point(headline.ActualWidth, 0)).X;
+            var feedbackLeft = feedback.TransformToAncestor(window).Transform(new Point(0, 0)).X;
+            Assert.True(headlineRight <= feedbackLeft + 0.5, $"the headline runs {headlineRight - feedbackLeft} px into the mark feedback");
+            Snapshots.Save(window, "window-watch-minimum-size");
+
+            window.Width = 1700;
+            window.Height = 1000;
+            window.UpdateLayout();
+            Assert.Equal(System.Windows.Media.Transform.Identity, host2.LayoutTransform); // a roomy window is not scaled
+            Assert.True(Math.Abs(host2.ActualWidth - ((FrameworkElement)window.FindName("PagesViewport")).ActualWidth) < 1.0, "the pages do not fill a roomy window");
+
+            window.AllowClose();
+            window.Close();
+        });
+    }
+
+    [DesktopFact]
+    public async Task The_replay_header_wraps_its_long_sentences_beside_the_export_button_instead_of_cutting_them()
+    {
+        // Real-app run of 2026-11-12, defects 3 and 8: the key-press and event-time sentences were trimmed to "...about 8..." and "...as the...".
+        var (host, _, shell) = await Make();
+        await using var owner = host;
+
+        MainWindow? window = null;
+        await WpfHost.RunAsync(() =>
+        {
+            window = new MainWindow(host, shell);
+            window.Show();
+            ((RadioButton)window.FindName("NavInvestigator")).IsChecked = true;
+            ((UIElement)window.FindName("MarkDetailPanel")).Visibility = Visibility.Visible;
+            ((TextBlock)window.FindName("MarkQualityLine")).Text = string.Concat(Enumerable.Repeat("Key-press time: frame-delivery jitter of about 12 ms. ", 6));
+            ((TextBlock)window.FindName("SelectionStatus")).Text = string.Concat(Enumerable.Repeat("No event time was chosen. The moment the key was pressed was not used as the event time. ", 3));
+            window.UpdateLayout();
+        });
+        await Flush();
+
+        await WpfHost.RunAsync(() =>
+        {
+            window!.UpdateLayout();
+            var export = (FrameworkElement)window.FindName("ExportButton");
+            var exportLeft = export.TransformToAncestor(window).Transform(new Point(0, 0)).X;
+            foreach (var name in new[] { "MarkQualityLine", "SelectionStatus" })
+            {
+                var line = (TextBlock)window.FindName(name);
+                var right = line.TransformToAncestor(window).Transform(new Point(line.ActualWidth, 0)).X;
+                Assert.True(right <= exportLeft + 0.5, $"{name} runs {right - exportLeft} px into the export button");
+                Assert.True(line.ActualHeight >= line.FontSize * 2.0, $"{name} is {line.ActualHeight} px high: it did not wrap");
+            }
+
+            Snapshots.Save(window, "window-replay-header-wrapped");
+            window.AllowClose();
+            window.Close();
+        });
+    }
+
+    [DesktopFact]
     public async Task The_capability_check_counts_what_can_be_set_up_apart_from_what_is_not_available()
     {
         // Real-app run of 2026-11-12, defect 13: "not available" and "not built yet" rows were counted as "needs setup / permission", behind raw enum badges.
