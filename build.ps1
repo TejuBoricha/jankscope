@@ -63,8 +63,17 @@ if (-not $actual.StartsWith('10.')) { throw "Expected a .NET 10 SDK, found $actu
 
 if ($Clean) {
     Write-Host "==> Clean" -ForegroundColor Cyan
+    # Never reach into another checkout nested in this one (an agent worktree under .claude\worktrees has its own .git entry): its build output is not ours to delete.
+    function Test-InNestedCheckout([string]$Path, [string]$Root) {
+        for ($dir = Split-Path -Parent $Path; $dir -and $dir.Length -gt $Root.Length; $dir = Split-Path -Parent $dir) {
+            if (Test-Path -LiteralPath (Join-Path $dir '.git')) { return $true }
+        }
+        return $false
+    }
+
     Get-ChildItem -Path $PSScriptRoot -Include bin, obj -Directory -Recurse -ErrorAction SilentlyContinue |
         Where-Object { $_.FullName -match '\\(src|tools|tests)\\' } |
+        Where-Object { -not (Test-InNestedCheckout $_.FullName $PSScriptRoot) } |
         ForEach-Object { Remove-Item $_.FullName -Recurse -Force }
 }
 

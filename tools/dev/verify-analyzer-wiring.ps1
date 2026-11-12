@@ -35,8 +35,19 @@ $problems = New-Object System.Collections.Generic.List[string]
 $productCount = 0
 $testCount = 0
 
+# A directory with its own .git entry (a directory, or the file of a linked worktree) is a separate checkout, such as an agent worktree under
+# .claude\worktrees, gated by its own build. Walking into it would evaluate a second copy of every project, unrestored. Nothing in this
+# repository can hide in one: git refuses to track a path that has a .git component. (The same rule is Repo.IsNestedCheckout in the tests.)
+function Test-InNestedCheckout([string]$Path, [string]$Root) {
+    for ($dir = Split-Path -Parent $Path; $dir -and $dir.Length -gt $Root.Length; $dir = Split-Path -Parent $dir) {
+        if (Test-Path -LiteralPath (Join-Path $dir '.git')) { return $true }
+    }
+    return $false
+}
+
 $projects = Get-ChildItem -Path $root -Filter *.csproj -Recurse -File |
-    Where-Object { $_.FullName -notmatch '\\(bin|obj|\.git)\\' }
+    Where-Object { $_.FullName -notmatch '\\(bin|obj|\.git)\\' } |
+    Where-Object { -not (Test-InNestedCheckout $_.FullName $root) }
 
 foreach ($project in $projects) {
     $rel = $project.FullName.Substring($root.Length).TrimStart('\', '/').Replace('\', '/')

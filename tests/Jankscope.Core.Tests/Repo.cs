@@ -41,6 +41,14 @@ internal static class Repo
     public static IEnumerable<string> Files(string subDirectory, string pattern) =>
         Enumerate(Path.Combine(Root, subDirectory), pattern, isRoot: false);
 
+    /// <summary>
+    /// A directory with a <c>.git</c> entry of its own (a directory, or the file of a linked worktree) is a separate checkout, such as an agent
+    /// worktree under <c>.claude/worktrees</c>. It is gated by its own build, and scanning it from here would count every file twice and fail the
+    /// local gate for reasons that are not in this tree. Nothing in this repository can hide in one: git refuses to track a path that has a
+    /// <c>.git</c> component, so a committed directory never contains such an entry.
+    /// </summary>
+    internal static bool IsNestedCheckout(string directory) => Path.Exists(Path.Combine(directory, ".git"));
+
     private static IEnumerable<string> Enumerate(string directory, string pattern, bool isRoot)
     {
         var isProject = Directory.EnumerateFiles(directory, "*.csproj").Any();
@@ -52,7 +60,7 @@ internal static class Repo
         foreach (var sub in Directory.EnumerateDirectories(directory))
         {
             var name = Path.GetFileName(sub);
-            if ((isRoot && SkippedTopLevel.Contains(name)) || (isProject && name is "bin" or "obj"))
+            if ((isRoot && SkippedTopLevel.Contains(name)) || (isProject && name is "bin" or "obj") || IsNestedCheckout(sub))
             {
                 continue;
             }
