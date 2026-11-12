@@ -6,7 +6,7 @@ namespace Jankscope.Frames.Tests.PresentMon;
 public class CsvParserHeaderTests
 {
     private static readonly string[] MappedNames =
-        ["Application", "ProcessID", "PresentMode", "TimeInMs", "MsBetweenPresents", "MsBetweenDisplayChange", "MsCPUBusy", "MsGPUBusy"];
+        ["Application", "ProcessID", "SwapChainAddress", "PresentMode", "TimeInMs", "MsBetweenPresents", "MsBetweenDisplayChange", "MsCPUBusy", "MsGPUBusy"];
 
     private static LogHeaderResult Read(string header) => new PresentMonCsvParser().ReadHeader(header);
 
@@ -21,9 +21,10 @@ public class CsvParserHeaderTests
         Assert.Empty(result.MissingOptionalColumns);
 
         var expectedIgnored = CsvTestData.RealHeader.Split(',').Where(n => !MappedNames.Contains(n)).ToArray();
-        Assert.Equal(20, expectedIgnored.Length);
+        Assert.Equal(19, expectedIgnored.Length);
         Assert.Equal(expectedIgnored, result.IgnoredColumns);
-        Assert.Contains("SwapChainAddress", result.IgnoredColumns);
+        Assert.Contains("PresentRuntime", result.IgnoredColumns); // still ignored: nothing reads it
+        Assert.DoesNotContain("SwapChainAddress", result.IgnoredColumns); // read since the swap-chain change (review of Stage 1b, finding 7)
         Assert.DoesNotContain("MsBetweenPresents", result.IgnoredColumns);
     }
 
@@ -36,7 +37,7 @@ public class CsvParserHeaderTests
         Assert.True(result.Supported);
         Assert.Equal(FrameLogFormat.PresentMon2, result.Format);
         Assert.Empty(result.MissingOptionalColumns);
-        Assert.Equal(20, result.IgnoredColumns.Count);
+        Assert.Equal(19, result.IgnoredColumns.Count);
     }
 
     [Theory]
