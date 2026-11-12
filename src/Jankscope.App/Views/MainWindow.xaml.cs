@@ -412,7 +412,7 @@ public partial class MainWindow : Window
         KpiConsistency.Text = $"{LiveDistribution.ConsistencyScore.ToString("0", CultureInfo.InvariantCulture)} / 100";
         KpiConsistencySub.Text = LiveDistribution.Verdict;
         KpiStutterCount.Text = detected.Events.Count.ToString(CultureInfo.InvariantCulture);
-        KpiStutterSub.Text = $"{detected.IsolatedSpikeCount.ToString(CultureInfo.InvariantCulture)} isolated | {detected.Clusters.Count.ToString(CultureInfo.InvariantCulture)} cluster(s)";
+        KpiStutterSub.Text = detected.Events.Count == 0 ? "No stutters in window" : StutterWording.Breakdown(detected.Clusters);
 
         ProvenanceBadge.Visibility = Visibility.Visible;
         if (provenance == DataProvenance.Simulated)
@@ -434,7 +434,9 @@ public partial class MainWindow : Window
         {
             double.IsNaN(fps) ? "frame rate not available" : $"{fps.ToString("0", CultureInfo.InvariantCulture)} frames/s (average, last 5 s)",
             double.IsNaN(p99) ? "99th percentile not available" : $"{p99.ToString("0.0", CultureInfo.InvariantCulture)} ms 99th percentile frame time (last 30 s)",
-            $"{detected.Events.Count.ToString(CultureInfo.InvariantCulture)} stutter(s) in the last 30 s, {detected.IsolatedSpikeCount.ToString(CultureInfo.InvariantCulture)} of them isolated spikes ({detected.CalibrationLabel} threshold)",
+            detected.Events.Count == 0
+                ? $"no stutters in the last 30 s ({detected.CalibrationLabel} threshold)"
+                : $"{detected.Events.Count.ToString(CultureInfo.InvariantCulture)} stutter(s) in the last 30 s: {StutterWording.Breakdown(detected.Clusters, spelledOut: true)} ({detected.CalibrationLabel} threshold)",
         };
         if (status.DroppedFrames > 0)
         {
@@ -772,7 +774,7 @@ public partial class MainWindow : Window
             InvP99Ms.Text = m.P99FrameTimeMs is { } p99 ? $"{p99.ToString("0.0", CultureInfo.InvariantCulture)} ms" : "-- ms";
             InvP999Ms.Text = m.P999FrameTimeMs is { } p999 ? $"{p999.ToString("0.0", CultureInfo.InvariantCulture)} ms" : "-- ms";
             InvStutters.Text = m.StutterEventsCount.ToString(CultureInfo.InvariantCulture);
-            InvClusters.Text = $"{m.StutterClustersCount.ToString(CultureInfo.InvariantCulture)} cluster(s)";
+            InvClusters.Text = StutterWording.Clusters(m.StutterClustersCount);
 
             var cards = bundle.Report.Hypotheses.Select(h => new HypothesisCardItem(
                 GradeBadge: $"GRADE {h.Grade}",
