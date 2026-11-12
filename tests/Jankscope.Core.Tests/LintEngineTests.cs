@@ -437,6 +437,40 @@ public class RepoScopeTests
     }
 
     [Fact]
+    public void A_nested_checkout_is_not_scanned_but_an_ordinary_directory_beside_it_still_is()
+    {
+        // An agent worktree under .claude/worktrees holds a whole copy of the repository; it has its own .git (a file in a linked worktree).
+        // Scanning it doubled every project and failed the local gate. It must be skipped, and nothing else may be.
+        var root = Path.Combine(Path.GetTempPath(), "jankscope-nested-" + Guid.NewGuid().ToString("N"));
+        try
+        {
+            foreach (var dir in new[] { "src/real", "tools/inner", ".claude/worktrees/wt/src/Copy", "elsewhere/clone/src" })
+            {
+                Directory.CreateDirectory(Path.Combine(root, dir));
+            }
+
+            File.WriteAllText(Path.Combine(root, ".claude", "worktrees", "wt", ".git"), "gitdir: C:/somewhere/.git/worktrees/wt"); // a linked worktree: .git is a file
+            Directory.CreateDirectory(Path.Combine(root, "elsewhere", "clone", ".git"));                                              // a full clone: .git is a directory
+            foreach (var file in new[] { "src/real/a.cs", "tools/inner/b.cs", ".claude/worktrees/wt/src/Copy/c.cs", "elsewhere/clone/src/d.cs", "elsewhere/clone/e.cs" })
+            {
+                File.WriteAllText(Path.Combine(root, file), "class X {}");
+            }
+
+            var found = Repo.FilesIn(root, "*.cs").Select(p => Rel(root, p)).Order(StringComparer.Ordinal).ToArray();
+
+            Assert.Equal(["src/real/a.cs", "tools/inner/b.cs"], found);
+            Assert.True(Repo.IsNestedCheckout(Path.Combine(root, ".claude", "worktrees", "wt")));
+            Assert.True(Repo.IsNestedCheckout(Path.Combine(root, "elsewhere", "clone")));
+            Assert.False(Repo.IsNestedCheckout(Path.Combine(root, "src", "real")));
+            Assert.False(Repo.IsNestedCheckout(Path.Combine(root, ".claude"))); // .claude itself is not a checkout; only what has its own .git is skipped
+        }
+        finally
+        {
+            Directory.Delete(root, recursive: true);
+        }
+    }
+
+    [Fact]
     public void The_real_repository_scan_finds_the_product_projects_and_skips_their_build_output()
     {
         var sources = Repo.AllFiles("*.cs").Select(Repo.Rel).ToList();
