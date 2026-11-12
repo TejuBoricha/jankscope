@@ -32,6 +32,7 @@ public sealed class PresentMonCsvParser : IFrameLogParser
     private long _nextIndex;
     private string? _lastApplication;
     private string? _lastPresentMode;
+    private string? _lastSwapChain;
 
     /// <summary>
     /// <paramref name="sourceProvenance"/> is what the caller knows about where the log came from (HC-9): <see cref="DataProvenance.Measured"/>
@@ -57,6 +58,7 @@ public sealed class PresentMonCsvParser : IFrameLogParser
         _nextIndex = 0;
         _lastApplication = null;
         _lastPresentMode = null;
+        _lastSwapChain = null;
         _map = CsvColumnMap.Analyze(headerLine);
         _fields = _map.Result.Supported ? new CsvField[_map.FieldCount] : [];
         return _map.Result;
@@ -136,8 +138,9 @@ public sealed class PresentMonCsvParser : IFrameLogParser
 
         var presentMode = ReadText(text, map.PresentModeColumn, ref _lastPresentMode);
         var application = ReadText(text, map.ApplicationColumn, ref _lastApplication);
+        var swapChain = ReadSwapChain(text, map.SwapChainColumn);
 
-        sample = new FrameSample(index, timestampMs, frameTimeMs, displayedMs, cpuBusyMs, gpuBusyMs, presentMode, application, processId, provenance);
+        sample = new FrameSample(index, timestampMs, frameTimeMs, displayedMs, cpuBusyMs, gpuBusyMs, presentMode, application, processId, provenance, swapChain);
         problem = null;
         return true;
     }
@@ -325,6 +328,40 @@ public sealed class PresentMonCsvParser : IFrameLogParser
     }
 
     /// <summary>The text of a string column, or <c>null</c> when the cell is empty or <c>NA</c>. Repeated values share one instance.</summary>
+    /// <summary>
+    /// The swap-chain address of a row, or null when the column is absent, NA or empty, or the cell is not an address (<c>0x</c> and one to sixteen hex digits, as PresentMon
+    /// writes it). A cell that is not an address is unknown, not a value: it would otherwise ride along on every sample of the capture.
+    /// </summary>
+    private string? ReadSwapChain(ReadOnlySpan<char> text, int column)
+    {
+        if (column < 0)
+        {
+            return null;
+        }
+
+        var raw = _fields[column].Raw(text).Trim();
+        if (raw.Length is < 3 or > 18 || raw[0] != '0' || (raw[1] != 'x' && raw[1] != 'X'))
+        {
+            return null;
+        }
+
+        foreach (var c in raw[2..])
+        {
+            if (!char.IsAsciiHexDigit(c))
+            {
+                return null;
+            }
+        }
+
+        if (_lastSwapChain is not null && raw.SequenceEqual(_lastSwapChain))
+        {
+            return _lastSwapChain;
+        }
+
+        _lastSwapChain = raw.ToString();
+        return _lastSwapChain;
+    }
+
     private string? ReadText(ReadOnlySpan<char> text, int column, ref string? cache)
     {
         if (column < 0)

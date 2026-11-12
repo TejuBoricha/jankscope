@@ -93,6 +93,7 @@ public class CsvParserFixtureTests
             Assert.Equal("Hardware Composed: Independent Flip", s.PresentMode);
             Assert.Equal("TestAppA.exe", s.Application);
             Assert.Equal(1000, s.ProcessId);
+            Assert.Equal("0x103E8", s.SwapChain);
         });
     }
 
@@ -305,5 +306,6 @@ public class CsvParserFixtureTests
         Assert.Equal(row[raw.Col("PresentMode")], sample.PresentMode);
         Assert.Equal(row[raw.Col("Application")], sample.Application);
         Assert.Equal(int.Parse(row[raw.Col("ProcessID")], CultureInfo.InvariantCulture), sample.ProcessId);
+        Assert.Equal(row[raw.Col("SwapChainAddress")], sample.SwapChain);
     }
 }

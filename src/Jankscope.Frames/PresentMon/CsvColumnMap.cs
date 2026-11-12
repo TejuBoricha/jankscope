@@ -19,6 +19,12 @@ internal sealed class CsvColumnMap
     public const string Application = "Application";
     public const string ProcessId = "ProcessID";
 
+    /// <summary>
+    /// Which swap chain a row belongs to (an address such as <c>0x103E8</c>). Frame times are measured per swap chain, so a program that presents on two (a game and an
+    /// overlay, say) writes two interleaved series. Read when present; not an "optional column" that is reported as missing, since a log without it is complete as before.
+    /// </summary>
+    public const string SwapChainAddress = "SwapChainAddress";
+
     /// <summary>Written by the synthetic harness on every row (never by PresentMon): the row is simulated. Not an optional PresentMon column, so it is never reported as missing.</summary>
     public const string Provenance = "JankscopeProvenance";
 
@@ -39,6 +45,7 @@ internal sealed class CsvColumnMap
         PresentMode,
         Application,
         ProcessId,
+        SwapChain,
         Provenance,
     }
 
@@ -53,6 +60,7 @@ internal sealed class CsvColumnMap
         (PresentMode, Role.PresentMode),
         (Application, Role.Application),
         (ProcessId, Role.ProcessId),
+        (SwapChainAddress, Role.SwapChain),
         (Provenance, Role.Provenance),
     ];
 
@@ -109,6 +117,8 @@ internal sealed class CsvColumnMap
     public int ApplicationColumn { get; private init; } = -1;
 
     public int ProcessIdColumn { get; private init; } = -1;
+
+    public int SwapChainColumn { get; private init; } = -1;
 
     public int ProvenanceColumn { get; private init; } = -1;
 
@@ -246,6 +256,7 @@ internal sealed class CsvColumnMap
             PresentModeColumn = first[(int)Role.PresentMode],
             ApplicationColumn = first[(int)Role.Application],
             ProcessIdColumn = first[(int)Role.ProcessId],
+            SwapChainColumn = first[(int)Role.SwapChain],
             ProvenanceColumn = first[(int)Role.Provenance],
         };
     }

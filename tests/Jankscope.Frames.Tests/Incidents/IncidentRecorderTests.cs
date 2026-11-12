@@ -31,7 +31,10 @@ internal sealed class RecorderRig
 
     public double LastPresentMs => _presentMs;
 
-    public void FeedFrame(double lengthMs)
+    /// <summary>The swap chain the frames are logged on unless a frame names another; null (the default) is a log that does not name chains.</summary>
+    public string? MainChain { get; set; }
+
+    public void FeedFrame(double lengthMs, string? swapChain = null)
     {
         _presentMs += lengthMs;
         var nowMs = Time.GetTimestamp() * 1000.0 / Time.TimestampFrequency;
@@ -42,7 +45,7 @@ internal sealed class RecorderRig
         }
 
         Clock.Observe(Time.GetTimestamp(), _presentMs);
-        Ring.Write(new FrameSample(_index++, _presentMs, lengthMs, Application: "game.exe", Provenance: DataProvenance.Fixture));
+        Ring.Write(new FrameSample(_index++, _presentMs, lengthMs, Application: "game.exe", Provenance: DataProvenance.Fixture, SwapChain: swapChain ?? MainChain));
     }
 
     public void Feed(double seconds)

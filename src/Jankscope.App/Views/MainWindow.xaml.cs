@@ -647,7 +647,7 @@ public partial class MainWindow : Window
         MarkDetailPanel.Visibility = Visibility.Visible;
         var item = _marks.First(m => m.Id == mark.Id);
         MarkSummaryLine.Text = mark.TargetProcess is { } program ? $"{item.Title}  -  Target: {program}" : item.Title;
-        MarkQualityLine.Text = DescribeQuality(mark);
+        MarkQualityLine.Text = MarkQualityText.Describe(mark);
 
         _updating = true;
         CandidatesList.ItemsSource = mark.Search.Candidates.Select(CandidateItem.From).ToList();
@@ -675,22 +675,6 @@ public partial class MainWindow : Window
         }
 
         RefreshInvestigatorView(forceCollect: changedMark);
-    }
-
-    private static string DescribeQuality(IncidentMark mark)
-    {
-        var parts = new List<string>();
-        if (mark.CaptureTime is { } time)
-        {
-            parts.Add(KeyPressTimeText.Describe(time));
-            parts.Add($"Before the mark: {mark.Window.AvailablePreRollSeconds.ToString("0", CultureInfo.InvariantCulture)} s recorded of the {mark.Window.RequestedPreRollSeconds.ToString("0", CultureInfo.InvariantCulture)} s asked for" + (mark.Window.PreRollShort ? " (not enough history yet; it is never padded)." : "."));
-        }
-        else
-        {
-            parts.Add("No frames had arrived when the key was pressed");
-        }
-
-        return string.Join(" | ", parts);
     }
 
     private void RefreshInvestigatorView(bool forceCollect)
