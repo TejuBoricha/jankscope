@@ -79,13 +79,14 @@
                         <TextBlock Text="TELEMETRY PIPELINE" FontFamily="Consolas" FontSize="10" FontWeight="Bold" Foreground="{DynamicResource CyanAccentBrush}"/>
                     </Border>
 
-                    <TextBlock Grid.Column="1" VerticalAlignment="Center" TextTrimming="CharacterEllipsis" Margin="0,0,12,0" FontFamily="Consolas" FontSize="11.5">
-                        <Run Foreground="{DynamicResource CyanAccentBrush}" FontWeight="Bold" Text="[STEP 1]"/>
-                        <Run Text=" Target 3D App or Simulator  "/>
-                        <Run Foreground="{DynamicResource WarningBrush}" FontWeight="Bold" Text="[STEP 2]"/>
-                        <Run Text=" Press Ctrl+Alt+F9 on Hitch  "/>
-                        <Run Foreground="{DynamicResource OkBrush}" FontWeight="Bold" Text="[STEP 3]"/>
-                        <Run Text=" Inspect 31-Frame Waterfall &amp; Export"/>
+                    <TextBlock Grid.Column="1" VerticalAlignment="Center" TextTrimming="CharacterEllipsis" Margin="0,0,12,0" FontFamily="Consolas" FontSize="11.5"
+                               ToolTip="1: pick a game or the demo. 2: press your mark hotkey (shown at the bottom left) when it hitches. 3: open Replay to inspect the spike and export.">
+                        <Run Foreground="{DynamicResource CyanAccentBrush}" FontWeight="Bold" Text="[1]"/>
+                        <Run Text=" Pick a game or the demo  "/>
+                        <Run Foreground="{DynamicResource WarningBrush}" FontWeight="Bold" Text="[2]"/>
+                        <Run Text=" Press your mark hotkey on a hitch  "/>
+                        <Run Foreground="{DynamicResource OkBrush}" FontWeight="Bold" Text="[3]"/>
+                        <Run Text=" Replay it and export"/>
                     </TextBlock>
 
                     <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center">
@@ -578,7 +579,7 @@
                         <StackPanel>
                             <TextBlock Style="{StaticResource Overline}" Text="CAPABILITY ROWS PROBED"/>
                             <TextBlock x:Name="RadarTotalCount" Style="{StaticResource KpiValue}" Text="--" Margin="0,3,0,1"/>
-                            <TextBlock Style="{StaticResource Muted}" FontFamily="Consolas" FontSize="10.5" Text="Counted live at startup"/>
+                            <TextBlock x:Name="RadarTotalNote" Style="{StaticResource Muted}" FontFamily="Consolas" FontSize="10.5" Text="Counted live at startup" TextTrimming="CharacterEllipsis"/>
                         </StackPanel>
                     </Border>
                     <Border Style="{StaticResource KpiCard}" Margin="0,0,8,0">
@@ -645,10 +646,21 @@
                                         </StackPanel>
                                         <StackPanel Grid.Column="2" VerticalAlignment="Top" Margin="8,0">
                                             <TextBlock Text="{Binding ValueOrReason}" FontFamily="Consolas" FontSize="11.5" TextWrapping="Wrap"/>
-                                            <TextBlock Text="{Binding PlainEnglishImpact}" Style="{StaticResource Muted}" FontSize="11" Margin="0,2,0,0" TextWrapping="Wrap"/>
+                                            <TextBlock Text="{Binding PlainEnglishImpact}" FontSize="11" Margin="0,2,0,0" TextWrapping="Wrap">
+                                                <TextBlock.Style>
+                                                    <!-- A row with no specific explanation shows none, instead of the same sentence on every such row. -->
+                                                    <Style TargetType="TextBlock" BasedOn="{StaticResource Muted}">
+                                                        <Style.Triggers>
+                                                            <DataTrigger Binding="{Binding PlainEnglishImpact}" Value="">
+                                                                <Setter Property="Visibility" Value="Collapsed"/>
+                                                            </DataTrigger>
+                                                        </Style.Triggers>
+                                                    </Style>
+                                                </TextBlock.Style>
+                                            </TextBlock>
                                         </StackPanel>
                                         <Border Grid.Column="3" Style="{StaticResource BadgeBorder}" HorizontalAlignment="Right" VerticalAlignment="Top">
-                                            <TextBlock Text="{Binding StatusBadge}" FontFamily="Consolas" FontSize="10.5" FontWeight="Bold"/>
+                                            <TextBlock Text="{Binding StatusBadge}" FontFamily="Consolas" FontSize="10.5" FontWeight="Bold" TextWrapping="Wrap" TextAlignment="Center"/>
                                         </Border>
                                     </Grid>
                                 </DataTemplate>
@@ -892,7 +904,10 @@
                         <StackPanel>
                             <TextBlock Style="{StaticResource CardTitle}" Text="OPEN-SOURCE COMMUNITY &amp; SUPPORT"/>
                             <TextBlock Style="{StaticResource Muted}" FontSize="11.5" Margin="0,4,0,10"
-                                       Text="Jankscope is MIT-licensed open-source software with zero telemetry, zero ads, and zero feature gates. The static links below open only in your default browser when clicked."/>
+                                       Text="Jankscope is MIT-licensed open-source software with zero telemetry, zero ads, and zero feature gates."/>
+                            <!-- Shown only when a link below is available (the addresses are empty until the project has a sponsor page and a store listing). -->
+                            <TextBlock x:Name="SupportLinksNote" Style="{StaticResource Muted}" FontSize="11.5" Margin="0,0,0,10" Visibility="Collapsed"
+                                       Text="The links below open only in your default browser, and only when you click one."/>
                             <WrapPanel>
                                 <Button x:Name="OpenSponsorButton" Content="Sponsor on GitHub" Click="OnOpenSponsorClicked"/>
                                 <Button x:Name="OpenStoreButton" Content="Microsoft Store" Click="OnOpenStoreClicked" Margin="0"/>

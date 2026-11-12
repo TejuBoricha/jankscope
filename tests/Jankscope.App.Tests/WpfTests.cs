@@ -5,6 +5,7 @@ using System.Windows.Media.Imaging;
 using System.Windows.Threading;
 using Jankscope.App.Services;
 using Jankscope.App.Views;
+using Jankscope.Core;
 using Jankscope.Core.Hotkeys;
 using Jankscope.Frames;
 using Jankscope.Frames.Incidents;
@@ -223,7 +224,7 @@ public class TimelineViewTests
 [Collection("WPF")]
 public class MainWindowSmokeTests
 {
-    private static async Task<(AppHost Host, FakeCaptureFactory Factory, FakeShell Shell)> Make()
+    private static async Task<(AppHost Host, FakeCaptureFactory Factory, FakeShell Shell)> Make(Func<CapabilityMatrix>? matrix = null)
     {
         var factory = new FakeCaptureFactory();
         var host = new AppHost(
@@ -231,7 +232,7 @@ public class MainWindowSmokeTests
             new SettingsStore(TestData.TempFile("settings.json")),
             factory,
             new SilentCue(),
-            () => TestData.Matrix(TestData.Row("anticheat.state", "idle"), TestData.Row("os.build", "10.0.26300")));
+            matrix ?? (() => TestData.Matrix(TestData.Row("anticheat.state", "idle"), TestData.Row("os.build", "10.0.26300"))));
         var shell = new FakeShell(host);
         shell.ApplyHotkeys(HotkeyBindings.Default);
         await host.MatrixTask;
@@ -239,6 +240,63 @@ public class MainWindowSmokeTests
     }
 
     private static async Task Flush() => await WpfHost.Dispatcher.InvokeAsync(() => { }, DispatcherPriority.ApplicationIdle).Task;
+
+    [DesktopFact]
+    public async Task The_capability_check_counts_what_can_be_set_up_apart_from_what_is_not_available()
+    {
+        // Real-app run of 2026-11-12, defect 13: "not available" and "not built yet" rows were counted as "needs setup / permission", behind raw enum badges.
+        CapabilityMatrix Matrix() => TestData.Matrix(
+            TestData.Row("anticheat.state", "ResidentOnly; elevated and kernel collectors not suppressed"),
+            TestData.Row("os.build", "10.0.26300"),
+            CapabilityEntry.Unavailable("frame.capture", "Frame capture", CapabilityTier.C, Availability.NeedsOptionalTool, "test", "the capture tool is not installed"),
+            CapabilityEntry.Planned("input.rawinput", "Raw Input timing", CapabilityTier.A, "Stage 2"),
+            CapabilityEntry.Planned("net.route", "Route probe", CapabilityTier.B, "Stage 2"),
+            CapabilityEntry.Unavailable("gpu.vrr", "Variable refresh", CapabilityTier.B, Availability.NotAvailable, "test", "the display does not report it"));
+        var (host, _, shell) = await Make(Matrix);
+        await using var owner = host;
+
+        await WpfHost.RunAsync(() =>
+        {
+            var window = new MainWindow(host, shell);
+            window.Show();
+            ((RadioButton)window.FindName("NavRadar")).IsChecked = true;
+            window.UpdateLayout();
+
+            Assert.Equal("6", ((TextBlock)window.FindName("RadarTotalCount")).Text);
+            Assert.Equal("2", ((TextBlock)window.FindName("RadarReadyCount")).Text);
+            Assert.Equal("1", ((TextBlock)window.FindName("RadarAttentionCount")).Text); // only the row the person could set up
+            Assert.Equal("3 more are not available or not built yet", ((TextBlock)window.FindName("RadarTotalNote")).Text);
+            Assert.Equal("Resident, idle", ((TextBlock)window.FindName("RadarAntiCheatStatus")).Text);
+            Snapshots.Save(window, "window-radar-mixed");
+
+            window.AllowClose();
+            window.Close();
+        });
+    }
+
+    [DesktopFact]
+    public async Task The_trust_page_mentions_links_only_when_a_link_is_shown()
+    {
+        // Real-app run of 2026-11-12, defect 7: the page said "the static links below" while the sponsor and store addresses were empty and no link was shown.
+        var (host, _, shell) = await Make();
+        await using var owner = host;
+
+        await WpfHost.RunAsync(() =>
+        {
+            var window = new MainWindow(host, shell);
+            window.Show();
+            ((RadioButton)window.FindName("NavAbout")).IsChecked = true;
+            window.UpdateLayout();
+
+            var anyLink = ((UIElement)window.FindName("OpenSponsorButton")).Visibility == Visibility.Visible
+                || ((UIElement)window.FindName("OpenStoreButton")).Visibility == Visibility.Visible;
+            var note = (UIElement)window.FindName("SupportLinksNote");
+            Assert.Equal(anyLink, note.Visibility == Visibility.Visible);
+
+            window.AllowClose();
+            window.Close();
+        });
+    }
 
     [DesktopFact]
     public async Task The_live_refresh_runs_only_while_the_window_is_visible()
