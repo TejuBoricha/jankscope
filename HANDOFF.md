@@ -38,7 +38,7 @@ Both review passes and the re-verification are done and the stage is `done-verif
 2. Stage 1a completed the carried items: the orphan-ETW-session cleaner, `AntiCheatSafety.Decide` wiring, the game-session detector, real detection for `managed.applied_policies` and `managed.entra_join`, and the `os.locale` redaction flag (L16). Remaining limitations are recorded in `docs/LIMITATIONS.md`.
 
 ### B. Stage 1a: what is done and what is next
-The five work packages (prompts in `docs/handoff/agent-prompts/`) were run as parallel sessions in private copies under `C:\Users\tejas\Desktop\PC FPS booster - stage1a\` (safe to delete) and **merged into the repo on 2026-10-17**; do not relaunch them. Their hand-over notes, review evidence and re-verification are summarised in `docs/STATUS.md`, `docs/reviews/stage-1a*.md` and `docs/LIMITATIONS.md`.
+The five work packages (prompts in `docs/handoff/agent-prompts/`) were run as parallel sessions in private copies outside the repo (deleted 2026-11-13) and **merged into the repo on 2026-10-17**; do not relaunch them. Their hand-over notes, review evidence and re-verification are summarised in `docs/STATUS.md`, `docs/reviews/stage-1a*.md` and `docs/LIMITATIONS.md`.
 
 Next, in order:
 1. Stages 1a and 1b are complete. Reviews and re-verifications are in `docs/reviews/stage-1a.md`, `docs/reviews/stage-1a-reverify.md`, and `docs/reviews/stage-1b.md`; the evidence ledger is `docs/STATUS.md`.
