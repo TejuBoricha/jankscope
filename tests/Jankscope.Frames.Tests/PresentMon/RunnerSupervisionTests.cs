@@ -677,7 +677,10 @@ public class RunnerSupervisionTests
         await RunnerRig.Eventually(() => rig.Health.RowsParsed == 1, "the first row");
 
         var stopping = rig.Runner.StopAsync();
-        await RunnerRig.Eventually(() => rig.Health.State == RunnerState.Stopping && rig.Launcher.Terminators.Count == 1 && rig.Clock.PendingTimers >= 1, "the grace period to be running");
+
+        // The watchdog's timer (10 s) is armed for the whole run, so "a timer is pending" does not say the grace period has started. Wait for the timer due within it:
+        // advancing the clock before the runner has armed it moves past a timer that does not exist yet, and the stop then never finishes.
+        await RunnerRig.Eventually(() => rig.Health.State == RunnerState.Stopping && rig.Launcher.Terminators.Count == 1 && rig.Clock.NextDueIn <= TimeSpan.FromSeconds(5), "the grace period to be running");
         Assert.False(rig.Launcher.Captures[0].Killed);
 
         rig.Clock.Advance(TimeSpan.FromSeconds(4.9));
@@ -697,7 +700,9 @@ public class RunnerSupervisionTests
     [Fact]
     public async Task Stop_when_the_helper_hangs_gives_up_after_the_cleanup_timeout_and_reports_the_session_that_may_remain()
     {
-        await using var rig = new RunnerRig();
+        // No watchdog: its 10 s timer would be pending for the whole run and satisfy "a timer is pending" before the helper's cleanup timer is armed,
+        // and advancing the clock before then skips a timer that does not exist yet.
+        await using var rig = new RunnerRig(o => o with { WatchdogNoOutputTimeout = Timeout.InfiniteTimeSpan });
         rig.Launcher.Terminator = TerminatorBehavior.Hang;
         rig.Launcher.EnqueueCapture(c => c.WriteHeaderAndRows(1));
 
