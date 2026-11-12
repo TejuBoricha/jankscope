@@ -24,6 +24,7 @@ public class RepoLintTests
         "advapi32.dll!QueryAllTracesW",
         "advapi32.dll!QueryServiceStatusEx",
         "advapi32.dll!StartTraceW",
+        "dwmapi.dll!DwmSetWindowAttribute",
         "dxgi.dll!CreateDXGIFactory1",
         "kernel32.dll!GetActiveProcessorCount",
         "kernel32.dll!GetLogicalProcessorInformationEx",

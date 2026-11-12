@@ -1,5 +1,6 @@
 using System.Windows;
 using System.Windows.Media;
+using Jankscope.App.Services;
 using Jankscope.Platform.Hotkeys;
 
 namespace Jankscope.App.Views;
@@ -10,6 +11,7 @@ public partial class WelcomeWindow : Window
     public WelcomeWindow(IReadOnlyList<HotkeyStatus> hotkeys)
     {
         InitializeComponent();
+        TitleBarTheme.Follow(this);
         Icon = Services.IconFactory.WindowIcon();
         var problems = hotkeys.Where(h => !h.Active).ToList();
         if (problems.Count == 0)

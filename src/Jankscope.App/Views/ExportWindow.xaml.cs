@@ -44,6 +44,7 @@ public partial class ExportWindow : Window
         _fileFilter = fileFilter;
         _dialogTitle = dialogTitle;
         InitializeComponent();
+        TitleBarTheme.Follow(this);
         Loaded += (_, _) => _ = BuildAsync();
     }
 
