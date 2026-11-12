@@ -13,12 +13,20 @@ public sealed class FrameDistributionView : FrameworkElement
 {
     private static readonly (double MaxMs, string Label, string CompactLabel, string BrushKey)[] Bands =
     [
-        (4.17, "< 4.2 ms", "< 4.2 ms", "CyanAccentBrush"),
+        (4.17, "< 4.2 ms", "< 4.2", "CyanAccentBrush"),
         (8.34, "4.2 - 8.3 ms", "4.2-8.3", "OkBrush"),
         (16.67, "8.3 - 16.7 ms", "8.3-16.7", "ChartLineBrush"),
-        (33.34, "16.7 - 33.3 ms", "16.7-33", "WarningBrush"),
-        (double.PositiveInfinity, "> 33.3 ms", "> 33.3 ms", "DangerBrush"),
+        (33.34, "16.7 - 33.3 ms", "16.7-33.3", "WarningBrush"),
+        (double.PositiveInfinity, "> 33.3 ms", "> 33.3", "DangerBrush"),
     ];
+
+    /// <summary>The heading of the tier bars. The narrow form drops the unit from each label to fit, so the heading carries it once (GUI-run report, defect 15).</summary>
+    internal static string TierHeading(bool compact) => compact ? "TIERS (ms)" : "FRAME-TIME TIER DISTRIBUTION";
+
+    /// <summary>The label of tier <paramref name="tier"/> (0 is the fastest). The wide form states its own unit; the narrow form relies on <see cref="TierHeading"/>.</summary>
+    internal static string TierLabel(int tier, bool compact) => compact ? Bands[tier].CompactLabel : Bands[tier].Label;
+
+    internal static int TierCount => Bands.Length;
 
     private int[] _counts = new int[5];
     private int _totalFrames;
@@ -170,7 +178,7 @@ public sealed class FrameDistributionView : FrameworkElement
 
         // Right bay: 5-tier latency distribution histogram
         var barsLeft = gaugeBayWidth + 10;
-        DrawText(dc, compact ? "TIERS" : "FRAME-TIME TIER DISTRIBUTION", muted, new Point(barsLeft, 7), dpi, 9.0, true, mono: true);
+        DrawText(dc, TierHeading(compact), muted, new Point(barsLeft, 7), dpi, 9.0, true, mono: true);
 
         var topOffset = 24.0;
         var rowHeight = Math.Max(18.0, (height - topOffset - 8) / Bands.Length);
@@ -184,7 +192,7 @@ public sealed class FrameDistributionView : FrameworkElement
                 ? $"{(fraction * 100.0).ToString("0.0", CultureInfo.InvariantCulture)}%"
                 : $"{(fraction * 100.0).ToString("0.0", CultureInfo.InvariantCulture)}% ({count.ToString(CultureInfo.InvariantCulture)})";
 
-            DrawText(dc, compact ? Bands[i].CompactLabel : Bands[i].Label, fg, new Point(barsLeft, y + 1), dpi, compact ? 9.2 : 10, true, mono: true);
+            DrawText(dc, TierLabel(i, compact), fg, new Point(barsLeft, y + 1), dpi, compact ? 9.2 : 10, true, mono: true);
 
             var labelColW = compact ? 58.0 : 90.0;
             var rightColW = compact ? 44.0 : 84.0;

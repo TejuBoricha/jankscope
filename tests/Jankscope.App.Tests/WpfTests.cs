@@ -180,6 +180,62 @@ public class TimelineViewTests
     }
 
     [Fact]
+    public async Task Empty_time_before_the_first_frame_is_not_called_a_gap_in_the_log()
+    {
+        // GUI-run report, defect 15: the live view always spans 30 s, so early in a capture its left part predates the first frame.
+        // "no frames logged" beside plotted frames read as a fault; the truth is "before the first frame".
+        var (frames, end) = TestData.Stream(30);
+        var late = frames.Where(f => f.TimestampMs > end - 10_000).ToArray();
+
+        var (before, inside) = await WpfHost.RunAsync(() =>
+        {
+            var view = Make(900, 240, late, end);
+            return (view.DescribeAt(end - 25_000), view.DescribeAt(end - 5_000));
+        });
+
+        Assert.EndsWith("before the first frame in this view", before);
+        Assert.DoesNotContain("no frames logged", before);
+        Assert.Contains("worst frame", inside);
+    }
+
+    [Fact]
+    public async Task Empty_time_after_the_last_frame_says_so_and_a_hole_between_frames_still_says_no_frames_logged()
+    {
+        var (frames, end) = TestData.Stream(30);
+        var early = frames.Where(f => f.TimestampMs < end - 20_000).ToArray();
+        var holed = frames.Where(f => f.TimestampMs < 10_000 || f.TimestampMs > 14_000).ToArray();
+
+        var (afterLast, hole, nothing) = await WpfHost.RunAsync(() =>
+        {
+            var earlyView = Make(900, 240, early, end);
+            var holedView = Make(900, 240, holed, end);
+            var emptyView = Make(900, 240, [], end);
+            return (earlyView.DescribeAt(end - 2_000), holedView.DescribeAt(12_000), emptyView.DescribeAt(end - 15_000));
+        });
+
+        Assert.EndsWith("after the last frame in this view", afterLast);
+        Assert.EndsWith("no frames logged here", hole);
+        Assert.EndsWith("no frames logged here", nothing); // with no frame at all there is no "before" or "after"
+    }
+
+    [Fact]
+    public void An_axis_label_near_the_right_edge_moves_left_instead_of_being_cut()
+    {
+        Assert.Equal(100.0, TimelineView.LabelLeft(100, 40, 900));   // plenty of room: where it was asked to go
+        Assert.Equal(846.0, TimelineView.LabelLeft(886, 50, 896));   // "key press" under the newest end: 50 wide, view ends at 896
+        Assert.Equal(0.0, TimelineView.LabelLeft(5, 2000, 100));     // never off the left edge
+        Assert.Equal(12.0, TimelineView.LabelLeft(12, 30, double.PositiveInfinity));
+    }
+
+    [Fact]
+    public void The_grey_band_text_names_where_the_empty_stretch_is()
+    {
+        Assert.Equal("before the first frame", TimelineView.GapWatermark(TimelineView.GapPosition.BeforeFirstFrame));
+        Assert.Equal("after the last frame", TimelineView.GapWatermark(TimelineView.GapPosition.AfterLastFrame));
+        Assert.Equal("no frames logged", TimelineView.GapWatermark(TimelineView.GapPosition.Between));
+    }
+
+    [Fact]
     public async Task A_position_maps_to_a_time_and_the_cursor_text_says_what_is_there()
     {
         var (frames, end) = TestData.Stream(30, (1000, 80));

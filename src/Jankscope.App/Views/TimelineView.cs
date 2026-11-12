@@ -152,7 +152,7 @@ public sealed class TimelineView : FrameworkElement
             dc.DrawLine(new Pen(grid, 1), new Point(x, plot.Bottom), new Point(x, plot.Bottom + 4));
             var zero = _data.RelativeToMs is null ? "0" : _data.MarkMs is null ? "now" : "key press";
             var label = t == 0 ? zero : (t > 0 ? "+" : "-") + Math.Abs(t).ToString("0.#", CultureInfo.InvariantCulture) + " s";
-            Label(dc, label, text, new Point(x - 14, plot.Bottom + 6), dpi, 10.5);
+            Label(dc, label, text, new Point(x - 14, plot.Bottom + 6), dpi, 10.5, rightEdge: width - 4);
         }
 
         dc.DrawRectangle(null, new Pen(grid, 1), plot);
@@ -178,9 +178,12 @@ public sealed class TimelineView : FrameworkElement
             if (i - run >= _gapColumns && runWidth >= 3)
             {
                 dc.DrawRectangle(gapBrush, null, new Rect(plot.Left + run * step, plot.Top, runWidth, plot.Height));
-                if (runWidth >= 70)
+                var watermark = new FormattedText(GapWatermark(GapKind(run, i - 1)), CultureInfo.InvariantCulture, FlowDirection.LeftToRight, new Typeface("Segoe UI"), 10, text, dpi);
+
+                // Drawn only where it fits inside the grey band, so it never runs over the frames next to it.
+                if (watermark.Width + 12 <= runWidth)
                 {
-                    Label(dc, "no frames logged", text, new Point(plot.Left + run * step + 6, plot.Top + 4), dpi, 10);
+                    dc.DrawText(watermark, new Point(plot.Left + run * step + 6, plot.Top + 4));
                 }
             }
         }
@@ -457,13 +460,11 @@ public sealed class TimelineView : FrameworkElement
     }
 
     /// <summary>What is under the cursor, in words: the time (from the mark when there is one) and the worst frame near it.</summary>
-    public string? DescribeCursor()
-    {
-        if (_cursorMs is not { } cursor)
-        {
-            return null;
-        }
+    public string? DescribeCursor() => _cursorMs is { } cursor ? DescribeAt(cursor) : null;
 
+    /// <summary>What is at the capture-clock time <paramref name="cursor"/>, in words. The columns must have been drawn (a view that was never laid out has none).</summary>
+    internal string DescribeAt(double cursor)
+    {
         var reference = _data.RelativeToMs ?? _data.StartMs;
         var seconds = (cursor - reference) / 1000.0;
         var when = (seconds >= 0 ? "+" : "-") + Math.Abs(seconds).ToString("0.00", CultureInfo.InvariantCulture) + " s";
@@ -486,11 +487,47 @@ public sealed class TimelineView : FrameworkElement
 
         if (index < 0 || _buckets[index].IsEmpty)
         {
-            return $"{when}: no frames logged here";
+            return $"{when}: {GapDescription(GapKind(index, index))}";
         }
 
         return $"{when}: worst frame {_buckets[index].MaxMs.ToString("0.0", CultureInfo.InvariantCulture)} ms ({_buckets[index].Count} frame(s))";
     }
+
+    /// <summary>Where a stretch of empty columns sits: before every frame in the view (the capture had not begun, or the view starts earlier than the buffer), after them, or between frames (a real hole).</summary>
+    internal enum GapPosition
+    {
+        Between,
+        BeforeFirstFrame,
+        AfterLastFrame,
+    }
+
+    /// <summary>The position of the empty columns <paramref name="first"/> to <paramref name="last"/>. A view with no frame at all has no "before" or "after": it is just empty.</summary>
+    private GapPosition GapKind(int first, int last)
+    {
+        var firstFilled = Array.FindIndex(_buckets, b => !b.IsEmpty);
+        var lastFilled = Array.FindLastIndex(_buckets, b => !b.IsEmpty);
+        if (firstFilled < 0)
+        {
+            return GapPosition.Between;
+        }
+
+        return last < firstFilled ? GapPosition.BeforeFirstFrame : first > lastFilled ? GapPosition.AfterLastFrame : GapPosition.Between;
+    }
+
+    /// <summary>The short text on a grey band. "No frames logged" while frames are drawn beside it read as a fault when it only meant the capture had not started yet (GUI-run report, defect 15).</summary>
+    internal static string GapWatermark(GapPosition position) => position switch
+    {
+        GapPosition.BeforeFirstFrame => "before the first frame",
+        GapPosition.AfterLastFrame => "after the last frame",
+        _ => "no frames logged",
+    };
+
+    internal static string GapDescription(GapPosition position) => position switch
+    {
+        GapPosition.BeforeFirstFrame => "before the first frame in this view",
+        GapPosition.AfterLastFrame => "after the last frame in this view",
+        _ => "no frames logged here",
+    };
 
     private void EnsureBuckets(Rect plot)
     {
@@ -513,11 +550,16 @@ public sealed class TimelineView : FrameworkElement
         _gapColumns = Math.Max(1, (int)Math.Ceiling(Math.Max(50.0, 3.0 * typicalFrameMs) / columnMs));
     }
 
-    private static void Label(DrawingContext dc, string text, Brush brush, Point at, double dpi, double size)
+    /// <summary>Draws a label at <paramref name="at"/>, moved left when it would run past <paramref name="rightEdge"/> (the axis label "key press" under the newest end was cut to "key pr").</summary>
+    private static void Label(DrawingContext dc, string text, Brush brush, Point at, double dpi, double size, double rightEdge = double.PositiveInfinity)
     {
         var formatted = new FormattedText(text, CultureInfo.InvariantCulture, FlowDirection.LeftToRight, new Typeface("Segoe UI"), size, brush, dpi);
-        dc.DrawText(formatted, at);
+        dc.DrawText(formatted, new Point(LabelLeft(at.X, formatted.Width, rightEdge), at.Y));
     }
+
+    /// <summary>The left edge for a label that wants to start at <paramref name="desired"/>: pulled left so its right end stays inside <paramref name="rightEdge"/>, never past 0.</summary>
+    internal static double LabelLeft(double desired, double labelWidth, double rightEdge) =>
+        Math.Max(0.0, Math.Min(desired, rightEdge - labelWidth));
 
     private static Brush Translucent(Brush brush, double opacity)
     {
