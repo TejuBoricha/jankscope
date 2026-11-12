@@ -177,6 +177,17 @@
         <Setter Property="Foreground" Value="{DynamicResource AccentTextBrush}"/>
         <Setter Property="BorderBrush" Value="{DynamicResource AccentBrush}"/>
         <Setter Property="FontWeight" Value="Bold"/>
+        <Style.Triggers>
+            <!-- The plain button fades to 38% when disabled. For a primary button that fades the dark label and the bright fill toward the page together, and the
+                 label became hard to read (GUI-run report, defect 14: "Mark stutter" before a capture starts). A disabled primary button is drawn as a soft,
+                 flat surface with a muted label at full strength instead: clearly off, still readable. A style trigger outranks the template trigger that sets the opacity. -->
+            <Trigger Property="IsEnabled" Value="False">
+                <Setter Property="Opacity" Value="1"/>
+                <Setter Property="Background" Value="{DynamicResource AccentSoftBrush}"/>
+                <Setter Property="Foreground" Value="{DynamicResource MutedBrush}"/>
+                <Setter Property="BorderBrush" Value="{DynamicResource BorderLineBrush}"/>
+            </Trigger>
+        </Style.Triggers>
     </Style>
 
     <Style x:Key="SimButton" TargetType="Button" BasedOn="{StaticResource {x:Type Button}}">
