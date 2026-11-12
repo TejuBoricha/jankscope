@@ -17,15 +17,23 @@ public sealed class SimulatedFrameSource : IFrameSource
     private readonly Channel<CapturedFrame> _channel = Channel.CreateUnbounded<CapturedFrame>();
     private readonly TaskCompletionSource _completion = new(TaskCreationOptions.RunContinuationsAsynchronously);
     private readonly CancellationTokenSource _cts = new();
+    /// <summary>How often the live part wakes to write the frames that have become due. Coarse on purpose: Windows timers tick every 15.6 ms and the frames are written by schedule, not by wake-up.</summary>
+    private static readonly TimeSpan LiveTick = TimeSpan.FromMilliseconds(8);
+
+    /// <summary>The most capture time written at one wake-up. A longer stall (a suspended process) is skipped, not replayed as a burst.</summary>
+    private const double MaxCatchUpMs = 1000.0;
+
     private readonly string _applicationName;
     private readonly bool _fastFill;
+    private readonly TimeProvider _time;
     private volatile RunnerState _state = RunnerState.NotStarted;
     private long _rowsParsed;
 
-    public SimulatedFrameSource(string applicationName = "simulated-workbench.exe", bool fastFill = true)
+    public SimulatedFrameSource(string applicationName = "simulated-workbench.exe", bool fastFill = true, TimeProvider? time = null)
     {
         _applicationName = applicationName;
         _fastFill = fastFill;
+        _time = time ?? TimeProvider.System;
     }
 
     public ChannelReader<CapturedFrame> Samples => _channel.Reader;
@@ -125,11 +133,23 @@ public sealed class SimulatedFrameSource : IFrameSource
         return samples;
     }
 
+    /// <summary>The length of live frame number <paramref name="index"/>: about 120 FPS with a 48 ms hitch every 260th frame.</summary>
+    private static double LiveFrameMs(long index) => 8.33 + (Math.Sin(index * 0.2) * 0.25) + (index % 260 == 0 ? 48.0 : 0.0);
+
     private async Task RunSimulationAsync()
     {
         try
         {
+            // The history is written in an instant but spans twenty seconds of capture time. Stamped with the moment it was written, the capture clock
+            // map would see a twenty-second burst and report seconds of "frame-delivery jitter" (the GUI run of 2026-11-12 showed 8313 ms). Each frame
+            // is therefore stamped as if it had arrived on schedule, the newest history frame now: the simulated delivery is steady, and the figure and
+            // the timeline band say so (a simulated source has no real delivery delay to measure; the data stays labelled Simulated).
             var prefill = BuildDemoSequence(_applicationName, 2400);
+            var anchorMs = prefill[^1].TimestampMs;
+            var anchorTicks = _time.GetTimestamp();
+            var ticksPerMs = _time.TimestampFrequency / 1000.0;
+            long ArrivalOf(double captureMs) => anchorTicks + (long)Math.Round((captureMs - anchorMs) * ticksPerMs);
+
             foreach (var sample in prefill)
             {
                 if (_cts.IsCancellationRequested)
@@ -137,21 +157,34 @@ public sealed class SimulatedFrameSource : IFrameSource
                     return;
                 }
 
-                _channel.Writer.TryWrite(new CapturedFrame(1, sample));
+                _channel.Writer.TryWrite(new CapturedFrame(1, sample, ArrivalOf(sample.TimestampMs)));
                 Interlocked.Increment(ref _rowsParsed);
             }
 
             if (_fastFill)
             {
                 var nextIndex = (long)prefill.Length;
-                var clockMs = prefill[^1].TimestampMs;
+                var clockMs = anchorMs;
                 while (!_cts.IsCancellationRequested)
                 {
-                    await Task.Delay(16, _cts.Token).ConfigureAwait(false);
-                    for (var k = 0; k < 2; k++)
+                    await Task.Delay(LiveTick, _time, _cts.Token).ConfigureAwait(false);
+
+                    // Write every frame whose time has come, however late this wake-up is, so the stream keeps the pace of the clock.
+                    var elapsedMs = (_time.GetTimestamp() - anchorTicks) / ticksPerMs;
+                    var lagMs = elapsedMs - (clockMs - anchorMs);
+                    if (lagMs > MaxCatchUpMs)
                     {
-                        var spike = (nextIndex % 260 == 0) ? 48.0 : 0.0;
-                        var frameMs = 8.33 + (Math.Sin(nextIndex * 0.2) * 0.25) + spike;
+                        clockMs += lagMs - MaxCatchUpMs;
+                    }
+
+                    while (true)
+                    {
+                        var frameMs = LiveFrameMs(nextIndex);
+                        if (clockMs + frameMs - anchorMs > elapsedMs)
+                        {
+                            break;
+                        }
+
                         clockMs += frameMs;
                         var sample = new FrameSample(
                             Index: nextIndex++,
@@ -164,7 +197,7 @@ public sealed class SimulatedFrameSource : IFrameSource
                             Application: _applicationName,
                             ProcessId: 4242,
                             Provenance: DataProvenance.Simulated);
-                        _channel.Writer.TryWrite(new CapturedFrame(1, sample));
+                        _channel.Writer.TryWrite(new CapturedFrame(1, sample, ArrivalOf(clockMs)));
                         Interlocked.Increment(ref _rowsParsed);
                     }
                 }

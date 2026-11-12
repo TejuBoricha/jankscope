@@ -451,4 +451,70 @@ public class MainWindowSmokeTests
 
         await host.Controller.StopAsync();
     }
+
+    [DesktopFact]
+    public async Task A_long_cause_title_wraps_inside_its_card_instead_of_being_cut_off()
+    {
+        // Real-app run of 2026-11-12, defect 1: "Frame pacing hitc..." and "Resident kernel anti-cheat presenc" were clipped, because the title
+        // is text from the rules engine and sat in a row that never wrapped.
+        var (host, _, shell) = await Make();
+        await using var owner = host;
+
+        MainWindow? window = null;
+        await WpfHost.RunAsync(() =>
+        {
+            window = new MainWindow(host, shell);
+            window.Show();
+            ((RadioButton)window.FindName("NavInvestigator")).IsChecked = true;
+            ((UIElement)window.FindName("MarkDetailPanel")).Visibility = Visibility.Visible; // shown only once a mark is chosen; this test is about layout alone
+
+            ((ListBox)window.FindName("HypothesesList")).ItemsSource = new[]
+            {
+                new HypothesisCardItem(
+                    GradeBadge: "GRADE B",
+                    Name: "Resident kernel anti-cheat presence together with a frame pacing hitch that repeats at a steady interval",
+                    Summary: "A summary.",
+                    SupportingEvidence: "Supporting Evidence: none.",
+                    FalsifierText: "What would falsify: nothing."),
+            };
+            window.UpdateLayout();
+        });
+        await Flush(); // the list makes its item containers on a later pass
+
+        await WpfHost.RunAsync(() =>
+        {
+            window!.UpdateLayout();
+            var list = (ListBox)window.FindName("HypothesesList");
+            var texts = Descendants<TextBlock>(list).Select(t => t.Text).ToList();
+            Assert.True(
+                texts.Any(t => t.StartsWith("Resident kernel", StringComparison.Ordinal)),
+                $"visible={list.IsVisible}, items={list.Items.Count}, width={list.ActualWidth}, realized texts=[{string.Join(" | ", texts)}]");
+            var title = Descendants<TextBlock>(list).Single(t => t.Text.StartsWith("Resident kernel", StringComparison.Ordinal));
+            var right = title.TransformToAncestor(list).Transform(new Point(title.ActualWidth, 0)).X;
+            Assert.True(right <= list.ActualWidth, $"the title runs {right - list.ActualWidth} px past the right edge of its list");
+            Assert.True(title.ActualHeight >= title.FontSize * 2.0, $"the title is {title.ActualHeight} px high: it did not wrap onto a second line");
+            Snapshots.Save(window, "window-investigator-long-title");
+
+            window.AllowClose();
+            window.Close();
+        });
+    }
+
+    private static IEnumerable<T> Descendants<T>(DependencyObject root)
+        where T : DependencyObject
+    {
+        for (var i = 0; i < VisualTreeHelper.GetChildrenCount(root); i++)
+        {
+            var child = VisualTreeHelper.GetChild(root, i);
+            if (child is T match)
+            {
+                yield return match;
+            }
+
+            foreach (var inner in Descendants<T>(child))
+            {
+                yield return inner;
+            }
+        }
+    }
 }
