@@ -172,7 +172,10 @@ public sealed class AppHost : IAsyncDisposable
             CaptureState.Capturing => hotkeyProblem ? TrayState.Attention : TrayState.Capturing,
             _ => hotkeyProblem ? TrayState.Attention : TrayState.Idle,
         };
-        return (state, "Jankscope: " + status.Headline.TrimEnd('.') + keys);
+        var tip = "Jankscope: " + status.Headline.TrimEnd('.');
+
+        // Windows cuts the tooltip at TrayIcon.MaxTipLength characters. The hotkeys are shown in the menu too, so they go first and the headline stays whole.
+        return (state, tip.Length + keys.Length <= TrayIcon.MaxTipLength ? tip + keys : tip);
     }
 
     /// <summary>The tray menu text for one action: its chord when it works, or a plain "not registered" when it does not.</summary>

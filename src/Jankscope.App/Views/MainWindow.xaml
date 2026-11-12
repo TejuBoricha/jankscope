@@ -100,10 +100,15 @@
                 </Grid>
             </Border>
 
+            <!-- The pages are laid out for a design size (PageScaling) and scaled down together when the window is smaller, so nothing collides or needs scrolling.
+                 The elements below this point up to the matching end comment are not re-indented, to keep the change reviewable. -->
+            <Border x:Name="PagesViewport" Grid.Row="1" ClipToBounds="True">
+            <Grid x:Name="PagesHost">
+
             <!-- ========================================================================= -->
             <!-- WORKSPACE 01: ZERO-SCROLL LIVE CAPTURE & MULTI-SCOPE TELEMETRY CONSOLE     -->
             <!-- ========================================================================= -->
-            <Grid x:Name="PageCapture" Grid.Row="1" Margin="16,12">
+            <Grid x:Name="PageCapture" Margin="16,12">
                 <Grid.RowDefinitions>
                     <RowDefinition Height="Auto"/>
                     <RowDefinition Height="Auto"/>
@@ -114,41 +119,37 @@
                 <!-- Row 0: Unified Hardware Transport & Target Acquisition Strip -->
                 <Border Grid.Row="0" Style="{StaticResource HeroCard}" Margin="0,0,0,10" Padding="14,9">
                     <StackPanel>
+                        <!-- Live status readout: its own line, so the headline and the mark feedback get the full width instead of what the controls leave. -->
                         <Grid>
                             <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="1.15*"/>
                                 <ColumnDefinition Width="Auto"/>
+                                <ColumnDefinition Width="*"/>
                                 <ColumnDefinition Width="Auto"/>
                             </Grid.ColumnDefinitions>
+                            <Border x:Name="CaptureStateDot" Grid.Column="0" Width="9" Height="9" CornerRadius="4.5" Background="{DynamicResource MutedBrush}" VerticalAlignment="Center" Margin="0,0,8,0"/>
+                            <TextBlock x:Name="CaptureHeadline" Grid.Column="1" FontSize="15" FontWeight="Bold" VerticalAlignment="Center" TextTrimming="CharacterEllipsis" AutomationProperties.LiveSetting="Polite"/>
+                            <TextBlock x:Name="MarkFeedback" Grid.Column="2" Margin="14,0,0,0" MaxWidth="520" FontSize="12" FontWeight="SemiBold" VerticalAlignment="Center" TextTrimming="CharacterEllipsis" Foreground="{DynamicResource CyanAccentBrush}" AutomationProperties.LiveSetting="Polite"/>
+                        </Grid>
+                        <!-- MinHeight keeps the strip the same height whether or not there is a detail line, so the page does not jump when a capture starts. -->
+                        <TextBlock x:Name="CaptureDetail" Style="{StaticResource Muted}" FontSize="11.5" MinHeight="16" Margin="17,2,0,0" TextTrimming="CharacterEllipsis"/>
 
-                            <!-- Live Status Readout -->
-                            <StackPanel Grid.Column="0" VerticalAlignment="Center" Margin="0,0,8,0">
-                                <StackPanel Orientation="Horizontal">
-                                    <Border x:Name="CaptureStateDot" Width="9" Height="9" CornerRadius="4.5" Background="{DynamicResource MutedBrush}" VerticalAlignment="Center" Margin="0,0,8,0"/>
-                                    <TextBlock x:Name="CaptureHeadline" FontSize="15" FontWeight="Bold" VerticalAlignment="Center" AutomationProperties.LiveSetting="Polite"/>
-                                    <TextBlock x:Name="MarkFeedback" Margin="14,0,0,0" FontSize="12" FontWeight="SemiBold" VerticalAlignment="Center" Foreground="{DynamicResource CyanAccentBrush}" AutomationProperties.LiveSetting="Polite"/>
-                                </StackPanel>
-                                <TextBlock x:Name="CaptureDetail" Style="{StaticResource Muted}" FontSize="11.5" Margin="17,2,0,0" TextTrimming="CharacterEllipsis"/>
+                        <!-- Controls: target and transport on the left, the two mark buttons on the right. -->
+                        <DockPanel Margin="0,8,0,0">
+                            <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" VerticalAlignment="Center">
+                                <Border Width="1" Height="24" Background="{DynamicResource BorderLineBrush}" Margin="4,0,6,0"/>
+                                <Button x:Name="MarkStutterButton" Content="Mark Stutter" Style="{StaticResource PrimaryButton}" Click="OnMarkStutterClicked"/>
+                                <Button x:Name="MarkInputButton" Content="Mark Input Stall" Click="OnMarkInputClicked" Margin="0"/>
                             </StackPanel>
-
-                            <!-- Target Executable Input & Transport Controls -->
-                            <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center" Margin="0,0,8,0">
+                            <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
                                 <TextBlock Text="TARGET:" Style="{StaticResource Overline}" VerticalAlignment="Center" Margin="0,0,6,0"/>
-                                <TextBox x:Name="ProgramBox" Width="104" Margin="0,0,6,0" VerticalAlignment="Center"
+                                <TextBox x:Name="ProgramBox" Width="150" Margin="0,0,6,0" VerticalAlignment="Center"
                                          AutomationProperties.Name="Executable file name, for example game.exe"
                                          ToolTip="Plain executable name only, e.g. eldenring.exe or cs2.exe (no folder path)."/>
                                 <Button x:Name="StartButton" Content="Start" Style="{StaticResource PrimaryButton}" Click="OnStartClicked"/>
                                 <Button x:Name="StopButton" Content="Stop" Click="OnStopClicked" IsEnabled="False"/>
                                 <Button x:Name="ScanButton" Content="Scan 3D" Click="OnScanClicked" Margin="0"/>
                             </StackPanel>
-
-                            <!-- Instant Incident Triggers -->
-                            <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center">
-                                <Border Width="1" Height="24" Background="{DynamicResource BorderLineBrush}" Margin="4,0,6,0"/>
-                                <Button x:Name="MarkStutterButton" Content="Mark Stutter" Style="{StaticResource PrimaryButton}" Click="OnMarkStutterClicked"/>
-                                <Button x:Name="MarkInputButton" Content="Mark Input Stall" Click="OnMarkInputClicked" Margin="0"/>
-                            </StackPanel>
-                        </Grid>
+                        </DockPanel>
 
                         <TextBlock x:Name="ScanStatus" Style="{StaticResource Muted}" FontSize="11.5" Margin="0,6,0,0" Visibility="Collapsed" AutomationProperties.LiveSetting="Polite"/>
                         <ListBox x:Name="ScanResultsList" MaxHeight="85" Margin="0,4,0,0" Visibility="Collapsed" SelectionChanged="OnScanResultPicked"
@@ -281,7 +282,7 @@
             <!-- ========================================================================= -->
             <!-- WORKSPACE 02: ZERO-SCROLL FORENSIC INCIDENT WORKBENCH                     -->
             <!-- ========================================================================= -->
-            <Grid x:Name="PageInvestigator" Grid.Row="1" Visibility="Collapsed" Margin="16,12">
+            <Grid x:Name="PageInvestigator" Visibility="Collapsed" Margin="16,12">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="236"/>
                     <ColumnDefinition Width="*"/>
@@ -345,8 +346,10 @@
                                 <Button x:Name="ExportButton" DockPanel.Dock="Right" Content="Preview &amp; Export Redacted Bundle..."
                                         Style="{StaticResource PrimaryButton}" Click="OnExportClicked" VerticalAlignment="Center" Margin="12,0,0,0"/>
                                 <StackPanel>
+                                    <!-- The title is one short line; the longer explanations below it wrap, so the whole sentence can be read. -->
                                     <TextBlock x:Name="MarkSummaryLine" FontFamily="Consolas" FontSize="12.5" FontWeight="Bold" TextTrimming="CharacterEllipsis"/>
-                                    <TextBlock x:Name="SelectionStatus" FontFamily="Consolas" FontSize="11.5" Foreground="{DynamicResource CyanAccentBrush}" FontWeight="SemiBold" Margin="0,2,0,0" TextTrimming="CharacterEllipsis" AutomationProperties.LiveSetting="Polite"/>
+                                    <TextBlock x:Name="MarkQualityLine" Style="{StaticResource Muted}" FontSize="11" Margin="0,2,0,0" TextWrapping="Wrap"/>
+                                    <TextBlock x:Name="SelectionStatus" FontFamily="Consolas" FontSize="11.5" Foreground="{DynamicResource CyanAccentBrush}" FontWeight="SemiBold" Margin="0,3,0,0" TextWrapping="Wrap" AutomationProperties.LiveSetting="Polite"/>
                                 </StackPanel>
                             </DockPanel>
                         </Border>
@@ -555,7 +558,7 @@
             <!-- ========================================================================= -->
             <!-- WORKSPACE 03: ZERO-SCROLL SYSTEM CAPABILITY & COEXISTENCE RADAR           -->
             <!-- ========================================================================= -->
-            <Grid x:Name="PageRadar" Grid.Row="1" Visibility="Collapsed" Margin="16,12">
+            <Grid x:Name="PageRadar" Visibility="Collapsed" Margin="16,12">
                 <Grid.RowDefinitions>
                     <RowDefinition Height="Auto"/>
                     <RowDefinition Height="Auto"/>
@@ -673,7 +676,7 @@
             <!-- ========================================================================= -->
             <!-- WORKSPACE 04: ZERO-SCROLL INPUT & MOUSE POLLING CONTINUITY LAB            -->
             <!-- ========================================================================= -->
-            <Grid x:Name="PageLab" Grid.Row="1" Visibility="Collapsed" Margin="16,12">
+            <Grid x:Name="PageLab" Visibility="Collapsed" Margin="16,12">
                 <Grid.RowDefinitions>
                     <RowDefinition Height="Auto"/>
                     <RowDefinition Height="Auto"/>
@@ -771,7 +774,7 @@
             <!-- ========================================================================= -->
             <!-- WORKSPACE 05: STUDIO CONFIGURATION & AUDIO CUES                           -->
             <!-- ========================================================================= -->
-            <Grid x:Name="PageSettings" Grid.Row="1" Visibility="Collapsed" Margin="16,12">
+            <Grid x:Name="PageSettings" Visibility="Collapsed" Margin="16,12">
                 <StackPanel>
                     <Border Style="{StaticResource HeroCard}" Margin="0,0,0,12">
                         <StackPanel>
@@ -857,7 +860,7 @@
             <!-- ========================================================================= -->
             <!-- WORKSPACE 06: SPEC, PRIVACY PROOF & COMPATIBILITY EXPORT                  -->
             <!-- ========================================================================= -->
-            <Grid x:Name="PageAbout" Grid.Row="1" Visibility="Collapsed" Margin="16,12">
+            <Grid x:Name="PageAbout" Visibility="Collapsed" Margin="16,12">
                 <StackPanel>
                     <Border Style="{StaticResource HeroCard}" Margin="0,0,0,12">
                         <DockPanel>
@@ -916,6 +919,10 @@
                     </Border>
                 </StackPanel>
             </Grid>
+
+            </Grid>
+            </Border>
+            <!-- end of the pages that are scaled together (PagesHost, PagesViewport) -->
         </Grid>
     </Grid>
 </Window>

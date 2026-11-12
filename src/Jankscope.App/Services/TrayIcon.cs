@@ -6,7 +6,8 @@ namespace Jankscope.App.Services;
 /// </summary>
 public sealed class TrayIcon : IDisposable
 {
-    private const int MaxTipLength = 63;
+    /// <summary>Windows cuts a notification-area tooltip at 63 characters.</summary>
+    internal const int MaxTipLength = 63;
 
     private readonly System.Windows.Forms.NotifyIcon _icon;
     private readonly Dictionary<TrayState, System.Drawing.Icon> _icons;
